@@ -27,7 +27,7 @@ Or deploy for free on GitHub Pages:
 ## Usage
 
 ```bash
-git clone https://github.com/yourusername/sat-vocab-app.git
+git clone https://github.com/Yers1/sat-vocab-app
 cd sat-vocab-app
 open index.html   # macOS
 # or just drag index.html into your browser

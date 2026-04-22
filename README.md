@@ -68,6 +68,4 @@ Pull requests welcome. Ideas:
 - Filter by letter or difficulty
 - Typing mode (type the word from the definition)
 
-## License
 
-MIT

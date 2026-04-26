@@ -1,4 +1,4 @@
-# SAT Vocab Trainer
+# SAT Vocab Trainer, flashcards
 
 A clean, dark-themed flashcard app to study the 1000 most common SAT vocabulary words — no frameworks, no dependencies, just a single HTML file.
 

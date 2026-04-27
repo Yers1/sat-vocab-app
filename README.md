@@ -22,7 +22,7 @@ Or deploy for free on GitHub Pages:
 1. Fork this repo
 2. Go to **Settings → Pages**
 3. Set source to `main` branch, `/ (root)`
-4. Your app will be live at `https://yourusername.github.io/sat-vocab-app`
+4. Your app will be live at `https://Yers1.io/sat-vocab-app`
 
 ## Usage
 

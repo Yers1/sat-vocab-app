@@ -9,6 +9,7 @@ A focused SAT vocabulary app with a complete PDF-derived reference deck, indepen
 - **Separate libraries** - 990 entries extracted from `sat.vocab.pdf`, plus as many independent personal decks as you need
 - **Adaptive SRS** - Again, Hard, and Know ratings schedule every card with its own due date and interval
 - **Daily plan** - a short mix of due reviews and new words with an honest stopping point
+- **Adjustable workload** - choose daily new words, due reviews, and streak target; continue with 20 more cards or the full deck at any time
 - **Five study modes** - flashcards, typed recall with hints, sentence context, multiple choice tests, and analytics
 - **Focused recovery** - launch sessions containing only recent mistakes or weak words
 - **Personal word tools** - create, rename, and delete decks; add words manually or import TXT, CSV, TSV, and JSON
@@ -16,7 +17,8 @@ A focused SAT vocabulary app with a complete PDF-derived reference deck, indepen
 - **Daily discipline** - GitHub-style 91-day activity heatmap, five-review daily minimum, and streak tracking
 - **Backup and transfer** - export or share every deck, schedule, streak, and setting, then import it on another device
 - **Installable PWA** - install from a supported browser and keep studying after the core app has been cached
-- **Reminders** - optional browser notification at a chosen time while the site is open, plus a test button
+- **Multiple reminders** - add up to eight daily times, remove them independently, and test browser notifications
+- **Learner profile** - GitHub-style identity, XP, level, review totals, streak, collections, and an opt-in leaderboard
 - **Pronunciation and keyboard controls** - browser speech plus Space, 1, 2, and 3 shortcuts
 
 ## Live Demo
@@ -75,6 +77,17 @@ JSON may contain arrays in the app's five-field format or objects with `word`, `
 - Zero dependencies
 - Static PWA files with no server runtime
 - Offline shell caching through a service worker
+
+## Optional cloud sync
+
+The app works locally without an account. Cross-device sync, email login, and the shared leaderboard use Supabase and stay disabled until a project is connected.
+
+1. Create a Supabase project and run `supabase-schema.sql` in its SQL editor.
+2. Add `https://sat-vocab-app-eosin.vercel.app` to the allowed Auth redirect URLs.
+3. Put the project URL and publishable key in `cloud-config.js`.
+4. Commit and deploy. Users can then request a magic login link from the Profile section.
+
+The publishable key is safe to ship to the browser. Row Level Security from `supabase-schema.sql` ensures users can only read and write their own vocabulary state; only opted-in profile statistics are public.
 
 ## Word List
 

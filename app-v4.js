@@ -4,7 +4,7 @@ const APP_KEY = 'sat-vocab-trainer-v4';
 const LEGACY_STATE_KEY = 'sat-vocab-trainer-v3';
 const LEGACY_WORDS_KEY = 'sat-vocab-custom-words-v3';
 const MAIN_DECK_ID = 'personal-main';
-const MIN_DAILY_REVIEWS = 5;
+const DEFAULT_DAILY_GOAL = 20;
 
 const STARTER_WORDS = [
   ['heritable','adj.','capable of being passed genetically from parent to offspring','Some traits are heritable, while others are shaped mainly by the environment.','наследуемый'],
@@ -47,7 +47,8 @@ const emptyState = () => ({
   },
   progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
   activity: {},
-  settings: { reminder: { enabled: false, time: '19:00', lastSent: '' }, dailyNew: 5, dailyReviews: 12, recoveryDays: 1 },
+  settings: { reminders: [], dailyNew: 20, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true },
+  profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false },
   lastStudy: new Date().toISOString()
 });
 
@@ -90,6 +91,10 @@ function normalizeWord(value) {
   return String(value || '').trim().toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ');
 }
 
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+}
+
 function shuffled(items) {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -106,7 +111,7 @@ function migrateLegacyState(base) {
     const legacy = JSON.parse(localStorage.getItem(LEGACY_STATE_KEY) || 'null');
     if (!legacy) return base;
     base.activity = legacy.activity || {};
-    if (legacy.reminder) base.settings.reminder = { ...base.settings.reminder, ...legacy.reminder };
+    if (legacy.reminder && legacy.reminder.enabled) base.settings.reminders = [{ time: legacy.reminder.time || '19:00', lastSent: legacy.reminder.lastSent || '' }];
     const today = localDateKey();
     [['pdf', 'pdf'], ['custom', MAIN_DECK_ID]].forEach(([oldId, newId]) => {
       const oldDeck = legacy.decks && legacy.decks[oldId];
@@ -137,12 +142,27 @@ function loadAppState() {
   try {
     const saved = JSON.parse(localStorage.getItem(APP_KEY) || 'null');
     if (!saved || saved.version !== 4) return migrateLegacyState(base);
+    const savedSettings = saved.settings || {};
+    const legacyReminder = savedSettings.reminder;
+    const reminders = Array.isArray(savedSettings.reminders)
+      ? savedSettings.reminders
+      : legacyReminder && legacyReminder.enabled ? [{ time: legacyReminder.time || '19:00', lastSent: legacyReminder.lastSent || '' }] : [];
+    const hasNewGoalSettings = Boolean(savedSettings.goalsConfigured);
     return {
       ...base,
       ...saved,
       personalDecks: { ...base.personalDecks, ...(saved.personalDecks || {}) },
       progress: { ...base.progress, ...(saved.progress || {}) },
-      settings: { ...base.settings, ...(saved.settings || {}), reminder: { ...base.settings.reminder, ...((saved.settings || {}).reminder || {}) } }
+      settings: {
+        ...base.settings,
+        ...savedSettings,
+        dailyNew: hasNewGoalSettings ? Number(savedSettings.dailyNew || 20) : 20,
+        dailyReviews: hasNewGoalSettings ? Number(savedSettings.dailyReviews || 30) : 30,
+        dailyGoal: hasNewGoalSettings ? Number(savedSettings.dailyGoal || DEFAULT_DAILY_GOAL) : DEFAULT_DAILY_GOAL,
+        reminders,
+        goalsConfigured: true
+      },
+      profile: { ...base.profile, ...(saved.profile || {}) }
     };
   } catch {
     return migrateLegacyState(base);
@@ -153,6 +173,11 @@ function saveAppState() {
   appState.activeDeckId = activeDeckId;
   appState.lastStudy = new Date().toISOString();
   localStorage.setItem(APP_KEY, JSON.stringify(appState));
+  if (typeof queueCloudSync === 'function') queueCloudSync();
+}
+
+function dailyGoal() {
+  return Math.max(1, Number(appState.settings.dailyGoal || DEFAULT_DAILY_GOAL));
 }
 
 function currentWords() {
@@ -244,6 +269,17 @@ function startDailyPlan() {
   setMode('flash');
   renderCard();
   showToast(`${queue.length} cards ready in your ${sessionKind} session.`);
+}
+
+function startExtraSession(amount = 20) {
+  const { due, fresh } = dailyPlanIndices();
+  const prioritized = [...new Set([...due, ...fresh, ...weakIndices(), ...currentWords().map((word, index) => index)])];
+  const limit = amount === 'all' ? prioritized.length : Math.max(1, Number(amount || 20));
+  queue = shuffled(prioritized).slice(0, limit);
+  sessionKind = amount === 'all' ? 'full deck' : 'extra';
+  setMode('flash');
+  renderCard();
+  showToast(`${queue.length} cards added. You can keep studying as long as your focus is good.`);
 }
 
 function weakIndices() {
@@ -368,9 +404,9 @@ function renderCard() {
 function showLearningComplete() {
   document.getElementById('flash-word').textContent = 'Done';
   document.getElementById('flash-pos').textContent = `${sessionKind} session complete`;
-  document.getElementById('flash-def').textContent = 'Your scheduled cards are finished for now.';
-  document.getElementById('flash-ru').textContent = 'На сегодня запланированные карточки закончены.';
-  document.getElementById('flash-ex').textContent = 'Try Type or Context mode to verify active recall.';
+  document.getElementById('flash-def').textContent = 'The current set is complete — your study is not limited.';
+  document.getElementById('flash-ru').textContent = 'Текущий набор закончен, но можно сразу продолжить ещё 20 слов или пройти всю колоду.';
+  document.getElementById('flash-ex').textContent = 'Use “+20 more”, “Study all”, Type, or Context to continue.';
   document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
 }
 
@@ -567,8 +603,8 @@ function renderDailyPlan() {
   const minutes = Math.max(1, Math.ceil(plan.length * 0.45));
   document.getElementById('plan-title').textContent = plan.length ? `${plan.length} cards · about ${minutes} min` : 'Scheduled work complete';
   document.getElementById('plan-copy').textContent = plan.length
-    ? `${Math.min(due.length, appState.settings.dailyReviews)} reviews due + ${Math.min(fresh.length, appState.settings.dailyNew)} new. Stop when the plan is complete.`
-    : 'No cards are due. Use Type, Context, or Weak words for an optional refresh.';
+    ? `${Math.min(due.length, appState.settings.dailyReviews)} reviews due + ${Math.min(fresh.length, appState.settings.dailyNew)} new. This is a target, not a limit — continue whenever you want.`
+    : 'The planned set is complete. Continue with +20 more, Study all, Type, or Context.';
 }
 
 function renderProgress() {
@@ -606,10 +642,10 @@ function calculateStreak() {
   let recoveryUsed = 0;
   const cursor = new Date();
   cursor.setHours(12, 0, 0, 0);
-  if ((appState.activity[localDateKey(cursor)] || 0) < MIN_DAILY_REVIEWS) cursor.setDate(cursor.getDate() - 1);
+  if ((appState.activity[localDateKey(cursor)] || 0) < dailyGoal()) cursor.setDate(cursor.getDate() - 1);
   for (let days = 0; days < 365; days += 1) {
     const count = appState.activity[localDateKey(cursor)] || 0;
-    if (count >= MIN_DAILY_REVIEWS) streak += 1;
+    if (count >= dailyGoal()) streak += 1;
     else if (recoveryUsed < appState.settings.recoveryDays && streak > 0) recoveryUsed += 1;
     else break;
     cursor.setDate(cursor.getDate() - 1);
@@ -632,9 +668,22 @@ function renderActivity() {
   const { streak, recoveryUsed } = calculateStreak();
   document.getElementById('streak-count').textContent = `${streak} day${streak === 1 ? '' : 's'}`;
   const todayCount = appState.activity[localDateKey()] || 0;
-  document.getElementById('commitment-copy').textContent = todayCount >= MIN_DAILY_REVIEWS
+  const goal = dailyGoal();
+  document.getElementById('streak-rule').textContent = `A day counts after ${goal} honest review${goal === 1 ? '' : 's'}. The target is adjustable.`;
+  document.getElementById('commitment-copy').textContent = todayCount >= goal
     ? `Daily minimum complete: ${todayCount} reviews. Continue only while your focus is good.`
-    : `${MIN_DAILY_REVIEWS - todayCount} honest review${MIN_DAILY_REVIEWS - todayCount === 1 ? '' : 's'} left today. ${recoveryUsed ? 'Your recovery day is currently protecting the streak.' : 'One recovery day is available.'}`;
+    : `${goal - todayCount} honest review${goal - todayCount === 1 ? '' : 's'} left today. ${recoveryUsed ? 'Your recovery day is currently protecting the streak.' : 'One recovery day is available.'}`;
+}
+
+function saveStudySettings() {
+  appState.settings.dailyNew = Math.min(200, Math.max(1, Number(document.getElementById('daily-new').value || 20)));
+  appState.settings.dailyReviews = Math.min(300, Math.max(1, Number(document.getElementById('daily-reviews').value || 30)));
+  appState.settings.dailyGoal = Math.min(100, Math.max(1, Number(document.getElementById('daily-goal').value || DEFAULT_DAILY_GOAL)));
+  appState.settings.goalsConfigured = true;
+  queue = dailyPlanIndices().plan;
+  saveAppState();
+  renderAll();
+  showToast(`Daily plan updated: ${appState.settings.dailyNew} new + ${appState.settings.dailyReviews} reviews.`);
 }
 
 function renderFocusedCounts() {
@@ -677,6 +726,7 @@ function renderAll() {
   renderProgress();
   renderActivity();
   renderFocusedCounts();
+  renderProfile();
   if (mode === 'analytics') renderAnalytics();
 }
 
@@ -907,15 +957,39 @@ async function showSystemNotification(title, body) {
   return true;
 }
 
-async function enableReminder() {
+function renderReminders() {
+  const reminders = Array.isArray(appState.settings.reminders) ? appState.settings.reminders : [];
+  document.getElementById('reminder-list').innerHTML = reminders.length
+    ? reminders.map((reminder, index) => `<span class="reminder-chip">${reminder.time}<button type="button" onclick="removeReminder(${index})" aria-label="Remove ${reminder.time} reminder">×</button></span>`).join('')
+    : '<span class="side-copy">No reminders yet.</span>';
+}
+
+async function addReminder() {
   const time = document.getElementById('reminder-time').value || '19:00';
-  appState.settings.reminder.time = time;
-  appState.settings.reminder.enabled = true;
+  if (!Array.isArray(appState.settings.reminders)) appState.settings.reminders = [];
+  if (appState.settings.reminders.some(reminder => reminder.time === time)) {
+    showToast(`A ${time} reminder already exists.`);
+    return;
+  }
+  if (appState.settings.reminders.length >= 8) {
+    showToast('Keep at most 8 reminders so they stay useful.');
+    return;
+  }
+  appState.settings.reminders.push({ time, lastSent: '' });
+  appState.settings.reminders.sort((a, b) => a.time.localeCompare(b.time));
   if ('Notification' in window && Notification.permission === 'default') {
     try { await Notification.requestPermission(); } catch { showToast('Browser notification permission was not granted.'); }
   }
   saveAppState();
-  showToast(`Daily reminder set for ${time}. The PWA can notify when the browser allows background activity.`);
+  renderReminders();
+  showToast(`${time} added. You now have ${appState.settings.reminders.length} daily reminder${appState.settings.reminders.length === 1 ? '' : 's'}.`);
+}
+
+function removeReminder(index) {
+  if (!Array.isArray(appState.settings.reminders)) return;
+  appState.settings.reminders.splice(index, 1);
+  saveAppState();
+  renderReminders();
 }
 
 async function testNotification() {
@@ -929,15 +1003,16 @@ async function testNotification() {
 }
 
 function checkReminder() {
-  const reminder = appState.settings.reminder;
-  if (!reminder.enabled) return;
+  const reminders = Array.isArray(appState.settings.reminders) ? appState.settings.reminders : [];
+  if (!reminders.length) return;
   const now = new Date();
   const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   const today = localDateKey(now);
-  if (time !== reminder.time || reminder.lastSent === today) return;
+  const reminder = reminders.find(item => item.time === time && item.lastSent !== today);
+  if (!reminder) return;
   reminder.lastSent = today;
   saveAppState();
-  const remaining = Math.max(0, MIN_DAILY_REVIEWS - (appState.activity[today] || 0));
+  const remaining = Math.max(0, dailyGoal() - (appState.activity[today] || 0));
   const message = remaining ? `${remaining} reviews protect today. Start with one card.` : 'Today’s minimum is complete.';
   showToast(message);
   showSystemNotification('SAT Vocab', message);
@@ -948,6 +1023,69 @@ function updateDeckLabels() {
   const personalDeck = activeDeckId === 'pdf' ? appState.personalDecks[appState.settings.lastPersonalDeck || MAIN_DECK_ID] || appState.personalDecks[MAIN_DECK_ID] : appState.personalDecks[activeDeckId];
   document.getElementById('personal-tab-name').textContent = personalDeck.name;
   document.getElementById('custom-deck-count').textContent = `${Object.keys(appState.personalDecks).length} decks · ${personalDeck.words.length} in current`;
+}
+
+function profileMetrics() {
+  let reviews = 0;
+  let mastered = 0;
+  Object.entries(appState.progress).forEach(([deckId, progress]) => {
+    Object.values((progress && progress.cards) || {}).forEach(record => {
+      reviews += Number(record.reviews || 0);
+      if (isMasteredCard(record)) mastered += 1;
+    });
+  });
+  const { streak } = calculateStreak();
+  const xp = reviews * 5 + mastered * 30 + streak * 50;
+  return { reviews, mastered, streak, xp, level: Math.floor(xp / 500) + 1 };
+}
+
+function renderProfile(populateForm = false) {
+  const profile = appState.profile || emptyState().profile;
+  const metrics = profileMetrics();
+  const name = profile.name || 'SAT learner';
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'SL';
+  document.getElementById('profile-avatar').textContent = initials;
+  document.getElementById('profile-title').textContent = name;
+  document.getElementById('profile-subtitle').textContent = profile.bio || 'Your vocabulary collections, consistency, and memory progress in one place.';
+  document.getElementById('profile-level').textContent = metrics.level;
+  document.getElementById('profile-xp').textContent = metrics.xp.toLocaleString();
+  document.getElementById('profile-reviews').textContent = metrics.reviews.toLocaleString();
+  document.getElementById('profile-mastered').textContent = metrics.mastered.toLocaleString();
+  document.getElementById('profile-streak').textContent = `${metrics.streak}d`;
+  if (populateForm) {
+    document.getElementById('profile-name').value = name;
+    document.getElementById('profile-bio').value = profile.bio || '';
+    document.getElementById('leaderboard-opt-in').checked = Boolean(profile.leaderboardOptIn);
+  }
+  const decks = [
+    { name: 'PDF vocabulary', words: pdfWords.length || 990, id: 'pdf' },
+    ...Object.values(appState.personalDecks).map(deck => ({ name: deck.name, words: deck.words.length, id: deck.id }))
+  ];
+  document.getElementById('profile-collections').innerHTML = decks.map(deck => {
+    const cards = ((appState.progress[deck.id] || {}).cards) || {};
+    const learned = Object.values(cards).filter(record => isMasteredCard(record)).length;
+    return `<article class="collection-item"><strong>${escapeHtml(deck.name)}</strong><span>${deck.words} words · ${learned} mastered</span></article>`;
+  }).join('');
+  if (typeof updateCloudProfilePreview === 'function') updateCloudProfilePreview(metrics);
+}
+
+function saveProfile(event) {
+  event.preventDefault();
+  const name = document.getElementById('profile-name').value.trim();
+  if (name.length < 2) {
+    showToast('Use at least 2 characters for your display name.');
+    return;
+  }
+  appState.profile = {
+    ...appState.profile,
+    name,
+    bio: document.getElementById('profile-bio').value.trim(),
+    leaderboardOptIn: document.getElementById('leaderboard-opt-in').checked
+  };
+  saveAppState();
+  renderProfile(true);
+  if (typeof syncCloudNow === 'function') syncCloudNow();
+  showToast('Profile saved.');
 }
 
 function installApp() {
@@ -977,7 +1115,11 @@ document.addEventListener('keydown', event => {
 
 async function initializeApp() {
   document.getElementById('today-label').textContent = `${new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date())} · today’s session`;
-  document.getElementById('reminder-time').value = appState.settings.reminder.time || '19:00';
+  document.getElementById('daily-new').value = appState.settings.dailyNew;
+  document.getElementById('daily-reviews').value = appState.settings.dailyReviews;
+  document.getElementById('daily-goal').value = dailyGoal();
+  renderReminders();
+  renderProfile(true);
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => showToast('Offline mode could not be registered.'));
   try {
     const loadedWords = await loadBundledPdfWords();
@@ -990,8 +1132,10 @@ async function initializeApp() {
   updateDeckLabels();
   switchDeck(activeDeckId === 'pdf' && !pdfWords.length ? MAIN_DECK_ID : activeDeckId);
   renderAll();
+  renderProfile(true);
   checkReminder();
   setInterval(checkReminder, 30000);
+  if (typeof initializeCloudSync === 'function') initializeCloudSync();
 }
 
 initializeApp();

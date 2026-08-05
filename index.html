@@ -438,6 +438,13 @@
   .utility-btn:hover { background: #eee9de; }
   .reminder-row { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 10px; }
   .reminder-row input { min-width: 0; border: 1px solid var(--border); background: var(--card); padding: 9px; border-radius: 5px; color: var(--text); font: inherit; }
+  .reminder-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .reminder-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); background: #f7f3ea; padding: 6px 8px; border-radius: 4px; color: var(--text); font: 600 .66rem 'DM Mono', monospace; }
+  .reminder-chip button { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0 2px; font: inherit; }
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 10px; }
+  .goal-field { color: var(--muted); font-size: .6rem; line-height: 1.4; }
+  .goal-field:last-child { grid-column: 1 / -1; }
+  .goal-field input { width: 100%; margin-top: 4px; border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 8px; border-radius: 5px; font: 600 .72rem 'DM Mono', monospace; }
   .add-panel { width: 100%; margin-top: 20px; background: rgba(255,253,247,.82); border: 1px solid var(--border); border-radius: 12px 12px 4px 12px; padding: 24px; }
   .add-head { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 18px; }
   .add-head p { color: var(--muted); font-size: .68rem; max-width: 62ch; line-height: 1.6; }
@@ -493,6 +500,32 @@
   .mistake-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .session-chip { border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 9px 7px; border-radius: 5px; cursor: pointer; font-size: .63rem; }
   .session-chip strong { display: block; font-size: .9rem; margin-bottom: 3px; }
+  .profile-panel { width: 100%; margin-top: 20px; background: #262a24; color: #f8f1e3; border-radius: 16px 16px 5px 16px; padding: clamp(22px, 4vw, 40px); }
+  .profile-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; border-bottom: 1px solid #464b43; padding-bottom: 24px; }
+  .profile-avatar { width: 68px; height: 68px; display: grid; place-items: center; background: #d66b50; border-radius: 18px 18px 5px 18px; color: white; font: 700 1.45rem 'Playfair Display', serif; }
+  .profile-title { font: 700 clamp(1.55rem, 3vw, 2.3rem)/1.05 'Playfair Display', serif; letter-spacing: -.025em; }
+  .profile-subtitle { color: #aeb4aa; font-size: .68rem; line-height: 1.55; margin-top: 6px; }
+  .cloud-state { border: 1px solid #596057; color: #c8cec4; padding: 8px 10px; border-radius: 5px; font-size: .64rem; white-space: nowrap; }
+  .cloud-state.online { border-color: #5a9c70; color: #91d2aa; }
+  .profile-stats { display: grid; grid-template-columns: repeat(5, 1fr); margin: 26px 0; border-top: 1px solid #464b43; border-bottom: 1px solid #464b43; }
+  .profile-stat { padding: 16px 12px; border-right: 1px solid #464b43; color: #aeb4aa; font-size: .62rem; }
+  .profile-stat:last-child { border-right: 0; }
+  .profile-stat strong { display: block; margin-top: 7px; color: #fff8e9; font: 700 1.35rem 'Playfair Display', serif; font-variant-numeric: tabular-nums; }
+  .profile-body { display: grid; grid-template-columns: minmax(0, .82fr) minmax(300px, 1.18fr); gap: 28px; }
+  .profile-section-title { font: 700 1.1rem 'Playfair Display', serif; margin-bottom: 10px; }
+  .profile-form { display: grid; gap: 8px; }
+  .profile-form input, .profile-form textarea { width: 100%; border: 1px solid #555b52; background: #30352e; color: #fff8e9; padding: 11px; border-radius: 5px; font: inherit; font-size: .7rem; resize: vertical; }
+  .profile-form button, .cloud-actions button { border: 1px solid #5c6358; background: transparent; color: #fff8e9; padding: 9px 11px; border-radius: 5px; cursor: pointer; font-size: .67rem; }
+  .profile-form button.primary { background: #d66b50; border-color: #d66b50; }
+  .collection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .collection-item { background: #30352e; padding: 13px; min-height: 88px; }
+  .collection-item strong { display: block; font: 700 1rem 'Playfair Display', serif; margin-bottom: 5px; }
+  .collection-item span { color: #aeb4aa; font-size: .62rem; line-height: 1.45; }
+  .leaderboard { margin-top: 22px; }
+  .leader-row { display: grid; grid-template-columns: 28px 1fr auto auto; gap: 10px; align-items: center; border-top: 1px solid #464b43; padding: 10px 0; font-size: .68rem; }
+  .leader-row span:last-child { color: #91d2aa; font-variant-numeric: tabular-nums; }
+  .cloud-actions { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 9px; }
+  .cloud-actions input { min-width: 0; border: 1px solid #555b52; background: #30352e; color: #fff8e9; padding: 10px; border-radius: 5px; font: inherit; font-size: .7rem; }
   .due-label { color: var(--accent); font-size: .6rem; }
   .hidden { display: none !important; }
 
@@ -506,6 +539,8 @@
     .analytics-grid { grid-template-columns: 1fr 1fr; }
     .utility-panel { grid-template-columns: 1fr; }
     .utility-actions { justify-content: flex-start; }
+    .profile-body { grid-template-columns: 1fr; }
+    .profile-stats { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 560px) {
     .app-shell { width: min(100% - 20px, 1180px); padding-top: 12px; }
@@ -526,7 +561,12 @@
     .analytics-grid { grid-template-columns: 1fr 1fr; }
     .deck-manager { grid-template-columns: 1fr 1fr; }
     .deck-manager select { grid-column: 1 / -1; }
-    .top-actions .install-btn { display: none; }
+    .top-actions .install-btn:not(.profile-jump) { display: none; }
+    .profile-head { grid-template-columns: auto 1fr; }
+    .cloud-state { grid-column: 1 / -1; }
+    .profile-stats { grid-template-columns: 1fr 1fr; }
+    .profile-stat { border-bottom: 1px solid #464b43; }
+    .collection-grid { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -541,7 +581,7 @@
       <div class="brand-mark" aria-hidden="true">SV</div>
       <div><h1>SAT Vocab</h1><p>focused recall trainer</p></div>
     </div>
-    <div class="top-actions"><button class="install-btn hidden" id="install-app" onclick="installApp()">Install app</button><div class="day-chip" id="today-label">Today’s session</div></div>
+    <div class="top-actions"><button class="install-btn profile-jump" onclick="document.getElementById('profile').scrollIntoView({behavior:'smooth'})">Profile</button><button class="install-btn hidden" id="install-app" onclick="installApp()">Install app</button><div class="day-chip" id="today-label">Today’s session</div></div>
   </header>
 
   <nav class="deck-tabs" aria-label="Vocabulary decks">
@@ -570,7 +610,7 @@
 
       <div class="daily-plan" id="daily-plan">
         <div><strong id="plan-title">Today’s focused session</strong><p id="plan-copy">Building your plan…</p></div>
-        <div class="plan-actions"><button class="mini-btn primary" onclick="startDailyPlan()">Start plan</button><button class="mini-btn" onclick="startMistakeSession('weak')">Weak words</button></div>
+        <div class="plan-actions"><button class="mini-btn primary" onclick="startDailyPlan()">Start plan</button><button class="mini-btn" onclick="startExtraSession(20)">+20 more</button><button class="mini-btn" onclick="startExtraSession('all')">Study all</button></div>
       </div>
 
       <div id="flash-mode">
@@ -680,20 +720,67 @@
         <div class="mistake-actions"><button class="session-chip" onclick="startMistakeSession('mistakes')"><strong id="mistake-count">0</strong>recent mistakes</button><button class="session-chip" onclick="startMistakeSession('weak')"><strong id="weak-count">0</strong>weak words</button></div>
       </section>
 
+      <section class="side-section" aria-labelledby="goals-title">
+        <h3 id="goals-title">Daily load</h3>
+        <p class="side-copy">Choose how much you want. The app suggests a finish line, but never blocks extra study.</p>
+        <div class="goal-grid">
+          <label class="goal-field">New words<input id="daily-new" type="number" min="1" max="200" value="20"></label>
+          <label class="goal-field">Due reviews<input id="daily-reviews" type="number" min="1" max="300" value="30"></label>
+          <label class="goal-field">Reviews to protect streak<input id="daily-goal" type="number" min="1" max="100" value="20"></label>
+        </div>
+        <button class="utility-btn" id="save-study-settings" onclick="saveStudySettings()">Save daily load</button>
+      </section>
+
       <section class="side-section" aria-labelledby="streak-title">
         <div class="streak-line"><h3 id="streak-title">Study streak</h3><strong id="streak-count">0 days</strong></div>
-        <p class="side-copy">A day counts after 5 honest reviews. Small consistency beats a perfect plan.</p>
+        <p class="side-copy" id="streak-rule">A day counts after your chosen review goal. Small consistency beats a perfect plan.</p>
         <div class="heatmap" id="heatmap" aria-label="Last 91 days of study activity"></div>
         <div class="commitment" id="commitment-copy">Do just 5 cards now. You may stop after that - starting is the win.</div>
       </section>
 
       <section class="side-section" aria-labelledby="reminder-title">
         <h3 id="reminder-title">Daily nudge</h3>
-        <p class="side-copy">Set a specific time. The reminder works while this site is open in the browser.</p>
-        <div class="reminder-row"><input type="time" id="reminder-time" value="19:00" aria-label="Reminder time"><button class="utility-btn" style="margin:0" onclick="enableReminder()">Enable</button></div>
+        <p class="side-copy">Add several times. In-page reminders work while the app is open; background delivery depends on the browser.</p>
+        <div class="reminder-row"><input type="time" id="reminder-time" value="19:00" aria-label="Reminder time"><button class="utility-btn" style="margin:0" onclick="addReminder()">Add</button></div>
+        <div class="reminder-list" id="reminder-list"></div>
       </section>
     </aside>
   </div>
+
+  <section class="profile-panel" id="profile" aria-labelledby="profile-title">
+    <div class="profile-head">
+      <div class="profile-avatar" id="profile-avatar">SL</div>
+      <div><p class="eyebrow">Learner profile</p><h2 class="profile-title" id="profile-title">SAT learner</h2><p class="profile-subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
+      <div class="cloud-state" id="cloud-state">Saved on this device</div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat">Level<strong id="profile-level">1</strong></div>
+      <div class="profile-stat">XP<strong id="profile-xp">0</strong></div>
+      <div class="profile-stat">Reviews<strong id="profile-reviews">0</strong></div>
+      <div class="profile-stat">Mastered<strong id="profile-mastered">0</strong></div>
+      <div class="profile-stat">Streak<strong id="profile-streak">0d</strong></div>
+    </div>
+    <div class="profile-body">
+      <div>
+        <h3 class="profile-section-title">Profile details</h3>
+        <form class="profile-form" onsubmit="saveProfile(event)">
+          <input id="profile-name" maxlength="32" placeholder="display name" aria-label="Display name">
+          <textarea id="profile-bio" maxlength="140" rows="3" placeholder="What are you studying for?" aria-label="Profile bio"></textarea>
+          <label class="side-copy"><input id="leaderboard-opt-in" type="checkbox"> Show my stats on the public leaderboard</label>
+          <button class="primary" type="submit">Save profile</button>
+        </form>
+        <h3 class="profile-section-title" style="margin-top:22px">Cloud account</h3>
+        <p class="profile-subtitle" id="cloud-copy">Connect an account to keep the same decks and progress on phone and laptop.</p>
+        <div class="cloud-actions"><input id="cloud-email" type="email" autocomplete="email" placeholder="email@example.com" aria-label="Cloud account email"><button onclick="sendLoginLink()">Send login link</button></div>
+        <button class="utility-btn" id="cloud-signout" style="color:#fff8e9;border-color:#555b52" onclick="signOutCloud()">Sign out on this device</button>
+      </div>
+      <div>
+        <h3 class="profile-section-title">Word collections</h3>
+        <div class="collection-grid" id="profile-collections"></div>
+        <div class="leaderboard"><h3 class="profile-section-title">Leaderboard</h3><p class="profile-subtitle">Ranking uses XP from real reviews. Only opted-in profiles appear.</p><div id="leaderboard-list"></div></div>
+      </div>
+    </div>
+  </section>
 
   <section class="add-panel" id="add-panel" aria-labelledby="add-title">
       <div class="add-head"><div><p class="eyebrow">Personal decks</p><h2 class="side-title" id="add-title">Organize your own words</h2></div><p>Each personal deck has its own words, schedule, errors, and progress.</p></div>
@@ -720,6 +807,8 @@
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
 <script src="pdf-words.js"></script>
+<script src="cloud-config.js"></script>
+<script src="cloud-sync.js"></script>
 <script type="text/plain" id="legacy-v3-source">
 const RAW = [
   ["abase","v.","to humiliate, degrade","After being overthrown, the deposed leader offered to bow down to his conqueror."],

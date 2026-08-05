@@ -2,12 +2,14 @@
 
 A focused SAT vocabulary app with a complete PDF-derived reference deck, independent personal decks, adaptive spaced repetition, and offline support. No frameworks or build step required.
 
+The current release separates Study, Library, Progress, and Profile; adds EN/RU/KK onboarding, a 15-word diagnostic, memory-stability scheduling, SAT readiness, and quality-based achievements. Progress is stored locally for now. Cross-device accounts and true background push are intentionally deferred until the Supabase backend is enabled.
+
 ![SAT Vocab Trainer](https://img.shields.io/badge/SAT-1000%20words-e8c547?style=flat-square) ![HTML](https://img.shields.io/badge/built%20with-HTML%2FJS-e8c547?style=flat-square) ![No dependencies](https://img.shields.io/badge/dependencies-none-4caf72?style=flat-square)
 
 ## Features
 
 - **Separate libraries** - 990 entries extracted from `sat.vocab.pdf`, plus as many independent personal decks as you need
-- **Adaptive SRS** - Again, Hard, and Know ratings schedule every card with its own due date and interval
+- **Adaptive SRS** - Again, Hard, Know, and Easy ratings update each card's difficulty, stability, due date, and interval
 - **Daily plan** - a short mix of due reviews and new words with an honest stopping point
 - **Adjustable workload** - choose daily new words, due reviews, and streak target; continue with 20 more cards or the full deck at any time
 - **Five study modes** - flashcards, typed recall with hints, sentence context, multiple choice tests, and analytics

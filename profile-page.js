@@ -6,6 +6,21 @@ const DEFAULT_DAILY_GOAL = 20;
 let appState = loadProfileState();
 let activeDeckId = appState.activeDeckId || MAIN_DECK_ID;
 
+const PROFILE_COPY = {
+  en: {'brand.profile':'learner profile','nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.profile':'Profile','profile.eyebrow':'Learner profile','device.saved':'Saved on this device','action.edit':'Edit profile','collections.title':'Word collections','leader.title':'Leaderboard','leader.local':'Local preview until cloud accounts are connected.','achievements.eyebrow':'Milestones','achievements.title':'Achievements','achievements.copy':'Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.','history.eyebrow':'Study history','history.title':'Reviews in the last year','road.eyebrow':'Vocabulary journey','road.title':'Roadmap','settings.private':'Private controls · only your public choices appear above'},
+  ru: {'brand.profile':'профиль ученика','nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.profile':'Профиль','profile.eyebrow':'Профиль ученика','device.saved':'Сохранено на этом устройстве','action.edit':'Настройки','collections.title':'Коллекции слов','leader.title':'Лидерборд','leader.local':'Локальный просмотр до подключения облачных аккаунтов.','achievements.eyebrow':'Вехи','achievements.title':'Достижения','achievements.copy':'Постоянные знаки дисциплины. Каждая открытая реликвия добавляет XP.','history.eyebrow':'История занятий','history.title':'Повторения за последний год','road.eyebrow':'Путь словарного запаса','road.title':'Карта пути','settings.private':'Личные настройки · наверху видна только публичная информация'},
+  kk: {'brand.profile':'оқушы профилі','nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.profile':'Профиль','profile.eyebrow':'Оқушы профилі','device.saved':'Осы құрылғыда сақталды','action.edit':'Баптаулар','collections.title':'Сөз жинақтары','leader.title':'Көшбасшылар','leader.local':'Бұлттық аккаунттар қосылғанша жергілікті көрініс.','achievements.eyebrow':'Белестер','achievements.title':'Жетістіктер','achievements.copy':'Тәртіптің тұрақты белгілері. Әр ашылған жәдігер қосымша XP береді.','history.eyebrow':'Оқу тарихы','history.title':'Соңғы жылдағы қайталаулар','road.eyebrow':'Сөздік қор жолы','road.title':'Жол картасы','settings.private':'Жеке баптаулар · жоғарыда тек ашық ақпарат көрінеді'}
+};
+
+function localizeProfilePage() {
+  const locale = (appState.settings || {}).locale || 'en';
+  document.documentElement.lang = locale;
+  document.querySelectorAll('[data-profile-i18n]').forEach(element => {
+    const key = element.dataset.profileI18n;
+    element.textContent = (PROFILE_COPY[locale] && PROFILE_COPY[locale][key]) || PROFILE_COPY.en[key] || key;
+  });
+}
+
 function loadProfileState() {
   try {
     const saved = JSON.parse(localStorage.getItem(APP_KEY) || 'null');
@@ -17,7 +32,7 @@ function loadProfileState() {
     personalDecks: { [MAIN_DECK_ID]: { id: MAIN_DECK_ID, name: 'My words', words: [] } },
     progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
     activity: {},
-    settings: { dailyGoal: DEFAULT_DAILY_GOAL },
+    settings: { dailyGoal: DEFAULT_DAILY_GOAL, locale: 'en', satDate: '' },
     profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, mascotSkin: 'classic', avatarChoice: 'initials', avatarData: '', translationLanguage: 'Russian' },
     lastStudy: new Date().toISOString()
   };
@@ -54,12 +69,10 @@ function isMasteredCard(record) {
 
 function achievementDefinitions(metrics) {
   const collectionCount = Number(metrics.collectionCount || Object.keys(appState.personalDecks || {}).length);
-  const todayCount = Number(metrics.todayCount || (appState.activity || {})[localDateKey()] || 0);
-  const overclockTarget = dailyGoal() * 2;
   return [
     { image: 'review-sigil.png', rarity: 'common', name: 'First Mark', copy: 'Break the seal with one honest review.', current: metrics.reviews, target: 1, reward: 25 },
     { image: 'ten-answers.png', rarity: 'common', name: 'Ten Honest Answers', copy: 'Record ten real recall decisions.', current: metrics.reviews, target: 10, reward: 50 },
-    { image: 'fifty-deep.png', rarity: 'rare', name: 'Fifty Deep', copy: 'Push through fifty focused reviews.', current: metrics.reviews, target: 50, reward: 125 },
+    { image: 'fifty-deep.png', rarity: 'rare', name: 'Precision Signal', copy: 'Hold at least 85% recall accuracy through fifty reviews.', current: metrics.reviews >= 50 ? metrics.retention : 0, target: 85, reward: 250 },
     { image: 'century-proof.png', rarity: 'epic', name: 'Century of Proof', copy: 'Leave one hundred marks in the archive.', current: metrics.reviews, target: 100, reward: 300 },
     { image: 'mastery-sigil.png', rarity: 'rare', name: 'Memory Set', copy: 'Move ten words into long-term memory.', current: metrics.mastered, target: 10, reward: 200 },
     { image: 'lexicon-keeper.png', rarity: 'legendary', name: 'Lexicon Keeper', copy: 'Master fifty words without shortcuts.', current: metrics.mastered, target: 50, reward: 800 },
@@ -67,27 +80,42 @@ function achievementDefinitions(metrics) {
     { image: 'full-week.png', rarity: 'epic', name: 'Full Week', copy: 'Protect a complete seven-day streak.', current: metrics.streak, target: 7, reward: 400 },
     { image: 'month-proof.png', rarity: 'mythic', name: 'Month of Proof', copy: 'Show up for thirty days. No lucky run.', current: metrics.streak, target: 30, reward: 2000 },
     { image: 'archive-sigil.png', rarity: 'rare', name: 'Curator', copy: 'Build a second personal word collection.', current: collectionCount, target: 2, reward: 200 },
-    { image: 'overclocked.png', rarity: 'epic', name: 'Overclocked', copy: 'Complete twice today’s review target.', current: todayCount, target: overclockTarget, reward: 300 },
-    { image: 'perfect-archive.png', rarity: 'mythic', name: 'Perfect Archive', copy: 'Master one hundred words for the final relic.', current: metrics.mastered, target: 100, reward: 1500 }
+    { image: 'overclocked.png', rarity: 'epic', name: 'Clean Run', copy: 'Recall twenty cards correctly in a row without guessing.', current: metrics.cleanRun, target: 20, reward: 500 },
+    { image: 'perfect-archive.png', rarity: 'mythic', name: 'Long Memory', copy: 'Grow a word to a thirty-day review interval.', current: metrics.longestInterval, target: 30, reward: 1200 }
   ].map(item => ({ ...item, unlocked: item.current >= item.target }));
 }
 
 function profileMetrics() {
   let reviews = 0;
   let mastered = 0;
+  let correct = 0;
+  let longestInterval = 0;
+  const history = [];
   Object.values(appState.progress || {}).forEach(progress => {
     Object.values((progress && progress.cards) || {}).forEach(record => {
       reviews += Number(record.reviews || 0);
+      correct += Number(record.correct || 0);
+      longestInterval = Math.max(longestInterval, Number(record.interval || 0));
+      history.push(...(record.history || []));
       if (isMasteredCard(record)) mastered += 1;
     });
   });
+  let cleanRun = 0;
+  for (const entry of history.sort((a, b) => String(b.at).localeCompare(String(a.at)))) {
+    if (!['know', 'easy'].includes(entry.rating)) break;
+    cleanRun += 1;
+  }
+  const retention = reviews ? Math.round(correct / reviews * 100) : 0;
   const { streak } = calculateStreak();
   const raw = {
     reviews,
     mastered,
     streak,
     collectionCount: Object.keys(appState.personalDecks || {}).length,
-    todayCount: Number((appState.activity || {})[localDateKey()] || 0)
+    todayCount: Number((appState.activity || {})[localDateKey()] || 0),
+    retention,
+    cleanRun,
+    longestInterval
   };
   const achievementXp = achievementDefinitions(raw).filter(item => item.unlocked).reduce((sum, item) => sum + item.reward, 0);
   const xp = reviews * 5 + mastered * 30 + streak * 50 + achievementXp;
@@ -135,6 +163,8 @@ function renderProfile(populateForm = false) {
     document.getElementById('profile-bio').value = profile.bio || '';
     document.getElementById('leaderboard-opt-in').checked = Boolean(profile.leaderboardOptIn);
     document.getElementById('translation-language').value = profile.translationLanguage || 'Russian';
+    document.getElementById('interface-language').value = (appState.settings || {}).locale || 'en';
+    document.getElementById('profile-sat-date').value = (appState.settings || {}).satDate || '';
   }
   const decks = [
     { id: 'pdf', name: 'PDF vocabulary', words: 990 },
@@ -324,8 +354,10 @@ function saveProfile(event) {
   const name = document.getElementById('profile-name').value.trim();
   if (name.length < 2) return showToast('Use at least 2 characters for your display name.');
   appState.profile = { ...appState.profile, name, bio: document.getElementById('profile-bio').value.trim(), leaderboardOptIn: document.getElementById('leaderboard-opt-in').checked, translationLanguage: document.getElementById('translation-language').value };
+  appState.settings = { ...appState.settings, locale: document.getElementById('interface-language').value, satDate: document.getElementById('profile-sat-date').value };
   appState.lastStudy = new Date().toISOString();
   localStorage.setItem(APP_KEY, JSON.stringify(appState));
+  localizeProfilePage();
   renderProfile(true);
   if (typeof syncCloudNow === 'function') syncCloudNow();
   closeProfileSettings();
@@ -359,6 +391,7 @@ function showToast(message) {
 }
 
 function initializeProfilePage() {
+  localizeProfilePage();
   renderProfile(true);
   document.getElementById('profile-settings').addEventListener('click', event => {
     if (event.target === event.currentTarget) closeProfileSettings();

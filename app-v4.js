@@ -47,7 +47,7 @@ const emptyState = () => ({
   },
   progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
   activity: {},
-  settings: { reminders: [], dailyNew: 20, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true },
+  settings: { reminders: [], dailyNew: 20, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true, onboardingComplete: false, locale: 'en', satDate: '' },
   profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, translationLanguage: 'Russian' },
   lastStudy: new Date().toISOString()
 });
@@ -74,6 +74,72 @@ let contextAnswered = false;
 let deferredInstallPrompt = null;
 let armedAction = '';
 let armedActionTimer = null;
+let onboardingStep = 1;
+let onboardingLocale = 'en';
+let diagnosticItems = [];
+let diagnosticIndex = 0;
+let diagnosticResults = [];
+
+const UI_COPY = {
+  en: {
+    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.profile':'Profile','brand.tagline':'focused recall trainer',
+    'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
+    'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
+    'plan.start':'Start plan','plan.more':'+20 more','plan.all':'Study all','road.title':'Road to Obsidian','road.full':'Full roadmap →',
+    'study.progress':'Session progress','card.word':'English word','card.reveal':'click card or press Space to reveal','card.meaning':'Meaning',
+    'rating.again':'1 · Again','rating.hard':'2 · Hard','rating.know':'3 · Know it','rating.easy':'4 · Easy',
+    'analytics.eyebrow':'Learning analytics','analytics.title':'What your memory is doing','analytics.retention':'Retention','analytics.due':'Due today','analytics.mastered':'Mastered','analytics.tomorrow':'Tomorrow','analytics.stability':'Memory stability','analytics.readiness':'SAT readiness','analytics.hardest':'Hardest words','analytics.forecast':'Next seven days','analytics.recent':'Recent ratings',
+    'side.live':'Live progress','side.new':'New','side.learning':'Learning','side.mastered':'Mastered','side.focus':'Focused sessions','side.load':'Daily load','side.streak':'Study streak','side.nudge':'Daily nudge',
+    'library.eyebrow':'Personal decks','library.title':'Organize your own words','backup.title':'Backup and transfer',
+    'onboarding.language':'Language','onboarding.plan':'Your plan','onboarding.diagnostic':'Diagnostic','onboarding.choose':'Choose your language','onboarding.build':'Build your SAT plan','onboarding.quick':'Quick diagnostic','action.back':'Back','action.continue':'Continue'
+  },
+  ru: {
+    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.profile':'Профиль','brand.tagline':'тренажёр активного запоминания',
+    'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
+    'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
+    'plan.start':'Начать план','plan.more':'+20 ещё','plan.all':'Учить всё','road.title':'Путь к Obsidian','road.full':'Вся карта →',
+    'study.progress':'Прогресс занятия','card.word':'Английское слово','card.reveal':'нажми на карточку или Space','card.meaning':'Значение',
+    'rating.again':'1 · Снова','rating.hard':'2 · Трудно','rating.know':'3 · Знаю','rating.easy':'4 · Легко',
+    'analytics.eyebrow':'Аналитика обучения','analytics.title':'Как работает твоя память','analytics.retention':'Запоминание','analytics.due':'На сегодня','analytics.mastered':'Выучено','analytics.tomorrow':'На завтра','analytics.stability':'Устойчивость памяти','analytics.readiness':'Готовность к SAT','analytics.hardest':'Самые сложные слова','analytics.forecast':'Следующие семь дней','analytics.recent':'Последние оценки',
+    'side.live':'Прогресс сейчас','side.new':'Новые','side.learning':'В процессе','side.mastered':'Выучено','side.focus':'Фокус-сессии','side.load':'Нагрузка на день','side.streak':'Серия занятий','side.nudge':'Напоминания',
+    'library.eyebrow':'Личные наборы','library.title':'Организуй свои слова','backup.title':'Резервная копия и перенос',
+    'onboarding.language':'Язык','onboarding.plan':'Твой план','onboarding.diagnostic':'Диагностика','onboarding.choose':'Выбери язык','onboarding.build':'Составь план SAT','onboarding.quick':'Быстрая диагностика','action.back':'Назад','action.continue':'Продолжить'
+  },
+  kk: {
+    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.profile':'Профиль','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
+    'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
+    'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
+    'plan.start':'Жоспарды бастау','plan.more':'+20 тағы','plan.all':'Бәрін оқу','road.title':'Obsidian жолы','road.full':'Толық жол картасы →',
+    'study.progress':'Сабақ прогресі','card.word':'Ағылшын сөзі','card.reveal':'карточканы немесе Space пернесін бас','card.meaning':'Мағынасы',
+    'rating.again':'1 · Қайта','rating.hard':'2 · Қиын','rating.know':'3 · Білемін','rating.easy':'4 · Оңай',
+    'analytics.eyebrow':'Оқу аналитикасы','analytics.title':'Жад қалай жұмыс істейді','analytics.retention':'Есте сақтау','analytics.due':'Бүгінге','analytics.mastered':'Меңгерілді','analytics.tomorrow':'Ертеңге','analytics.stability':'Жад тұрақтылығы','analytics.readiness':'SAT дайындығы','analytics.hardest':'Ең қиын сөздер','analytics.forecast':'Келесі жеті күн','analytics.recent':'Соңғы бағалар',
+    'side.live':'Қазіргі прогресс','side.new':'Жаңа','side.learning':'Үйренуде','side.mastered':'Меңгерілді','side.focus':'Фокус сессиялар','side.load':'Күндік жүктеме','side.streak':'Оқу сериясы','side.nudge':'Еске салғыштар',
+    'library.eyebrow':'Жеке жинақтар','library.title':'Өз сөздеріңді ретте','backup.title':'Сақтық көшірме және тасымалдау',
+    'onboarding.language':'Тіл','onboarding.plan':'Жоспарың','onboarding.diagnostic':'Диагностика','onboarding.choose':'Тілді таңда','onboarding.build':'SAT жоспарын құр','onboarding.quick':'Жылдам диагностика','action.back':'Артқа','action.continue':'Жалғастыру'
+  }
+};
+
+function t(key) {
+  const locale = (appState.settings || {}).locale || 'en';
+  return (UI_COPY[locale] && UI_COPY[locale][key]) || UI_COPY.en[key] || key;
+}
+
+function applyLocale(temporaryLocale = '') {
+  const locale = temporaryLocale || (appState.settings || {}).locale || 'en';
+  document.documentElement.lang = locale;
+  const localText = key => (UI_COPY[locale] && UI_COPY[locale][key]) || UI_COPY.en[key] || key;
+  document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = localText(element.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(element => { element.innerHTML = localText(element.dataset.i18nHtml); });
+}
+
+function applyWorkspaceView() {
+  const requested = new URLSearchParams(location.search).get('view');
+  const view = ['study','library','progress'].includes(requested) ? requested : 'study';
+  document.body.dataset.view = view;
+  document.querySelectorAll('[data-view-link]').forEach(link => link.classList.toggle('active', link.dataset.viewLink === view));
+  if (view === 'library' && activeDeckId === 'pdf') openPersonalDeck();
+  if (view === 'progress') setMode('analytics');
+}
 
 function localDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -161,7 +227,10 @@ function loadAppState() {
         dailyReviews: hasNewGoalSettings ? Number(savedSettings.dailyReviews || 30) : 30,
         dailyGoal: hasNewGoalSettings ? Number(savedSettings.dailyGoal || DEFAULT_DAILY_GOAL) : DEFAULT_DAILY_GOAL,
         reminders,
-        goalsConfigured: true
+        goalsConfigured: true,
+        onboardingComplete: savedSettings.onboardingComplete === undefined ? true : Boolean(savedSettings.onboardingComplete),
+        locale: ['en','ru','kk'].includes(savedSettings.locale) ? savedSettings.locale : 'en',
+        satDate: savedSettings.satDate || ''
       },
       profile: { ...base.profile, ...(saved.profile || {}) }
     };
@@ -197,7 +266,7 @@ function deckProgress(deckId = activeDeckId) {
 }
 
 function defaultCardRecord() {
-  return { interval: 0, due: localDateKey(), reviews: 0, correct: 0, lapses: 0, lastRating: 'new', lastReview: '', history: [] };
+  return { interval: 0, due: localDateKey(), reviews: 0, correct: 0, lapses: 0, lastRating: 'new', lastReview: '', history: [], stability: .2, difficulty: 5 };
 }
 
 function cardRecord(index, create = false) {
@@ -224,16 +293,30 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
   record.reviews += 1;
   record.lastReview = new Date().toISOString();
   record.lastRating = rating;
+  const previousStability = Math.max(.1, Number(record.stability || record.interval || .2));
+  const previousDifficulty = Math.min(10, Math.max(1, Number(record.difficulty || 5)));
   if (rating === 'again') {
+    record.difficulty = Math.min(10, previousDifficulty + .8);
+    record.stability = Math.max(.1, previousStability * .25);
     record.interval = 0;
     record.due = today;
     record.lapses += 1;
   } else if (rating === 'hard') {
-    record.interval = record.interval < 1 ? 1 : Math.max(1, Math.round(record.interval * 1.3));
+    record.difficulty = Math.min(10, previousDifficulty + .15);
+    record.stability = record.reviews === 1 ? 1 : Math.max(1, previousStability * (1.15 + (10 - record.difficulty) * .02));
+    record.interval = Math.max(1, Math.round(record.stability));
+    record.due = addDaysKey(today, record.interval);
+  } else if (rating === 'easy') {
+    record.correct += 1;
+    record.difficulty = Math.max(1, previousDifficulty - .45);
+    record.stability = record.reviews === 1 ? 7 : Math.min(365, previousStability * (2.35 + (10 - record.difficulty) * .04));
+    record.interval = Math.max(7, Math.round(record.stability));
     record.due = addDaysKey(today, record.interval);
   } else {
     record.correct += 1;
-    record.interval = record.interval < 1 ? 1 : record.interval < 3 ? 3 : record.interval < 7 ? 7 : Math.min(180, Math.round(record.interval * 2.15));
+    record.difficulty = Math.max(1, previousDifficulty - .2);
+    record.stability = record.reviews === 1 ? 3 : Math.min(365, previousStability * (1.75 + (10 - record.difficulty) * .035));
+    record.interval = Math.max(3, Math.round(record.stability));
     record.due = addDaysKey(today, record.interval);
   }
   record.history = Array.isArray(record.history) ? record.history : [];
@@ -392,7 +475,7 @@ function rateCard(rating) {
 function renderRatingReceipt(index, rating, record) {
   const receipt = document.getElementById('rating-receipt');
   if (!receipt) return;
-  const labels = { again: 'Again', hard: 'Hard', know: 'Know it' };
+  const labels = { again: 'Again', hard: 'Hard', know: 'Know it', easy: 'Easy' };
   const dueCopy = record.due === localDateKey() ? 'returns today' : `next ${record.due}`;
   receipt.className = `rating-receipt ${rating}`;
   receipt.innerHTML = `<span><strong>${labels[rating]}</strong> · ${escapeHtml(currentWords()[index][0])}</span><span>${record.interval || '<1'} day interval · ${dueCopy}</span>`;
@@ -736,6 +819,7 @@ function renderAnalytics() {
   const totalReviews = records.reduce((sum, item) => sum + item.record.reviews, 0);
   const totalCorrect = records.reduce((sum, item) => sum + item.record.correct, 0);
   const retention = totalReviews ? Math.round((totalCorrect / totalReviews) * 100) : 0;
+  const averageStability = records.length ? records.reduce((sum,item) => sum + Number(item.record.stability || item.record.interval || 0),0) / records.length : 0;
   const today = localDateKey();
   const due = records.filter(item => item.record.due <= today).length;
   const mastered = records.filter(item => isMasteredCard(item.record)).length;
@@ -744,6 +828,16 @@ function renderAnalytics() {
   document.getElementById('metric-due').textContent = due;
   document.getElementById('metric-mastered').textContent = mastered;
   document.getElementById('metric-tomorrow').textContent = tomorrow;
+  document.getElementById('metric-stability').textContent = `${averageStability.toFixed(1)}d`;
+  const coverage = currentWords().length ? records.length / currentWords().length : 0;
+  const masteryRatio = currentWords().length ? mastered / currentWords().length : 0;
+  const readiness = Math.round(Math.min(100, retention * .55 + coverage * 25 + masteryRatio * 20));
+  document.getElementById('metric-readiness').textContent = `${readiness}%`;
+  const countdown = document.getElementById('sat-countdown');
+  if (appState.settings.satDate) {
+    const remaining = Math.max(0, Math.ceil((new Date(`${appState.settings.satDate}T12:00:00`) - new Date()) / 86400000));
+    countdown.textContent = `${remaining} days until SAT · ${readiness}% readiness from current recall data.`;
+  } else countdown.textContent = 'Set your SAT date during onboarding or in your profile settings.';
 
   const hardest = [...records].sort((a, b) => (b.record.lapses * 3 + b.record.reviews - b.record.correct) - (a.record.lapses * 3 + a.record.reviews - a.record.correct)).slice(0, 8);
   const maxDifficulty = Math.max(1, ...hardest.map(item => item.record.lapses * 3 + item.record.reviews - item.record.correct));
@@ -1090,25 +1184,35 @@ function updateDeckLabels() {
 function profileMetrics() {
   let reviews = 0;
   let mastered = 0;
-  Object.entries(appState.progress).forEach(([deckId, progress]) => {
+  let correct = 0;
+  let longestInterval = 0;
+  const history = [];
+  Object.values(appState.progress).forEach(progress => {
     Object.values((progress && progress.cards) || {}).forEach(record => {
       reviews += Number(record.reviews || 0);
+      correct += Number(record.correct || 0);
+      longestInterval = Math.max(longestInterval, Number(record.interval || 0));
+      history.push(...(record.history || []));
       if (isMasteredCard(record)) mastered += 1;
     });
   });
+  let cleanRun = 0;
+  for (const entry of history.sort((a, b) => String(b.at).localeCompare(String(a.at)))) {
+    if (!['know', 'easy'].includes(entry.rating)) break;
+    cleanRun += 1;
+  }
+  const retention = reviews ? Math.round(correct / reviews * 100) : 0;
   const { streak } = calculateStreak();
   const collectionCount = Object.keys(appState.personalDecks || {}).length;
-  const todayCount = Number((appState.activity || {})[localDateKey()] || 0);
-  const goal = dailyGoal();
   const rewardChecks = [
-    [reviews >= 1, 25], [reviews >= 10, 50], [reviews >= 50, 125], [reviews >= 100, 300],
-    [mastered >= 10, 200], [mastered >= 50, 800], [mastered >= 100, 1500],
+    [reviews >= 1, 25], [reviews >= 10, 50], [reviews >= 50 && retention >= 85, 250], [reviews >= 100, 300],
+    [mastered >= 10, 200], [mastered >= 50, 800],
     [streak >= 3, 150], [streak >= 7, 400], [streak >= 30, 2000],
-    [collectionCount >= 2, 200], [todayCount >= goal * 2, 300]
+    [collectionCount >= 2, 200], [cleanRun >= 20, 500], [longestInterval >= 30, 1200]
   ];
   const achievementXp = rewardChecks.reduce((sum, [unlocked, reward]) => sum + (unlocked ? reward : 0), 0);
   const xp = reviews * 5 + mastered * 30 + streak * 50 + achievementXp;
-  return { reviews, mastered, streak, achievementXp, xp, level: Math.floor(xp / 500) + 1 };
+  return { reviews, mastered, streak, retention, cleanRun, longestInterval, achievementXp, xp, level: Math.floor(xp / 500) + 1 };
 }
 
 function renderMainRoadmap() {
@@ -1207,14 +1311,98 @@ window.addEventListener('beforeinstallprompt', event => {
   document.getElementById('install-app').classList.remove('hidden');
 });
 
+function renderOnboardingStep() {
+  document.querySelectorAll('[data-onboarding-step]').forEach(step => step.classList.toggle('active', Number(step.dataset.onboardingStep) === onboardingStep));
+  document.querySelectorAll('[data-onboarding-marker]').forEach(marker => marker.classList.toggle('active', Number(marker.dataset.onboardingMarker) === onboardingStep));
+  document.getElementById('onboarding-back').classList.toggle('hidden', onboardingStep === 1);
+  const next = document.getElementById('onboarding-next');
+  const nextCopy = {
+    en: onboardingStep === 3 ? (diagnosticResults.length >= 15 ? 'Build my plan' : 'Answer the diagnostic') : 'Continue',
+    ru: onboardingStep === 3 ? (diagnosticResults.length >= 15 ? 'Создать мой план' : 'Заверши диагностику') : 'Продолжить',
+    kk: onboardingStep === 3 ? (diagnosticResults.length >= 15 ? 'Жоспарымды құру' : 'Диагностиканы аяқта') : 'Жалғастыру'
+  };
+  next.textContent = nextCopy[onboardingLocale] || nextCopy.en;
+  next.disabled = onboardingStep === 3 && diagnosticResults.length < 15;
+  if (onboardingStep === 3 && !diagnosticItems.length) startDiagnostic();
+}
+
+function moveOnboarding(direction) {
+  if (direction < 0) {
+    onboardingStep = Math.max(1, onboardingStep - 1);
+    renderOnboardingStep();
+    return;
+  }
+  if (onboardingStep === 1) {
+    const selected = document.querySelector('#locale-choices .selected');
+    onboardingLocale = selected ? selected.dataset.locale : 'en';
+    onboardingStep = 2;
+  } else if (onboardingStep === 2) {
+    onboardingStep = 3;
+  } else if (diagnosticResults.length >= 15) finishOnboarding();
+  renderOnboardingStep();
+}
+
+function startDiagnostic() {
+  diagnosticItems = shuffled(STARTER_WORDS.map((word, index) => ({ word, index }))).slice(0, 15);
+  diagnosticIndex = 0;
+  diagnosticResults = [];
+  renderDiagnosticQuestion();
+}
+
+function renderDiagnosticQuestion() {
+  if (diagnosticIndex >= diagnosticItems.length) {
+    document.getElementById('diagnostic-progress').textContent = '15 / 15';
+    document.getElementById('diagnostic-word').textContent = `${diagnosticResults.filter(result => result.correct).length} already strong`;
+    document.getElementById('diagnostic-options').innerHTML = '<p class="side-copy">Your first study plan is ready.</p>';
+    renderOnboardingStep();
+    return;
+  }
+  const current = diagnosticItems[diagnosticIndex];
+  document.getElementById('diagnostic-progress').textContent = `${diagnosticIndex + 1} / ${diagnosticItems.length}`;
+  document.getElementById('diagnostic-word').textContent = current.word[0];
+  const distractors = shuffled(STARTER_WORDS.filter(word => word[0] !== current.word[0])).slice(0, 3);
+  const options = shuffled([current.word, ...distractors]);
+  document.getElementById('diagnostic-options').innerHTML = options.map(option => `<button type="button" onclick="answerDiagnostic('${option[0].replace(/'/g,"\\'")}')">${escapeHtml(option[2])}</button>`).join('');
+}
+
+function answerDiagnostic(answer) {
+  if (diagnosticIndex >= diagnosticItems.length) return;
+  const current = diagnosticItems[diagnosticIndex];
+  diagnosticResults.push({ index: current.index, correct: answer === current.word[0] });
+  diagnosticIndex += 1;
+  renderDiagnosticQuestion();
+}
+
+function finishOnboarding() {
+  const today = localDateKey();
+  const cards = appState.progress[MAIN_DECK_ID].cards;
+  diagnosticResults.filter(result => result.correct).forEach(result => {
+    cards[result.index] = { interval:7,due:addDaysKey(today,7),reviews:1,correct:1,lapses:0,lastRating:'easy',lastReview:new Date().toISOString(),history:[{at:new Date().toISOString(),rating:'easy',source:'diagnostic'}],stability:7,difficulty:4 };
+  });
+  const languageNames = { en:'Russian', ru:'Russian', kk:'Kazakh' };
+  appState.settings.locale = onboardingLocale;
+  appState.settings.satDate = document.getElementById('onboarding-sat-date').value;
+  appState.settings.dailyGoal = Math.min(100, Math.max(5, Number(document.getElementById('onboarding-daily-goal').value || 20)));
+  appState.settings.onboardingComplete = true;
+  appState.profile.translationLanguage = languageNames[onboardingLocale];
+  saveAppState();
+  document.getElementById('onboarding-dialog').close();
+  applyLocale();
+  queue = shuffled(dailyPlanIndices().plan);
+  renderAll();
+  showToast('Your first SAT plan is ready.');
+}
+
 document.addEventListener('keydown', event => {
   if (mode !== 'flash' || ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(event.target.tagName)) return;
   if (event.key === '1') rateCard('again');
   if (event.key === '2') rateCard('hard');
   if (event.key === '3') rateCard('know');
+  if (event.key === '4') rateCard('easy');
 });
 
 async function initializeApp() {
+  applyLocale();
   document.getElementById('today-label').textContent = `${new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date())} · today’s session`;
   document.getElementById('daily-new').value = appState.settings.dailyNew;
   document.getElementById('daily-reviews').value = appState.settings.dailyReviews;
@@ -1232,11 +1420,22 @@ async function initializeApp() {
   renderPersonalDeckSelect();
   updateDeckLabels();
   switchDeck(activeDeckId === 'pdf' && !pdfWords.length ? MAIN_DECK_ID : activeDeckId);
+  applyWorkspaceView();
   renderAll();
   renderProfile(true);
   checkReminder();
   setInterval(checkReminder, 30000);
   if (typeof initializeCloudSync === 'function') initializeCloudSync();
+  document.querySelectorAll('#locale-choices [data-locale]').forEach(button => button.addEventListener('click', () => {
+    document.querySelectorAll('#locale-choices [data-locale]').forEach(option => option.classList.toggle('selected', option === button));
+    onboardingLocale = button.dataset.locale;
+    applyLocale(onboardingLocale);
+  }));
+  const defaultSatDate = new Date();
+  defaultSatDate.setDate(defaultSatDate.getDate() + 90);
+  document.getElementById('onboarding-sat-date').min = localDateKey();
+  document.getElementById('onboarding-sat-date').value = appState.settings.satDate || localDateKey(defaultSatDate);
+  if (!appState.settings.onboardingComplete) setTimeout(() => document.getElementById('onboarding-dialog').showModal(), 0);
 }
 
 initializeApp();

@@ -21,6 +21,7 @@
     :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
     .shell { width:min(1120px,100%); margin:0 auto; }
     .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:18px; }
+    .profile-nav { display:flex;gap:4px;align-items:center; }.profile-nav a { color:#756f64;text-decoration:none;padding:8px 9px;border-radius:5px;font-size:.61rem; }.profile-nav a:hover,.profile-nav a.active { background:var(--ink);color:white; }
     .brand { display:flex; align-items:center; gap:10px; }
     .brand-mark { width:35px;height:35px;display:block;border-radius:9px 9px 3px 9px;overflow:hidden;box-shadow:0 5px 15px rgba(34,39,32,.16); }
     .brand-mark img { width:100%;height:100%;display:block; }
@@ -76,7 +77,7 @@
     .settings-head p { color:var(--muted);font-size:.56rem;margin-top:4px; }
     .settings-close { width:36px;height:36px;border:1px solid #596057;background:transparent;color:var(--cream);cursor:pointer;font-size:1rem; }
     .settings-close:hover { background:#3a4037; }
-    .settings-content { display:grid;grid-template-columns:1.1fr .9fr;gap:0; }
+    .settings-content { display:grid;grid-template-columns:1fr;gap:0; }
     .settings-pane { padding:24px; }
     .settings-pane + .settings-pane { border-left:1px solid var(--line);background:#232721; }
     .settings-kicker { color:var(--accent);font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px; }
@@ -84,21 +85,21 @@
     .settings-note { color:var(--muted);font-size:.59rem;line-height:1.55;margin-bottom:16px; }
     .hidden { display:none!important; }
     @media(max-width:760px){ .profile-head{grid-template-columns:auto 1fr}.profile-head-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(3,1fr)}.settings-content{grid-template-columns:1fr}.settings-pane+.settings-pane{border-left:0;border-top:1px solid var(--line)} }
-    @media(max-width:520px){ body{padding:10px}.brand span{display:none}.profile{padding:20px}.avatar{width:62px;height:62px}.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid var(--line)}.collections{grid-template-columns:1fr}.cloud-actions{grid-template-columns:1fr}.leader-row{grid-template-columns:24px 1fr auto}.leader-row span:nth-child(3){display:none} }
+    @media(max-width:520px){ body{padding:10px}.brand span{display:none}.topbar{align-items:flex-start}.profile-nav{flex-wrap:wrap;justify-content:flex-end}.profile{padding:20px}.avatar{width:62px;height:62px}.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid var(--line)}.collections{grid-template-columns:1fr}.cloud-actions{grid-template-columns:1fr}.leader-row{grid-template-columns:24px 1fr auto}.leader-row span:nth-child(3){display:none} }
   </style>
   <link rel="stylesheet" href="profile-game.css">
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
-      <div class="brand"><div class="brand-mark"><img src="icon.svg" alt=""></div><div><strong>SAT Vocab</strong><span>learner profile</span></div></div>
-      <a class="back" href="index.html">← Back to study</a>
+      <div class="brand"><div class="brand-mark"><img src="icon.svg" alt=""></div><div><strong>SAT Vocab</strong><span data-profile-i18n="brand.profile">learner profile</span></div></div>
+      <nav class="profile-nav" aria-label="App sections"><a href="index.html?view=study" data-profile-i18n="nav.study">Study</a><a href="index.html?view=library" data-profile-i18n="nav.library">Library</a><a href="index.html?view=progress" data-profile-i18n="nav.progress">Progress</a><a class="active" href="profile.html" data-profile-i18n="nav.profile">Profile</a></nav>
     </header>
     <section class="profile tier-bronze" id="profile-card" aria-labelledby="profile-title">
       <div class="profile-head">
         <div class="avatar" id="profile-avatar"><span id="profile-avatar-text">SL</span><img class="hidden" id="profile-avatar-image" alt="Selected profile avatar"></div>
-        <div><p class="eyebrow">Learner profile</p><h1 id="profile-title">SAT learner</h1><p class="subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
-        <div class="profile-head-actions"><div class="cloud-state" id="cloud-state">Saved on this device</div><button class="edit-profile" type="button" onclick="openProfileSettings()">Edit profile</button></div>
+        <div><p class="eyebrow" data-profile-i18n="profile.eyebrow">Learner profile</p><h1 id="profile-title">SAT learner</h1><p class="subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
+        <div class="profile-head-actions"><div class="cloud-state" id="cloud-state" data-profile-i18n="device.saved">Saved on this device</div><button class="edit-profile" type="button" onclick="openProfileSettings()" data-profile-i18n="action.edit">Edit profile</button></div>
       </div>
       <div class="stats">
         <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Level</span><strong id="profile-level">1</strong><small>current rank</small></div>
@@ -114,29 +115,31 @@
       </section>
       <div class="profile-body">
         <section aria-labelledby="collections-title">
-          <h2 id="collections-title">Word collections</h2>
+          <h2 id="collections-title" data-profile-i18n="collections.title">Word collections</h2>
           <div class="collections" id="profile-collections"></div>
-          <div class="leaderboard"><h2>Leaderboard</h2><p class="leader-copy">Ranking uses XP from real reviews. Only opted-in profiles appear.</p><div id="leaderboard-list"></div></div>
+          <div class="leaderboard"><h2 data-profile-i18n="leader.title">Leaderboard</h2><p class="leader-copy" data-profile-i18n="leader.local">Local preview until cloud accounts are connected.</p><div id="leaderboard-list"></div></div>
         </section>
       </div>
-      <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow">Milestones</p><h2 id="achievement-title">Achievements</h2><p class="section-intro">Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.</p></div><strong id="achievement-total">0 / 12 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
-      <section class="contribution-section" aria-labelledby="contribution-title"><div class="section-heading"><div><p class="eyebrow">Study history</p><h2 id="contribution-title">Reviews in the last year</h2></div><div class="year-chip" id="activity-year"></div></div><div class="contribution-scroll"><div class="profile-heatmap" id="profile-heatmap" aria-label="Review activity for the last year"></div></div><div class="heat-legend"><span>Less</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>More</span></div></section>
-      <section class="roadmap-section" aria-labelledby="roadmap-title"><div class="section-heading"><div><p class="eyebrow">Vocabulary journey</p><h2 id="roadmap-title">Roadmap</h2></div><span id="roadmap-copy">Level 1</span></div><div class="roadmap" id="roadmap"></div></section>
+      <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow" data-profile-i18n="achievements.eyebrow">Milestones</p><h2 id="achievement-title" data-profile-i18n="achievements.title">Achievements</h2><p class="section-intro" data-profile-i18n="achievements.copy">Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.</p></div><strong id="achievement-total">0 / 12 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
+      <section class="contribution-section" aria-labelledby="contribution-title"><div class="section-heading"><div><p class="eyebrow" data-profile-i18n="history.eyebrow">Study history</p><h2 id="contribution-title" data-profile-i18n="history.title">Reviews in the last year</h2></div><div class="year-chip" id="activity-year"></div></div><div class="contribution-scroll"><div class="profile-heatmap" id="profile-heatmap" aria-label="Review activity for the last year"></div></div><div class="heat-legend"><span>Less</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>More</span></div></section>
+      <section class="roadmap-section" aria-labelledby="roadmap-title"><div class="section-heading"><div><p class="eyebrow" data-profile-i18n="road.eyebrow">Vocabulary journey</p><h2 id="roadmap-title" data-profile-i18n="road.title">Roadmap</h2></div><span id="roadmap-copy">Level 1</span></div><div class="roadmap" id="roadmap"></div></section>
     </section>
     <dialog class="settings-dialog" id="profile-settings" aria-labelledby="settings-title">
-      <div class="settings-head"><div><h2 id="settings-title">Edit profile</h2><p>Private controls · only your public choices appear above</p></div><button class="settings-close" type="button" onclick="closeProfileSettings()" aria-label="Close profile settings">×</button></div>
+      <div class="settings-head"><div><h2 id="settings-title" data-profile-i18n="action.edit">Edit profile</h2><p data-profile-i18n="settings.private">Private controls · only your public choices appear above</p></div><button class="settings-close" type="button" onclick="closeProfileSettings()" aria-label="Close profile settings">×</button></div>
       <div class="settings-content">
         <section class="settings-pane" aria-labelledby="identity-settings"><p class="settings-kicker">Identity</p><h3 id="identity-settings">Profile details</h3><p class="settings-note">Change how your learner profile appears.</p>
           <form class="form" onsubmit="saveProfile(event)">
             <input id="profile-name" maxlength="32" placeholder="display name" aria-label="Display name">
             <textarea id="profile-bio" maxlength="140" rows="3" placeholder="What are you studying for?" aria-label="Profile bio"></textarea>
+            <label class="form-field">Interface language<select id="interface-language"><option value="en">English</option><option value="ru">Русский</option><option value="kk">Қазақша</option></select></label>
+            <label class="form-field">SAT date<input id="profile-sat-date" type="date"></label>
             <label class="form-field">Translation language<select id="translation-language"><option>Russian</option><option>Kazakh</option><option>Ukrainian</option><option>Spanish</option><option>Turkish</option><option>French</option><option>German</option><option>Arabic</option><option>Chinese</option><option>Korean</option><option>Japanese</option><option>Other</option></select></label>
             <div class="avatar-picker"><span>Profile image</span><div class="avatar-options" id="avatar-options"><button type="button" data-avatar="initials" onclick="selectProfileAvatar('initials')">Initials</button><button type="button" data-avatar="logo" onclick="selectProfileAvatar('logo')">SV logo</button><button type="button" data-avatar="glyph" onclick="selectProfileAvatar('glyph')">Glyph</button><label for="avatar-upload" id="avatar-upload-label">Upload photo<input id="avatar-upload" type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadProfileAvatar(event)"></label></div></div>
             <label class="check"><input id="leaderboard-opt-in" type="checkbox"> Show my stats on the public leaderboard</label>
             <button class="btn primary" type="submit">Save profile</button>
           </form>
         </section>
-        <section class="settings-pane" aria-labelledby="cloud-settings"><p class="settings-kicker">Sync</p><h3 id="cloud-settings">Cloud account</h3><p class="settings-note">Connect an account to keep the same decks and progress on phone and laptop.</p><div class="cloud-actions"><input id="cloud-email" type="email" autocomplete="email" placeholder="email@example.com" aria-label="Cloud account email"><button class="btn" type="button" onclick="sendLoginLink()">Send login link</button></div><button class="btn" type="button" style="width:100%;margin-top:8px" onclick="signOutCloud()">Sign out on this device</button></section>
+        <section class="settings-pane hidden" aria-labelledby="cloud-settings"><p class="settings-kicker">Sync</p><h3 id="cloud-settings">Cloud account</h3></section>
       </div>
     </dialog>
   </main>

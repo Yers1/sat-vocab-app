@@ -51,7 +51,7 @@ open index.html   # macOS
 ## How It Works
 
 ### Learn mode
-- Tap a card or press Space to reveal the definition, Russian translation when available, and example
+- Tap a card or press Space to reveal the definition, translation in your preferred language when available, and example
 - Choose **Again**, **Hard**, or **Know it**; ratings stay disabled until the answer is revealed
 - Again and Hard cards return automatically; Know it marks the word mastered
 - Switch between PDF vocabulary and My words without mixing progress
@@ -71,7 +71,7 @@ open index.html   # macOS
 For TXT, CSV, and TSV, use one row per word:
 
 ```text
-word | English definition | Russian translation | example sentence
+word | English definition | translation in your language | example sentence
 ```
 
 JSON may contain arrays in the app's five-field format or objects with `word`, `definition`, `translation`, `example`, and optional `partOfSpeech` fields.

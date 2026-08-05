@@ -1,5 +1,5 @@
-const CACHE_NAME = 'sat-vocab-v7-relics-20260805';
-const CORE_ASSETS = ['./', './index.html', './profile.html', './profile-game.css', './app-v4.js', './profile-page.js', './cloud-config.js', './cloud-sync.js', './pdf-words.js', './manifest.json', './icon.svg', './assets/mascot/glyph-focus.png', './assets/mascot/glyph-sad.png', './assets/mascot/glyph-win.png', './assets/achievements/review-sigil.png', './assets/achievements/mastery-sigil.png', './assets/achievements/streak-sigil.png', './assets/achievements/archive-sigil.png'];
+const CACHE_NAME = 'sat-vocab-v9-international-profile-20260805';
+const CORE_ASSETS = ['./', './index.html', './profile.html', './profile-game.css', './app-v4.js', './profile-page.js', './cloud-config.js', './cloud-sync.js', './pdf-words.js', './manifest.json', './icon.svg', './assets/mascot/glyph-focus.png', './assets/mascot/glyph-sad.png', './assets/mascot/glyph-win.png', './assets/achievements/review-sigil.png', './assets/achievements/ten-answers.png', './assets/achievements/fifty-deep.png', './assets/achievements/century-proof.png', './assets/achievements/mastery-sigil.png', './assets/achievements/lexicon-keeper.png', './assets/achievements/streak-sigil.png', './assets/achievements/full-week.png', './assets/achievements/month-proof.png', './assets/achievements/archive-sigil.png', './assets/achievements/overclocked.png', './assets/achievements/perfect-archive.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS)).then(() => self.skipWaiting()));

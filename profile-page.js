@@ -18,7 +18,7 @@ function loadProfileState() {
     progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
     activity: {},
     settings: { dailyGoal: DEFAULT_DAILY_GOAL },
-    profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, mascotSkin: 'classic', avatarChoice: 'initials', avatarData: '' },
+    profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, mascotSkin: 'classic', avatarChoice: 'initials', avatarData: '', translationLanguage: 'Russian' },
     lastStudy: new Date().toISOString()
   };
 }
@@ -58,17 +58,17 @@ function achievementDefinitions(metrics) {
   const overclockTarget = dailyGoal() * 2;
   return [
     { image: 'review-sigil.png', rarity: 'common', name: 'First Mark', copy: 'Break the seal with one honest review.', current: metrics.reviews, target: 1, reward: 25 },
-    { image: 'review-sigil.png', rarity: 'common', name: 'Ten Honest Answers', copy: 'Record ten real recall decisions.', current: metrics.reviews, target: 10, reward: 50 },
-    { image: 'review-sigil.png', rarity: 'rare', name: 'Fifty Deep', copy: 'Push through fifty focused reviews.', current: metrics.reviews, target: 50, reward: 125 },
-    { image: 'review-sigil.png', rarity: 'epic', name: 'Century of Proof', copy: 'Leave one hundred marks in the archive.', current: metrics.reviews, target: 100, reward: 300 },
+    { image: 'ten-answers.png', rarity: 'common', name: 'Ten Honest Answers', copy: 'Record ten real recall decisions.', current: metrics.reviews, target: 10, reward: 50 },
+    { image: 'fifty-deep.png', rarity: 'rare', name: 'Fifty Deep', copy: 'Push through fifty focused reviews.', current: metrics.reviews, target: 50, reward: 125 },
+    { image: 'century-proof.png', rarity: 'epic', name: 'Century of Proof', copy: 'Leave one hundred marks in the archive.', current: metrics.reviews, target: 100, reward: 300 },
     { image: 'mastery-sigil.png', rarity: 'rare', name: 'Memory Set', copy: 'Move ten words into long-term memory.', current: metrics.mastered, target: 10, reward: 200 },
-    { image: 'mastery-sigil.png', rarity: 'legendary', name: 'Lexicon Keeper', copy: 'Master fifty words without shortcuts.', current: metrics.mastered, target: 50, reward: 800 },
+    { image: 'lexicon-keeper.png', rarity: 'legendary', name: 'Lexicon Keeper', copy: 'Master fifty words without shortcuts.', current: metrics.mastered, target: 50, reward: 800 },
     { image: 'streak-sigil.png', rarity: 'rare', name: 'Three-Day Signal', copy: 'Keep the recall signal alive for 3 days.', current: metrics.streak, target: 3, reward: 150 },
-    { image: 'streak-sigil.png', rarity: 'epic', name: 'Full Week', copy: 'Protect a complete seven-day streak.', current: metrics.streak, target: 7, reward: 400 },
-    { image: 'streak-sigil.png', rarity: 'mythic', name: 'Month of Proof', copy: 'Show up for thirty days. No lucky run.', current: metrics.streak, target: 30, reward: 2000 },
+    { image: 'full-week.png', rarity: 'epic', name: 'Full Week', copy: 'Protect a complete seven-day streak.', current: metrics.streak, target: 7, reward: 400 },
+    { image: 'month-proof.png', rarity: 'mythic', name: 'Month of Proof', copy: 'Show up for thirty days. No lucky run.', current: metrics.streak, target: 30, reward: 2000 },
     { image: 'archive-sigil.png', rarity: 'rare', name: 'Curator', copy: 'Build a second personal word collection.', current: collectionCount, target: 2, reward: 200 },
-    { image: 'streak-sigil.png', rarity: 'epic', name: 'Overclocked', copy: 'Complete twice today’s review target.', current: todayCount, target: overclockTarget, reward: 300 },
-    { image: 'mastery-sigil.png', rarity: 'mythic', name: 'Perfect Archive', copy: 'Master one hundred words for the final relic.', current: metrics.mastered, target: 100, reward: 1500 }
+    { image: 'overclocked.png', rarity: 'epic', name: 'Overclocked', copy: 'Complete twice today’s review target.', current: todayCount, target: overclockTarget, reward: 300 },
+    { image: 'perfect-archive.png', rarity: 'mythic', name: 'Perfect Archive', copy: 'Master one hundred words for the final relic.', current: metrics.mastered, target: 100, reward: 1500 }
   ].map(item => ({ ...item, unlocked: item.current >= item.target }));
 }
 
@@ -134,6 +134,7 @@ function renderProfile(populateForm = false) {
     document.getElementById('profile-name').value = name;
     document.getElementById('profile-bio').value = profile.bio || '';
     document.getElementById('leaderboard-opt-in').checked = Boolean(profile.leaderboardOptIn);
+    document.getElementById('translation-language').value = profile.translationLanguage || 'Russian';
   }
   const decks = [
     { id: 'pdf', name: 'PDF vocabulary', words: 990 },
@@ -322,12 +323,24 @@ function saveProfile(event) {
   event.preventDefault();
   const name = document.getElementById('profile-name').value.trim();
   if (name.length < 2) return showToast('Use at least 2 characters for your display name.');
-  appState.profile = { ...appState.profile, name, bio: document.getElementById('profile-bio').value.trim(), leaderboardOptIn: document.getElementById('leaderboard-opt-in').checked };
+  appState.profile = { ...appState.profile, name, bio: document.getElementById('profile-bio').value.trim(), leaderboardOptIn: document.getElementById('leaderboard-opt-in').checked, translationLanguage: document.getElementById('translation-language').value };
   appState.lastStudy = new Date().toISOString();
   localStorage.setItem(APP_KEY, JSON.stringify(appState));
   renderProfile(true);
   if (typeof syncCloudNow === 'function') syncCloudNow();
+  closeProfileSettings();
   showToast('Profile saved.');
+}
+
+function openProfileSettings() {
+  renderProfile(true);
+  const dialog = document.getElementById('profile-settings');
+  if (!dialog.open) dialog.showModal();
+}
+
+function closeProfileSettings() {
+  const dialog = document.getElementById('profile-settings');
+  if (dialog && dialog.open) dialog.close();
 }
 
 function applyRemoteCloudState(state) {
@@ -347,5 +360,8 @@ function showToast(message) {
 
 function initializeProfilePage() {
   renderProfile(true);
+  document.getElementById('profile-settings').addEventListener('click', event => {
+    if (event.target === event.currentTarget) closeProfileSettings();
+  });
   if (typeof initializeCloudSync === 'function') initializeCloudSync();
 }

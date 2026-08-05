@@ -48,7 +48,7 @@ const emptyState = () => ({
   progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
   activity: {},
   settings: { reminders: [], dailyNew: 20, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true },
-  profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false },
+  profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, translationLanguage: 'Russian' },
   lastStudy: new Date().toISOString()
 });
 
@@ -406,7 +406,7 @@ function renderCard() {
   document.getElementById('flash-word').textContent = word[0];
   document.getElementById('flash-pos').textContent = `${word[1] || '—'}${record && record.reviews ? ` · next interval ${record.interval || '<1'}d` : ' · new'}`;
   document.getElementById('flash-def').textContent = word[2];
-  document.getElementById('flash-ru').textContent = word[4] || 'No Russian translation saved';
+  document.getElementById('flash-ru').textContent = word[4] || 'No translation saved';
   document.getElementById('flash-ex').textContent = word[3] || `Write a sentence using “${word[0]}”.`;
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
@@ -417,7 +417,7 @@ function showLearningComplete() {
   document.getElementById('flash-word').textContent = 'Done';
   document.getElementById('flash-pos').textContent = `${sessionKind} session complete`;
   document.getElementById('flash-def').textContent = 'The current set is complete — your study is not limited.';
-  document.getElementById('flash-ru').textContent = 'Текущий набор закончен, но можно сразу продолжить ещё 20 слов или пройти всю колоду.';
+  document.getElementById('flash-ru').textContent = 'This set is complete. Continue with 20 more cards or study the full deck.';
   document.getElementById('flash-ex').textContent = 'Use “+20 more”, “Study all”, Type, or Context to continue.';
   document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
 }
@@ -774,11 +774,22 @@ function renderAnalytics() {
 function renderAll() {
   renderDailyPlan();
   renderMainRoadmap();
+  renderTranslationPreference();
   renderProgress();
   renderActivity();
   renderFocusedCounts();
   renderProfile();
   if (mode === 'analytics') renderAnalytics();
+}
+
+function renderTranslationPreference() {
+  const input = document.getElementById('new-translation');
+  if (!input) return;
+  const language = (appState.profile || {}).translationLanguage || 'Russian';
+  input.placeholder = language === 'Other' ? 'Translation in your language' : `${language} translation`;
+  input.setAttribute('aria-label', input.placeholder);
+  const copy = document.getElementById('translation-format-copy');
+  if (copy) copy.textContent = `Format: word | definition | ${language === 'Other' ? 'your language' : language} translation | example`;
 }
 
 function resetProgress() {

@@ -45,10 +45,14 @@
     .stat strong { display:block;margin-top:10px;color:var(--cream);font:700 1.8rem 'Playfair Display',serif;font-variant-numeric:tabular-nums; }
     .stat small { display:block;margin-top:5px;color:#7f877c;font-size:.5rem;line-height:1.35; }
     .stat:nth-child(1){--stat-color:#d66b50}.stat:nth-child(2){--stat-color:#e7c46d}.stat:nth-child(3){--stat-color:#91d2aa}.stat:nth-child(4){--stat-color:#65c892}.stat:nth-child(5){--stat-color:#ef8068}
-    .profile-body { display:grid;grid-template-columns:minmax(280px,.76fr) minmax(0,1.24fr);gap:34px; }
+    .profile-body { margin-top:34px; }
+    .profile-head-actions { display:grid;gap:8px;justify-items:stretch; }
+    .edit-profile { border:1px solid var(--tier);background:transparent;color:var(--cream);padding:9px 11px;border-radius:5px;font-size:.63rem;cursor:pointer; }
+    .edit-profile:hover { background:#3a4037; }
     h2 { font:700 1.25rem 'Playfair Display',serif;margin-bottom:12px; }
     .form { display:grid;gap:9px; }
-    .form input,.form textarea,.cloud-actions input { width:100%;border:1px solid #555b52;background:var(--panel-2);color:var(--cream);padding:12px;border-radius:5px;font-size:.69rem;resize:vertical; }
+    .form input,.form textarea,.form select,.cloud-actions input { width:100%;border:1px solid #555b52;background:var(--panel-2);color:var(--cream);padding:12px;border-radius:5px;font-size:.69rem;resize:vertical; }
+    .form-field { display:grid;gap:6px;color:var(--muted);font-size:.57rem; }
     .check { display:flex;gap:8px;align-items:flex-start;color:var(--muted);font-size:.63rem;line-height:1.5;padding:5px 0; }
     .check input { width:auto;margin-top:2px; }
     .btn { border:1px solid #5c6358;background:transparent;color:var(--cream);padding:10px 12px;border-radius:5px;cursor:pointer;font-size:.66rem; }
@@ -65,8 +69,21 @@
     .leader-row { display:grid;grid-template-columns:28px minmax(100px,1fr) auto auto;gap:11px;align-items:center;border-top:1px solid var(--line);padding:12px 0;font-size:.66rem; }
     .leader-row span:last-child { color:var(--green);font-variant-numeric:tabular-nums; }
     .toast { position:fixed;right:18px;bottom:18px;max-width:340px;background:#fffdf7;color:var(--ink);padding:13px 16px;border-radius:7px;font-size:.68rem;line-height:1.5;box-shadow:0 14px 45px rgba(23,26,21,.28); }
+    .settings-dialog { width:min(780px,calc(100% - 28px));max-height:min(820px,calc(100dvh - 28px));margin:auto;border:1px solid #555b52;background:#262a24;color:var(--cream);padding:0;box-shadow:0 30px 90px rgba(13,16,12,.48);overflow:auto; }
+    .settings-dialog::backdrop { background:rgba(20,23,19,.72);backdrop-filter:blur(5px); }
+    .settings-head { position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 22px;background:rgba(38,42,36,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px); }
+    .settings-head h2 { margin:0;font-size:1.3rem; }
+    .settings-head p { color:var(--muted);font-size:.56rem;margin-top:4px; }
+    .settings-close { width:36px;height:36px;border:1px solid #596057;background:transparent;color:var(--cream);cursor:pointer;font-size:1rem; }
+    .settings-close:hover { background:#3a4037; }
+    .settings-content { display:grid;grid-template-columns:1.1fr .9fr;gap:0; }
+    .settings-pane { padding:24px; }
+    .settings-pane + .settings-pane { border-left:1px solid var(--line);background:#232721; }
+    .settings-kicker { color:var(--accent);font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px; }
+    .settings-pane h3 { font:700 1.15rem 'Playfair Display',serif;margin-bottom:8px; }
+    .settings-note { color:var(--muted);font-size:.59rem;line-height:1.55;margin-bottom:16px; }
     .hidden { display:none!important; }
-    @media(max-width:760px){ .profile-head{grid-template-columns:auto 1fr}.cloud-state{grid-column:1/-1}.profile-body{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)} }
+    @media(max-width:760px){ .profile-head{grid-template-columns:auto 1fr}.profile-head-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(3,1fr)}.settings-content{grid-template-columns:1fr}.settings-pane+.settings-pane{border-left:0;border-top:1px solid var(--line)} }
     @media(max-width:520px){ body{padding:10px}.brand span{display:none}.profile{padding:20px}.avatar{width:62px;height:62px}.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid var(--line)}.collections{grid-template-columns:1fr}.cloud-actions{grid-template-columns:1fr}.leader-row{grid-template-columns:24px 1fr auto}.leader-row span:nth-child(3){display:none} }
   </style>
   <link rel="stylesheet" href="profile-game.css">
@@ -81,7 +98,7 @@
       <div class="profile-head">
         <div class="avatar" id="profile-avatar"><span id="profile-avatar-text">SL</span><img class="hidden" id="profile-avatar-image" alt="Selected profile avatar"></div>
         <div><p class="eyebrow">Learner profile</p><h1 id="profile-title">SAT learner</h1><p class="subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
-        <div class="cloud-state" id="cloud-state">Saved on this device</div>
+        <div class="profile-head-actions"><div class="cloud-state" id="cloud-state">Saved on this device</div><button class="edit-profile" type="button" onclick="openProfileSettings()">Edit profile</button></div>
       </div>
       <div class="stats">
         <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Level</span><strong id="profile-level">1</strong><small>current rank</small></div>
@@ -90,33 +107,38 @@
         <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Mastered</span><strong id="profile-mastered">0</strong><small>in long-term memory</small></div>
         <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Streak</span><strong id="profile-streak">0d</strong><small>signal held alive</small></div>
       </div>
-      <div class="xp-progress"><div><span id="tier-name">Bronze frame</span><span id="xp-next">0 / 500 XP</span></div><div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div></div>
+      <div class="xp-progress"><div><span class="tier-badge"><i class="tier-medallion"></i><span id="tier-name">Bronze frame</span></span><span id="xp-next">0 / 500 XP</span></div><div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div></div>
       <section class="mascot-zone" aria-labelledby="mascot-title">
         <div class="mascot-stage skin-classic" id="mascot-stage"><div class="mascot-orbit"></div><img id="mascot-image" src="assets/mascot/glyph-focus.png" alt="Glyph, an abstract typographic learning spirit"></div>
         <div class="mascot-copy"><p class="eyebrow">Study companion</p><h2 id="mascot-title">Glyph is waiting</h2><p class="subtitle" id="mascot-message">Complete a review to wake the word spirit.</p><div class="mascot-collection" id="mascot-collection"></div></div>
       </section>
       <div class="profile-body">
-        <div>
-          <h2>Profile details</h2>
-          <form class="form" onsubmit="saveProfile(event)">
-            <input id="profile-name" maxlength="32" placeholder="display name" aria-label="Display name">
-            <textarea id="profile-bio" maxlength="140" rows="3" placeholder="What are you studying for?" aria-label="Profile bio"></textarea>
-            <div class="avatar-picker"><span>Profile image</span><div class="avatar-options" id="avatar-options"><button type="button" data-avatar="initials" onclick="selectProfileAvatar('initials')">Initials</button><button type="button" data-avatar="logo" onclick="selectProfileAvatar('logo')">SV logo</button><button type="button" data-avatar="glyph" onclick="selectProfileAvatar('glyph')">Glyph</button><label for="avatar-upload" id="avatar-upload-label">Upload photo<input id="avatar-upload" type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadProfileAvatar(event)"></label></div></div>
-            <label class="check"><input id="leaderboard-opt-in" type="checkbox"> Show my stats on the public leaderboard</label>
-            <button class="btn primary" type="submit">Save profile</button>
-          </form>
-          <div class="section-gap"><h2>Cloud account</h2><p class="subtitle">Connect an account to keep the same decks and progress on phone and laptop.</p><div class="cloud-actions"><input id="cloud-email" type="email" autocomplete="email" placeholder="email@example.com" aria-label="Cloud account email"><button class="btn" onclick="sendLoginLink()">Send login link</button></div><button class="btn" style="width:100%;margin-top:8px" onclick="signOutCloud()">Sign out on this device</button></div>
-        </div>
-        <div>
-          <h2>Word collections</h2>
+        <section aria-labelledby="collections-title">
+          <h2 id="collections-title">Word collections</h2>
           <div class="collections" id="profile-collections"></div>
           <div class="leaderboard"><h2>Leaderboard</h2><p class="leader-copy">Ranking uses XP from real reviews. Only opted-in profiles appear.</p><div id="leaderboard-list"></div></div>
-        </div>
+        </section>
       </div>
       <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow">Milestones</p><h2 id="achievement-title">Achievements</h2><p class="section-intro">Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.</p></div><strong id="achievement-total">0 / 12 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
       <section class="contribution-section" aria-labelledby="contribution-title"><div class="section-heading"><div><p class="eyebrow">Study history</p><h2 id="contribution-title">Reviews in the last year</h2></div><div class="year-chip" id="activity-year"></div></div><div class="contribution-scroll"><div class="profile-heatmap" id="profile-heatmap" aria-label="Review activity for the last year"></div></div><div class="heat-legend"><span>Less</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>More</span></div></section>
       <section class="roadmap-section" aria-labelledby="roadmap-title"><div class="section-heading"><div><p class="eyebrow">Vocabulary journey</p><h2 id="roadmap-title">Roadmap</h2></div><span id="roadmap-copy">Level 1</span></div><div class="roadmap" id="roadmap"></div></section>
     </section>
+    <dialog class="settings-dialog" id="profile-settings" aria-labelledby="settings-title">
+      <div class="settings-head"><div><h2 id="settings-title">Edit profile</h2><p>Private controls · only your public choices appear above</p></div><button class="settings-close" type="button" onclick="closeProfileSettings()" aria-label="Close profile settings">×</button></div>
+      <div class="settings-content">
+        <section class="settings-pane" aria-labelledby="identity-settings"><p class="settings-kicker">Identity</p><h3 id="identity-settings">Profile details</h3><p class="settings-note">Change how your learner profile appears.</p>
+          <form class="form" onsubmit="saveProfile(event)">
+            <input id="profile-name" maxlength="32" placeholder="display name" aria-label="Display name">
+            <textarea id="profile-bio" maxlength="140" rows="3" placeholder="What are you studying for?" aria-label="Profile bio"></textarea>
+            <label class="form-field">Translation language<select id="translation-language"><option>Russian</option><option>Kazakh</option><option>Ukrainian</option><option>Spanish</option><option>Turkish</option><option>French</option><option>German</option><option>Arabic</option><option>Chinese</option><option>Korean</option><option>Japanese</option><option>Other</option></select></label>
+            <div class="avatar-picker"><span>Profile image</span><div class="avatar-options" id="avatar-options"><button type="button" data-avatar="initials" onclick="selectProfileAvatar('initials')">Initials</button><button type="button" data-avatar="logo" onclick="selectProfileAvatar('logo')">SV logo</button><button type="button" data-avatar="glyph" onclick="selectProfileAvatar('glyph')">Glyph</button><label for="avatar-upload" id="avatar-upload-label">Upload photo<input id="avatar-upload" type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadProfileAvatar(event)"></label></div></div>
+            <label class="check"><input id="leaderboard-opt-in" type="checkbox"> Show my stats on the public leaderboard</label>
+            <button class="btn primary" type="submit">Save profile</button>
+          </form>
+        </section>
+        <section class="settings-pane" aria-labelledby="cloud-settings"><p class="settings-kicker">Sync</p><h3 id="cloud-settings">Cloud account</h3><p class="settings-note">Connect an account to keep the same decks and progress on phone and laptop.</p><div class="cloud-actions"><input id="cloud-email" type="email" autocomplete="email" placeholder="email@example.com" aria-label="Cloud account email"><button class="btn" type="button" onclick="sendLoginLink()">Send login link</button></div><button class="btn" type="button" style="width:100%;margin-top:8px" onclick="signOutCloud()">Sign out on this device</button></section>
+      </div>
+    </dialog>
   </main>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
   <script src="cloud-config.js"></script>

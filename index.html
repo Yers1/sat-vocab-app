@@ -575,7 +575,7 @@
       <div class="brand-mark"><img src="icon.svg" alt=""></div>
       <div><h1>SAT Vocab</h1><p>focused recall trainer</p></div>
     </div>
-    <div class="top-actions"><a class="install-btn profile-jump" href="profile.html" target="_blank" rel="noopener">Profile ↗</a><button class="install-btn hidden" id="install-app" onclick="installApp()">Install app</button><div class="day-chip" id="today-label">Today’s session</div></div>
+    <div class="top-actions"><a class="install-btn profile-jump" href="profile.html">Profile</a><button class="install-btn hidden" id="install-app" onclick="installApp()">Install app</button><div class="day-chip" id="today-label">Today’s session</div></div>
   </header>
 
   <nav class="deck-tabs" aria-label="Vocabulary decks">
@@ -608,7 +608,7 @@
       </div>
 
       <section class="study-roadmap" aria-label="Vocabulary level roadmap">
-        <div class="roadmap-head"><div><strong>Road to Obsidian</strong><span id="main-roadmap-next">Next: level 3</span></div><a href="profile.html#roadmap-title" target="_blank" rel="noopener">Full roadmap ↗</a></div>
+        <div class="roadmap-head"><div><strong>Road to Obsidian</strong><span id="main-roadmap-next">Next: level 3</span></div><a href="profile.html#roadmap-title">Full roadmap →</a></div>
         <div class="main-road-scroll"><div class="main-road-track" id="main-roadmap"></div></div>
       </section>
 
@@ -756,13 +756,13 @@
         <input id="new-word" required placeholder="word" aria-label="New word">
         <input id="new-pos" placeholder="part of speech" aria-label="Part of speech">
         <input id="new-definition" required placeholder="English definition" aria-label="English definition">
-        <input id="new-translation" placeholder="Russian translation" aria-label="Russian translation">
+        <input id="new-translation" placeholder="Your translation" aria-label="Translation in your preferred language">
         <input id="new-example" placeholder="example sentence" aria-label="Example sentence">
         <button type="submit">Add word</button>
       </form>
       <div class="file-import">
         <label for="word-file">Import TXT, CSV, TSV or JSON</label><input id="word-file" type="file" accept=".txt,.csv,.tsv,.json" onchange="importWordFile(event)">
-        <span>Format: word | definition | translation | example (one row per word)</span>
+        <span id="translation-format-copy">Format: word | definition | translation | example (one row per word)</span>
       </div>
   </section>
 

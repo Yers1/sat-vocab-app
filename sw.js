@@ -1,5 +1,5 @@
-const CACHE_NAME = 'sat-vocab-v5-profile-page-20260805';
-const CORE_ASSETS = ['./', './index.html', './profile.html', './app-v4.js', './profile-page.js', './cloud-config.js', './cloud-sync.js', './pdf-words.js', './manifest.json', './icon.svg'];
+const CACHE_NAME = 'sat-vocab-v6-gamification-20260805';
+const CORE_ASSETS = ['./', './index.html', './profile.html', './profile-game.css', './app-v4.js', './profile-page.js', './cloud-config.js', './cloud-sync.js', './pdf-words.js', './manifest.json', './icon.svg', './assets/mascot/glyph-focus.png', './assets/mascot/glyph-sad.png', './assets/mascot/glyph-win.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS)).then(() => self.skipWaiting()));

@@ -67,6 +67,7 @@ let missedIndices = [];
 let typeItems = [];
 let typeIndex = 0;
 let typeAnswered = false;
+let typeAttempts = 0;
 let contextItems = [];
 let contextIndex = 0;
 let contextAnswered = false;
@@ -217,7 +218,7 @@ function isMasteredCard(record) {
   return Boolean(record && record.interval >= 7 && record.lastRating !== 'again');
 }
 
-function updateSrs(index, rating, source = 'learn') {
+function updateSrs(index, rating, source = 'learn', metadata = {}) {
   const record = cardRecord(index, true);
   const today = localDateKey();
   record.reviews += 1;
@@ -236,10 +237,11 @@ function updateSrs(index, rating, source = 'learn') {
     record.due = addDaysKey(today, record.interval);
   }
   record.history = Array.isArray(record.history) ? record.history : [];
-  record.history.push({ at: record.lastReview, rating, source });
+  record.history.push({ at: record.lastReview, rating, source, ...metadata });
   record.history = record.history.slice(-24);
   recordActivity();
   saveAppState();
+  return record;
 }
 
 function dailyPlanIndices() {
@@ -253,7 +255,7 @@ function dailyPlanIndices() {
     else if (isNewCard(record)) fresh.push(index);
   });
   const selectedDue = shuffled(due).slice(0, appState.settings.dailyReviews);
-  const selectedNew = fresh.slice(0, appState.settings.dailyNew);
+  const selectedNew = shuffled(fresh).slice(0, appState.settings.dailyNew);
   return { due, fresh, plan: [...selectedDue, ...selectedNew] };
 }
 
@@ -318,7 +320,7 @@ function switchDeck(deckId) {
   document.getElementById('personal-tab-name').textContent = deckId === 'pdf' ? appState.personalDecks[MAIN_DECK_ID].name : currentDeckName();
   document.getElementById('deck-eyebrow').textContent = `${currentDeckName()} · ${currentWords().length} words`;
   document.getElementById('side-deck-title').textContent = currentDeckName();
-  queue = dailyPlanIndices().plan;
+  queue = shuffled(dailyPlanIndices().plan);
   updateDeckLabels();
   renderPersonalDeckSelect();
   renderAll();
@@ -344,7 +346,7 @@ function setMode(nextMode) {
   });
   document.getElementById('results-mode').classList.add('hidden');
   if (mode === 'flash') {
-    if (!queue.length) queue = dailyPlanIndices().plan;
+    if (!queue.length) queue = shuffled(dailyPlanIndices().plan);
     renderCard();
   } else if (mode === 'type') startTypeSession();
   else if (mode === 'context') startContextSession();
@@ -379,11 +381,21 @@ function speakWord(event) {
 function rateCard(rating) {
   if (!flipped || !queue.length) return;
   const index = queue.shift();
-  updateSrs(index, rating, 'learn');
+  const record = updateSrs(index, rating, 'learn');
+  renderRatingReceipt(index, rating, record);
   if (rating === 'again') queue.splice(Math.min(3, queue.length), 0, index);
   else if (rating === 'hard' && queue.length < 18) queue.push(index);
   renderAll();
   renderCard();
+}
+
+function renderRatingReceipt(index, rating, record) {
+  const receipt = document.getElementById('rating-receipt');
+  if (!receipt) return;
+  const labels = { again: 'Again', hard: 'Hard', know: 'Know it' };
+  const dueCopy = record.due === localDateKey() ? 'returns today' : `next ${record.due}`;
+  receipt.className = `rating-receipt ${rating}`;
+  receipt.innerHTML = `<span><strong>${labels[rating]}</strong> · ${escapeHtml(currentWords()[index][0])}</span><span>${record.interval || '<1'} day interval · ${dueCopy}</span>`;
 }
 
 function renderCard() {
@@ -437,6 +449,8 @@ function renderTypeQuestion() {
   input.value = '';
   input.disabled = false;
   typeAnswered = false;
+  typeAttempts = 0;
+  document.getElementById('type-show-answer').classList.add('hidden');
   setTimeout(() => input.focus(), 0);
 }
 
@@ -456,15 +470,41 @@ function checkTypedAnswer(event) {
   const word = currentWords()[index];
   const answer = document.getElementById('type-answer').value;
   if (!answer.trim()) return;
-  typeAnswered = true;
   const correct = normalizeWord(answer) === normalizeWord(word[0]);
   const feedback = document.getElementById('type-feedback');
-  feedback.className = `recall-feedback ${correct ? 'good' : 'bad'}`;
-  feedback.textContent = correct ? `Correct · ${word[4] || word[2]}` : `Answer: ${word[0]} · ${word[4] || word[2]}`;
+  typeAttempts += 1;
+  if (!correct) {
+    feedback.className = 'recall-feedback bad';
+    feedback.textContent = `Not yet · attempt ${typeAttempts}. Try again, use a hint, or reveal the answer.`;
+    document.getElementById('type-show-answer').classList.remove('hidden');
+    document.getElementById('type-answer').select();
+    return;
+  }
+  typeAnswered = true;
+  feedback.className = 'recall-feedback good';
+  feedback.textContent = `Correct in ${typeAttempts} attempt${typeAttempts === 1 ? '' : 's'} · ${word[4] || word[2]}`;
   document.getElementById('type-answer').disabled = true;
-  updateSrs(index, correct ? 'know' : 'again', 'type');
+  document.getElementById('type-show-answer').classList.add('hidden');
+  updateSrs(index, typeAttempts === 1 ? 'know' : 'hard', 'type', { attempts: typeAttempts, revealed: false });
   renderAll();
-  setTimeout(() => { typeIndex += 1; renderTypeQuestion(); }, 1250);
+  setTimeout(() => { typeIndex += 1; renderTypeQuestion(); }, 1500);
+}
+
+function revealTypedAnswer() {
+  if (typeAnswered || typeIndex >= typeItems.length || typeAttempts < 1) return;
+  const index = typeItems[typeIndex];
+  const word = currentWords()[index];
+  typeAnswered = true;
+  const input = document.getElementById('type-answer');
+  input.value = word[0];
+  input.disabled = true;
+  document.getElementById('type-show-answer').classList.add('hidden');
+  const feedback = document.getElementById('type-feedback');
+  feedback.className = 'recall-feedback bad';
+  feedback.textContent = `${word[0]} · ${word[4] || word[2]}. This word will return for another review.`;
+  updateSrs(index, 'again', 'type', { attempts: typeAttempts, revealed: true });
+  renderAll();
+  setTimeout(() => { typeIndex += 1; renderTypeQuestion(); }, 2400);
 }
 
 function escapeRegExp(value) {
@@ -719,6 +759,16 @@ function renderAnalytics() {
   }
   const maxForecast = Math.max(1, ...forecast.map(item => item.count));
   document.getElementById('forecast-bars').innerHTML = forecast.map(item => `<div class="bar-row"><span>${item.key === today ? 'Today' : item.key.slice(5)}</span><div class="bar-track"><div class="bar-fill" style="width:${item.count / maxForecast * 100}%"></div></div><span>${item.count}</span></div>`).join('');
+
+  const recentRatings = currentWords().flatMap((word, index) => {
+    const record = cardRecord(index);
+    return ((record && record.history) || []).map(entry => ({ ...entry, word: word[0], interval: record.interval }));
+  }).sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 12);
+  document.getElementById('recent-ratings').innerHTML = recentRatings.length ? recentRatings.map(entry => {
+    const label = entry.rating === 'know' ? 'Know it' : entry.rating[0].toUpperCase() + entry.rating.slice(1);
+    const time = new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `<div class="rating-log-row"><strong>${escapeHtml(entry.word)}</strong><span class="rating-badge">${label} · ${escapeHtml(entry.source)}</span><span>${time}</span></div>`;
+  }).join('') : '<p class="side-copy">Your Again, Hard, and Know ratings will appear here.</p>';
 }
 
 function renderAll() {

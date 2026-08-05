@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#f2efe7">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -476,6 +477,13 @@
   .hint-btn { border: 1px solid #596057; color: #c9cdc4; background: transparent; padding: 7px 9px; border-radius: 5px; cursor: pointer; font-size: .64rem; }
   .hint-btn:hover { background: #3c423a; }
   .hint-output { color: #ef957d; font-size: .76rem; min-height: 22px; margin-top: 9px; }
+  .show-answer-btn { border: 1px solid #ef957d; color: #ffd1c7; background: transparent; padding: 8px 10px; border-radius: 5px; cursor: pointer; font-size: .65rem; margin-top: 8px; }
+  .rating-receipt { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 9px; padding: 9px 11px; border: 1px dashed var(--border); color: var(--muted); font-size: .64rem; line-height: 1.45; }
+  .rating-receipt strong { color: var(--text); }
+  .rating-receipt.again strong { color: #c95b47; } .rating-receipt.hard strong { color: #b08335; } .rating-receipt.know strong { color: var(--green); }
+  .rating-log { display: grid; gap: 6px; }
+  .rating-log-row { display: grid; grid-template-columns: minmax(90px,1fr) auto auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: .66rem; }
+  .rating-badge { padding: 4px 6px; border: 1px solid var(--border); font-size: .59rem; }
   .context-sentence { font: 400 clamp(1.4rem, 3.4vw, 2.2rem)/1.45 'Playfair Display', serif; text-wrap: pretty; }
   .context-blank { color: #ef957d; border-bottom: 2px solid #ef957d; padding: 0 .18em; }
   .analytics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0 24px; }
@@ -605,6 +613,7 @@
           <button class="btn btn-hard" onclick="rateCard('hard')">2 · Hard</button>
           <button class="btn btn-know" onclick="rateCard('know')">3 · Know it</button>
         </div>
+        <div class="rating-receipt" id="rating-receipt"><span>Your next rating will appear here.</span><span>Again · Hard · Know</span></div>
       </div>
 
       <div id="type-mode" class="hidden mode-shell">
@@ -619,6 +628,7 @@
           </div>
           <div class="hint-output" id="type-hint"></div>
           <form class="recall-input-row" onsubmit="checkTypedAnswer(event)"><input class="recall-input" id="type-answer" autocomplete="off" spellcheck="false" placeholder="type the English word" aria-label="Type the English word"><button class="recall-submit" type="submit">Check</button></form>
+          <button class="show-answer-btn hidden" id="type-show-answer" type="button" onclick="revealTypedAnswer()">Show answer</button>
           <div class="recall-feedback" id="type-feedback" aria-live="polite"></div>
         </div>
       </div>
@@ -666,6 +676,7 @@
         </div>
         <section class="analytics-section"><h3>Hardest words</h3><div class="bar-list" id="hardest-words"></div></section>
         <section class="analytics-section"><h3>Next seven days</h3><div class="bar-list" id="forecast-bars"></div></section>
+        <section class="analytics-section"><h3>Recent ratings</h3><div class="rating-log" id="recent-ratings"></div></section>
       </div>
     </section>
 

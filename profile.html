@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#222720">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root { --bg:#f2efe7; --ink:#222720; --panel:#262a24; --panel-2:#30352e; --line:#4a5047; --muted:#aeb4aa; --cream:#fff8e9; --accent:#d66b50; --green:#91d2aa; }
@@ -62,6 +63,7 @@
     @media(max-width:760px){ .profile-head{grid-template-columns:auto 1fr}.cloud-state{grid-column:1/-1}.profile-body{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)} }
     @media(max-width:520px){ body{padding:10px}.brand span{display:none}.profile{padding:20px}.avatar{width:62px;height:62px}.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid var(--line)}.collections{grid-template-columns:1fr}.cloud-actions{grid-template-columns:1fr}.leader-row{grid-template-columns:24px 1fr auto}.leader-row span:nth-child(3){display:none} }
   </style>
+  <link rel="stylesheet" href="profile-game.css">
 </head>
 <body>
   <main class="shell">
@@ -69,9 +71,9 @@
       <div class="brand"><div class="brand-mark">SV</div><div><strong>SAT Vocab</strong><span>learner profile</span></div></div>
       <a class="back" href="index.html">← Back to study</a>
     </header>
-    <section class="profile" aria-labelledby="profile-title">
+    <section class="profile tier-bronze" id="profile-card" aria-labelledby="profile-title">
       <div class="profile-head">
-        <div class="avatar" id="profile-avatar">SL</div>
+        <div class="avatar" id="profile-avatar"><span id="profile-avatar-text">SL</span><img class="hidden" id="profile-avatar-image" alt="Selected profile avatar"></div>
         <div><p class="eyebrow">Learner profile</p><h1 id="profile-title">SAT learner</h1><p class="subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
         <div class="cloud-state" id="cloud-state">Saved on this device</div>
       </div>
@@ -82,12 +84,18 @@
         <div class="stat">Mastered<strong id="profile-mastered">0</strong></div>
         <div class="stat">Streak<strong id="profile-streak">0d</strong></div>
       </div>
+      <div class="xp-progress"><div><span id="tier-name">Bronze frame</span><span id="xp-next">0 / 500 XP</span></div><div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div></div>
+      <section class="mascot-zone" aria-labelledby="mascot-title">
+        <div class="mascot-stage skin-classic" id="mascot-stage"><div class="mascot-orbit"></div><img id="mascot-image" src="assets/mascot/glyph-focus.png" alt="Glyph, an abstract typographic learning spirit"></div>
+        <div class="mascot-copy"><p class="eyebrow">Study companion</p><h2 id="mascot-title">Glyph is waiting</h2><p class="subtitle" id="mascot-message">Complete a review to wake the word spirit.</p><div class="mascot-collection" id="mascot-collection"></div></div>
+      </section>
       <div class="profile-body">
         <div>
           <h2>Profile details</h2>
           <form class="form" onsubmit="saveProfile(event)">
             <input id="profile-name" maxlength="32" placeholder="display name" aria-label="Display name">
             <textarea id="profile-bio" maxlength="140" rows="3" placeholder="What are you studying for?" aria-label="Profile bio"></textarea>
+            <div class="avatar-picker"><span>Profile image</span><div class="avatar-options" id="avatar-options"><button type="button" data-avatar="initials" onclick="selectProfileAvatar('initials')">Initials</button><button type="button" data-avatar="logo" onclick="selectProfileAvatar('logo')">SV logo</button><button type="button" data-avatar="glyph" onclick="selectProfileAvatar('glyph')">Glyph</button><label for="avatar-upload" id="avatar-upload-label">Upload photo<input id="avatar-upload" type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadProfileAvatar(event)"></label></div></div>
             <label class="check"><input id="leaderboard-opt-in" type="checkbox"> Show my stats on the public leaderboard</label>
             <button class="btn primary" type="submit">Save profile</button>
           </form>
@@ -99,6 +107,9 @@
           <div class="leaderboard"><h2>Leaderboard</h2><p class="leader-copy">Ranking uses XP from real reviews. Only opted-in profiles appear.</p><div id="leaderboard-list"></div></div>
         </div>
       </div>
+      <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow">Milestones</p><h2 id="achievement-title">Achievements</h2></div><strong id="achievement-total">0 / 8 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
+      <section class="contribution-section" aria-labelledby="contribution-title"><div class="section-heading"><div><p class="eyebrow">Study history</p><h2 id="contribution-title">Reviews in the last year</h2></div><div class="year-chip" id="activity-year"></div></div><div class="contribution-scroll"><div class="profile-heatmap" id="profile-heatmap" aria-label="Review activity for the last year"></div></div><div class="heat-legend"><span>Less</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>More</span></div></section>
+      <section class="roadmap-section" aria-labelledby="roadmap-title"><div class="section-heading"><div><p class="eyebrow">Vocabulary journey</p><h2 id="roadmap-title">Roadmap</h2></div><span id="roadmap-copy">Level 1</span></div><div class="roadmap" id="roadmap"></div></section>
     </section>
   </main>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>

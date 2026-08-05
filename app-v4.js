@@ -79,6 +79,9 @@ let onboardingLocale = 'en';
 let diagnosticItems = [];
 let diagnosticIndex = 0;
 let diagnosticResults = [];
+let selectedLibraryWords = new Set();
+let editingWordIndex = -1;
+let pendingImportWords = [];
 
 const UI_COPY = {
   en: {
@@ -139,7 +142,21 @@ function applyWorkspaceView() {
   document.querySelectorAll('[data-view-link]').forEach(link => link.classList.toggle('active', link.dataset.viewLink === view));
   if (view === 'library' && activeDeckId === 'pdf') openPersonalDeck();
   if (view === 'progress') setMode('analytics');
+  else if (view === 'study' && mode === 'analytics') setMode('flash');
+  if (view === 'library') renderLibraryWords();
 }
+
+function navigateWorkspace(event, view) {
+  if (event) event.preventDefault();
+  const nextUrl = new URL(location.href);
+  nextUrl.pathname = nextUrl.pathname.endsWith('index.html') ? nextUrl.pathname : `${nextUrl.pathname.replace(/\/$/, '')}/index.html`;
+  nextUrl.search = `?view=${view}`;
+  if (location.href !== nextUrl.href) history.pushState({ view }, '', nextUrl);
+  applyWorkspaceView();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.addEventListener('popstate', applyWorkspaceView);
 
 function localDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -396,6 +413,9 @@ function startMistakeSession(kind) {
 function switchDeck(deckId) {
   if (deckId !== 'pdf' && !appState.personalDecks[deckId]) deckId = MAIN_DECK_ID;
   activeDeckId = deckId;
+  selectedLibraryWords.clear();
+  cancelWordEdit(false);
+  cancelImportPreview(false);
   saveAppState();
   document.getElementById('deck-pdf').classList.toggle('active', deckId === 'pdf');
   document.getElementById('deck-custom').classList.toggle('active', deckId !== 'pdf');
@@ -863,6 +883,49 @@ function renderAnalytics() {
     const time = new Date(entry.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return `<div class="rating-log-row"><strong>${escapeHtml(entry.word)}</strong><span class="rating-badge">${label} · ${escapeHtml(entry.source)}</span><span>${time}</span></div>`;
   }).join('') : '<p class="side-copy">Your Again, Hard, and Know ratings will appear here.</p>';
+  renderSatPlan(mastered);
+}
+
+function saveSatPlanDate(value) {
+  appState.settings.satDate = value || '';
+  saveAppState();
+  renderAnalytics();
+  showToast(value ? 'SAT plan updated.' : 'SAT date cleared.');
+}
+
+function renderSatPlan(masteredCount) {
+  const dateInput = document.getElementById('sat-plan-date');
+  if (!dateInput) return;
+  dateInput.min = localDateKey();
+  dateInput.value = appState.settings.satDate || '';
+  const total = currentWords().length;
+  const mastered = Number.isFinite(masteredCount) ? masteredCount : currentWords().filter((word, index) => isMasteredCard(cardRecord(index))).length;
+  const remaining = Math.max(0, total - mastered);
+  const completion = total ? Math.round(mastered / total * 100) : 0;
+  document.getElementById('sat-words-left').textContent = remaining.toLocaleString();
+  document.getElementById('sat-plan-percent').textContent = `${completion}%`;
+  document.getElementById('sat-pace-fill').style.transform = `scaleX(${completion / 100})`;
+  if (!appState.settings.satDate) {
+    document.getElementById('sat-days-left').textContent = '—';
+    document.getElementById('sat-daily-words').textContent = '—';
+    document.getElementById('sat-weekly-words').textContent = '—';
+    document.getElementById('sat-pace-label').textContent = 'Set an exam date to calculate your pace.';
+    document.getElementById('sat-plan-status').textContent = 'Your current deck progress is shown above. Add a date for a daily and weekly finish line.';
+    return;
+  }
+  const daysLeft = Math.max(1, Math.ceil((new Date(`${appState.settings.satDate}T12:00:00`) - new Date()) / 86400000));
+  const dailyWords = remaining ? Math.ceil(remaining / daysLeft) : 0;
+  const weeklyWords = Math.min(remaining, dailyWords * 7);
+  const configured = Number(appState.settings.dailyNew || 20);
+  document.getElementById('sat-days-left').textContent = daysLeft.toLocaleString();
+  document.getElementById('sat-daily-words').textContent = dailyWords.toLocaleString();
+  document.getElementById('sat-weekly-words').textContent = weeklyWords.toLocaleString();
+  document.getElementById('sat-pace-label').textContent = `${mastered.toLocaleString()} of ${total.toLocaleString()} words secured`;
+  document.getElementById('sat-plan-status').textContent = remaining === 0
+    ? 'This deck is fully covered. Keep reviewing due cards to protect retention.'
+    : configured >= dailyWords
+      ? `Your current ${configured}-new-word daily setting is enough to finish this deck before the exam.`
+      : `Raise Daily load from ${configured} to ${dailyWords} new words, or choose a smaller priority deck.`;
 }
 
 function renderAll() {
@@ -872,6 +935,7 @@ function renderAll() {
   renderProgress();
   renderActivity();
   renderFocusedCounts();
+  renderLibraryWords();
   renderProfile();
   if (mode === 'analytics') renderAnalytics();
 }
@@ -898,6 +962,106 @@ function resetProgress() {
 function renderPersonalDeckSelect() {
   const select = document.getElementById('personal-deck-select');
   select.innerHTML = Object.values(appState.personalDecks).map(deck => `<option value="${deck.id}" ${deck.id === activeDeckId ? 'selected' : ''}>${deck.name} · ${deck.words.length} words</option>`).join('');
+}
+
+function libraryVisibleIndices() {
+  if (activeDeckId === 'pdf') return [];
+  const query = normalizeWord(document.getElementById('library-search')?.value || '');
+  const filter = document.getElementById('library-filter')?.value || 'all';
+  return currentWords().map((word, index) => ({ word, index, record: cardRecord(index) })).filter(item => {
+    const haystack = normalizeWord(`${item.word[0]} ${item.word[2]} ${item.word[4] || ''}`);
+    const status = isMasteredCard(item.record) ? 'mastered' : isNewCard(item.record) ? 'new' : 'learning';
+    return (!query || haystack.includes(query)) && (filter === 'all' || filter === status);
+  }).map(item => item.index);
+}
+
+function renderLibraryWords() {
+  const list = document.getElementById('library-word-list');
+  if (!list) return;
+  if (activeDeckId === 'pdf') {
+    list.innerHTML = '<div class="library-empty">Open a personal deck to edit its words.</div>';
+    return;
+  }
+  const visible = libraryVisibleIndices();
+  const words = currentWords();
+  list.innerHTML = visible.length ? visible.map(index => {
+    const word = words[index];
+    const record = cardRecord(index);
+    const status = isMasteredCard(record) ? 'mastered' : isNewCard(record) ? 'new' : 'learning';
+    return `<div class="library-row"><input type="checkbox" aria-label="Select ${escapeHtml(word[0])}" ${selectedLibraryWords.has(index) ? 'checked' : ''} onchange="toggleLibraryWord(${index},this.checked)"><strong>${escapeHtml(word[0])}</strong><span class="library-definition">${escapeHtml(word[2])}</span><span class="library-status ${status}">${status}</span><button type="button" onclick="editLibraryWord(${index})">Edit</button></div>`;
+  }).join('') : '<div class="library-empty">No words match this search and filter.</div>';
+  document.getElementById('library-selection-copy').textContent = `${selectedLibraryWords.size} selected · ${visible.length} visible`;
+}
+
+function toggleLibraryWord(index, checked) {
+  if (checked) selectedLibraryWords.add(index);
+  else selectedLibraryWords.delete(index);
+  document.getElementById('library-selection-copy').textContent = `${selectedLibraryWords.size} selected · ${libraryVisibleIndices().length} visible`;
+}
+
+function toggleVisibleLibraryWords() {
+  const visible = libraryVisibleIndices();
+  const allSelected = visible.length && visible.every(index => selectedLibraryWords.has(index));
+  visible.forEach(index => allSelected ? selectedLibraryWords.delete(index) : selectedLibraryWords.add(index));
+  renderLibraryWords();
+}
+
+function resetSelectedWordProgress() {
+  if (!selectedLibraryWords.size || activeDeckId === 'pdf') return showToast('Select at least one word first.');
+  const cards = ensureProgress(activeDeckId).cards;
+  selectedLibraryWords.forEach(index => { delete cards[index]; });
+  saveAppState();
+  renderAll();
+  showToast(`Reset the schedule for ${selectedLibraryWords.size} selected words.`);
+}
+
+function deleteSelectedWords() {
+  if (!selectedLibraryWords.size || activeDeckId === 'pdf') return showToast('Select at least one word first.');
+  const count = selectedLibraryWords.size;
+  if (!armDestructiveAction('bulk-delete-words', `Click Delete selected again within 5 seconds to remove ${count} words.`, 'bulk-delete-words', 'Confirm deletion')) return;
+  const deck = appState.personalDecks[activeDeckId];
+  const oldCards = ensureProgress(activeDeckId).cards;
+  const kept = [];
+  const remappedCards = {};
+  deck.words.forEach((word, oldIndex) => {
+    if (selectedLibraryWords.has(oldIndex)) return;
+    const nextIndex = kept.length;
+    kept.push(word);
+    if (oldCards[oldIndex]) remappedCards[nextIndex] = oldCards[oldIndex];
+  });
+  deck.words = kept;
+  appState.progress[activeDeckId].cards = remappedCards;
+  selectedLibraryWords.clear();
+  queue = shuffled(dailyPlanIndices().plan);
+  saveAppState();
+  renderAll();
+  updateDeckLabels();
+  renderPersonalDeckSelect();
+  showToast(`${count} words removed.`);
+}
+
+function editLibraryWord(index) {
+  if (activeDeckId === 'pdf' || !currentWords()[index]) return;
+  const word = currentWords()[index];
+  editingWordIndex = index;
+  document.getElementById('new-word').value = word[0];
+  document.getElementById('new-pos').value = word[1] || '';
+  document.getElementById('new-definition').value = word[2] || '';
+  document.getElementById('new-translation').value = word[4] || '';
+  document.getElementById('new-example').value = word[3] || '';
+  document.getElementById('editing-word-label').textContent = word[0];
+  document.getElementById('word-edit-banner').classList.remove('hidden');
+  document.getElementById('word-submit-button').textContent = 'Save changes';
+  document.getElementById('new-word').focus();
+}
+
+function cancelWordEdit(clearFields = true) {
+  editingWordIndex = -1;
+  const banner = document.getElementById('word-edit-banner');
+  if (banner) banner.classList.add('hidden');
+  const button = document.getElementById('word-submit-button');
+  if (button) button.textContent = 'Add word';
+  if (clearFields) document.querySelector('.add-form')?.reset();
 }
 
 function makeDeckId() {
@@ -965,17 +1129,21 @@ function addCustomWord(event) {
   const definition = document.getElementById('new-definition').value.trim();
   const translation = document.getElementById('new-translation').value.trim();
   const example = document.getElementById('new-example').value.trim() || `Write a sentence using “${word}”.`;
-  if (deck.words.some(item => normalizeWord(item[0]) === normalizeWord(word))) {
+  if (deck.words.some((item, index) => index !== editingWordIndex && normalizeWord(item[0]) === normalizeWord(word))) {
     showToast('This word is already in the selected deck.');
     return;
   }
-  deck.words.push([word, part, definition, example, translation]);
+  const entry = [word, part, definition, example, translation];
+  const edited = editingWordIndex >= 0;
+  if (edited) deck.words[editingWordIndex] = entry;
+  else deck.words.push(entry);
   saveAppState();
   event.target.reset();
+  cancelWordEdit(false);
   renderAll();
   updateDeckLabels();
   renderPersonalDeckSelect();
-  showToast(`${word} added to “${deck.name}”.`);
+  showToast(edited ? `${word} updated.` : `${word} added to “${deck.name}”.`);
 }
 
 function parseImportedWords(text, extension) {
@@ -1000,22 +1168,57 @@ function importWordFile(event) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const deck = appState.personalDecks[activeDeckId];
       const imported = parseImportedWords(String(reader.result), extension).filter(item => item[0] && item[2]);
-      const existing = new Set(deck.words.map(item => normalizeWord(item[0])));
-      const unique = imported.filter(item => !existing.has(normalizeWord(item[0])));
-      deck.words.push(...unique);
-      saveAppState();
-      renderAll();
-      updateDeckLabels();
-      renderPersonalDeckSelect();
-      showToast(`${unique.length} words imported. ${imported.length - unique.length} duplicates skipped.`);
+      const seen = new Set();
+      pendingImportWords = imported.filter(item => {
+        const key = normalizeWord(item[0]);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      renderImportPreview();
     } catch (error) {
       showToast(`Could not import file: ${error.message}`);
     }
     event.target.value = '';
   };
   reader.readAsText(file);
+}
+
+function renderImportPreview() {
+  const preview = document.getElementById('import-preview');
+  if (!preview) return;
+  const existing = new Set(currentWords().map(item => normalizeWord(item[0])));
+  const unique = pendingImportWords.filter(item => !existing.has(normalizeWord(item[0])));
+  const duplicates = pendingImportWords.length - unique.length;
+  preview.classList.remove('hidden');
+  document.getElementById('import-preview-copy').textContent = `${unique.length} new words ready · ${duplicates} duplicates will be skipped`;
+  document.getElementById('import-preview-list').innerHTML = unique.slice(0, 8).map(item => `<div class="import-preview-row"><strong>${escapeHtml(item[0])}</strong><span>${escapeHtml(item[2])}</span></div>`).join('') || '<div class="library-empty">This file contains no new words for this deck.</div>';
+}
+
+function confirmImportWords() {
+  if (!pendingImportWords.length || activeDeckId === 'pdf') return cancelImportPreview();
+  const deck = appState.personalDecks[activeDeckId];
+  const existing = new Set(deck.words.map(item => normalizeWord(item[0])));
+  const unique = pendingImportWords.filter(item => !existing.has(normalizeWord(item[0])));
+  deck.words.push(...unique);
+  const skipped = pendingImportWords.length - unique.length;
+  saveAppState();
+  cancelImportPreview(false);
+  renderAll();
+  updateDeckLabels();
+  renderPersonalDeckSelect();
+  showToast(`${unique.length} words imported. ${skipped} duplicates skipped.`);
+}
+
+function cancelImportPreview(clearFile = true) {
+  pendingImportWords = [];
+  const preview = document.getElementById('import-preview');
+  if (preview) preview.classList.add('hidden');
+  if (clearFile) {
+    const input = document.getElementById('word-file');
+    if (input) input.value = '';
+  }
 }
 
 function backupPayload() {
@@ -1065,19 +1268,21 @@ function importBackup(event) {
 }
 
 function armDestructiveAction(action, message, buttonId = '', armedLabel = '') {
+  const button = buttonId ? document.getElementById(buttonId) : null;
+  if (button && !button.dataset.defaultLabel) button.dataset.defaultLabel = button.textContent;
   if (armedAction === action) {
     armedAction = '';
     clearTimeout(armedActionTimer);
-    if (buttonId) document.getElementById(buttonId).textContent = action.startsWith('delete-') ? 'Delete' : 'Reset progress';
+    if (button) button.textContent = button.dataset.defaultLabel;
     return true;
   }
   armedAction = action;
   showToast(message);
-  if (buttonId && armedLabel) document.getElementById(buttonId).textContent = armedLabel;
+  if (button && armedLabel) button.textContent = armedLabel;
   clearTimeout(armedActionTimer);
   armedActionTimer = setTimeout(() => {
     armedAction = '';
-    if (buttonId) document.getElementById(buttonId).textContent = action.startsWith('delete-') ? 'Delete' : 'Reset progress';
+    if (button) button.textContent = button.dataset.defaultLabel;
   }, 5000);
   return false;
 }

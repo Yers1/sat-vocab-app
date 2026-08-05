@@ -9,6 +9,7 @@ The current release separates Study, Library, Progress, and Profile; adds EN/RU/
 ## Features
 
 - **Separate libraries** - 990 entries extracted from `sat.vocab.pdf`, plus as many independent personal decks as you need
+- **Instant workspace navigation** - Study, Library, and Progress switch in place without reloading the app or vocabulary data
 - **Adaptive SRS** - Again, Hard, Know, and Easy ratings update each card's difficulty, stability, due date, and interval
 - **Daily plan** - a short mix of due reviews and new words with an honest stopping point
 - **Adjustable workload** - choose daily new words, due reviews, and streak target; continue with 20 more cards or the full deck at any time
@@ -16,6 +17,8 @@ The current release separates Study, Library, Progress, and Profile; adds EN/RU/
 - **Focused recovery** - launch sessions containing only recent mistakes or weak words
 - **Personal word tools** - create, rename, and delete decks; add words manually or import TXT, CSV, TSV, and JSON
 - **Analytics** - retention, due/mastered totals, hardest words, and a seven-day workload forecast
+- **SAT pace plan** - set an exam date and see days left, words remaining, daily pace, weekly target, and deck completion
+- **Library control** - search and filter words, edit entries, select many words, reset schedules, delete safely, and preview imports before saving
 - **Daily discipline** - GitHub-style 91-day activity heatmap, five-review daily minimum, and streak tracking
 - **Backup and transfer** - export or share every deck, schedule, streak, and setting, then import it on another device
 - **Installable PWA** - install from a supported browser and keep studying after the core app has been cached

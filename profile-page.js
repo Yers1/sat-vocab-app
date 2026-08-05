@@ -52,6 +52,26 @@ function isMasteredCard(record) {
   return Boolean(record && record.interval >= 7 && record.lastRating !== 'again');
 }
 
+function achievementDefinitions(metrics) {
+  const collectionCount = Number(metrics.collectionCount || Object.keys(appState.personalDecks || {}).length);
+  const todayCount = Number(metrics.todayCount || (appState.activity || {})[localDateKey()] || 0);
+  const overclockTarget = dailyGoal() * 2;
+  return [
+    { image: 'review-sigil.png', rarity: 'common', name: 'First Mark', copy: 'Break the seal with one honest review.', current: metrics.reviews, target: 1, reward: 25 },
+    { image: 'review-sigil.png', rarity: 'common', name: 'Ten Honest Answers', copy: 'Record ten real recall decisions.', current: metrics.reviews, target: 10, reward: 50 },
+    { image: 'review-sigil.png', rarity: 'rare', name: 'Fifty Deep', copy: 'Push through fifty focused reviews.', current: metrics.reviews, target: 50, reward: 125 },
+    { image: 'review-sigil.png', rarity: 'epic', name: 'Century of Proof', copy: 'Leave one hundred marks in the archive.', current: metrics.reviews, target: 100, reward: 300 },
+    { image: 'mastery-sigil.png', rarity: 'rare', name: 'Memory Set', copy: 'Move ten words into long-term memory.', current: metrics.mastered, target: 10, reward: 200 },
+    { image: 'mastery-sigil.png', rarity: 'legendary', name: 'Lexicon Keeper', copy: 'Master fifty words without shortcuts.', current: metrics.mastered, target: 50, reward: 800 },
+    { image: 'streak-sigil.png', rarity: 'rare', name: 'Three-Day Signal', copy: 'Keep the recall signal alive for 3 days.', current: metrics.streak, target: 3, reward: 150 },
+    { image: 'streak-sigil.png', rarity: 'epic', name: 'Full Week', copy: 'Protect a complete seven-day streak.', current: metrics.streak, target: 7, reward: 400 },
+    { image: 'streak-sigil.png', rarity: 'mythic', name: 'Month of Proof', copy: 'Show up for thirty days. No lucky run.', current: metrics.streak, target: 30, reward: 2000 },
+    { image: 'archive-sigil.png', rarity: 'rare', name: 'Curator', copy: 'Build a second personal word collection.', current: collectionCount, target: 2, reward: 200 },
+    { image: 'streak-sigil.png', rarity: 'epic', name: 'Overclocked', copy: 'Complete twice today’s review target.', current: todayCount, target: overclockTarget, reward: 300 },
+    { image: 'mastery-sigil.png', rarity: 'mythic', name: 'Perfect Archive', copy: 'Master one hundred words for the final relic.', current: metrics.mastered, target: 100, reward: 1500 }
+  ].map(item => ({ ...item, unlocked: item.current >= item.target }));
+}
+
 function profileMetrics() {
   let reviews = 0;
   let mastered = 0;
@@ -62,8 +82,35 @@ function profileMetrics() {
     });
   });
   const { streak } = calculateStreak();
-  const xp = reviews * 5 + mastered * 30 + streak * 50;
-  return { reviews, mastered, streak, xp, level: Math.floor(xp / 500) + 1 };
+  const raw = {
+    reviews,
+    mastered,
+    streak,
+    collectionCount: Object.keys(appState.personalDecks || {}).length,
+    todayCount: Number((appState.activity || {})[localDateKey()] || 0)
+  };
+  const achievementXp = achievementDefinitions(raw).filter(item => item.unlocked).reduce((sum, item) => sum + item.reward, 0);
+  const xp = reviews * 5 + mastered * 30 + streak * 50 + achievementXp;
+  return { ...raw, achievementXp, xp, level: Math.floor(xp / 500) + 1 };
+}
+
+function animateMetric(id, target, suffix = '') {
+  const element = document.getElementById(id);
+  if (!element) return;
+  const start = element.dataset.value === undefined ? (id === 'profile-level' ? 1 : 0) : Number(element.dataset.value);
+  const end = Number(target || 0);
+  element.dataset.value = String(end);
+  const render = value => { element.textContent = `${Math.round(value).toLocaleString()}${suffix}`; };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || start === end) return render(end);
+  const started = performance.now();
+  const duration = Math.min(1100, 420 + Math.abs(end - start) * 5);
+  const tick = now => {
+    const progress = Math.min(1, (now - started) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    render(start + (end - start) * eased);
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 function escapeHtml(value) {
@@ -78,11 +125,11 @@ function renderProfile(populateForm = false) {
   renderProfileAvatar(profile, initials);
   document.getElementById('profile-title').textContent = name;
   document.getElementById('profile-subtitle').textContent = profile.bio || 'Your vocabulary collections, consistency, and memory progress in one place.';
-  document.getElementById('profile-level').textContent = metrics.level;
-  document.getElementById('profile-xp').textContent = metrics.xp.toLocaleString();
-  document.getElementById('profile-reviews').textContent = metrics.reviews.toLocaleString();
-  document.getElementById('profile-mastered').textContent = metrics.mastered.toLocaleString();
-  document.getElementById('profile-streak').textContent = `${metrics.streak}d`;
+  animateMetric('profile-level', metrics.level);
+  animateMetric('profile-xp', metrics.xp);
+  animateMetric('profile-reviews', metrics.reviews);
+  animateMetric('profile-mastered', metrics.mastered);
+  animateMetric('profile-streak', metrics.streak, 'd');
   if (populateForm) {
     document.getElementById('profile-name').value = name;
     document.getElementById('profile-bio').value = profile.bio || '';
@@ -230,21 +277,13 @@ function selectMascotSkin(skinId) {
 }
 
 function renderAchievements(metrics) {
-  const collectionCount = Object.keys(appState.personalDecks || {}).length;
-  const todayCount = Number((appState.activity || {})[localDateKey()] || 0);
-  const achievements = [
-    { icon: 'I', name: 'First mark', copy: 'Complete the first review', unlocked: metrics.reviews >= 1 },
-    { icon: 'X', name: 'Ten honest answers', copy: 'Reach 10 total reviews', unlocked: metrics.reviews >= 10 },
-    { icon: 'L', name: 'Fifty deep', copy: 'Reach 50 total reviews', unlocked: metrics.reviews >= 50 },
-    { icon: 'M', name: 'Memory set', copy: 'Master 10 words', unlocked: metrics.mastered >= 10 },
-    { icon: 'III', name: 'Three-day signal', copy: 'Hold a 3 day streak', unlocked: metrics.streak >= 3 },
-    { icon: 'VII', name: 'Full week', copy: 'Hold a 7 day streak', unlocked: metrics.streak >= 7 },
-    { icon: '++', name: 'Curator', copy: 'Create a second personal collection', unlocked: collectionCount >= 2 },
-    { icon: '★', name: 'Overclocked', copy: 'Complete twice your daily goal', unlocked: todayCount >= dailyGoal() * 2 }
-  ];
+  const achievements = achievementDefinitions(metrics);
   const unlocked = achievements.filter(item => item.unlocked).length;
   document.getElementById('achievement-total').textContent = `${unlocked} / ${achievements.length} unlocked`;
-  document.getElementById('achievement-grid').innerHTML = achievements.map(item => `<article class="achievement ${item.unlocked ? 'unlocked' : 'locked'}"><div class="achievement-icon">${item.icon}</div><strong>${item.name}</strong><span>${item.copy}</span></article>`).join('');
+  document.getElementById('achievement-grid').innerHTML = achievements.map(item => {
+    const progress = Math.min(100, Math.round(item.current / item.target * 100));
+    return `<article class="achievement ${item.unlocked ? 'unlocked' : 'locked'}" data-rarity="${item.rarity}"><img class="achievement-art" src="assets/achievements/${item.image}" alt=""><div class="achievement-top"><span class="rarity">${item.rarity}</span><span class="reward">+${item.reward} XP</span></div><strong>${item.name}</strong><span class="achievement-copy">${item.copy}</span><div class="achievement-progress"><div><span>${item.unlocked ? 'Relic secured' : 'Progress'}</span><span>${Math.min(item.current, item.target).toLocaleString()} / ${item.target.toLocaleString()}</span></div><div class="achievement-progress-track"><div class="achievement-progress-fill" style="width:${progress}%"></div></div></div></article>`;
+  }).join('');
 }
 
 function renderProfileHeatmap() {

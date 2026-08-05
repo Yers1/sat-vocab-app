@@ -19,7 +19,7 @@ A focused SAT vocabulary app with a complete PDF-derived reference deck, indepen
 - **Installable PWA** - install from a supported browser and keep studying after the core app has been cached
 - **Multiple reminders** - add up to eight daily times, remove them independently, and test browser notifications
 - **Separate learner profile page** - the Profile button opens a dedicated tab with GitHub-style identity, XP, level, review totals, streak, collections, and an opt-in leaderboard
-- **Gamification** - animated XP frames, the non-animal Glyph mascot with activity-based moods, unlockable skins, achievements, a one-year contribution map, and a level roadmap
+- **Gamification** - animated XP frames and stat counters, the non-animal Glyph mascot, 12 permanent achievement relics with bonus XP, unlockable skins, a one-year contribution map, and synced Roadmaps on study and profile pages
 - **Profile images** - choose initials, the app logo, Glyph, or upload a custom photo that is resized locally
 - **Visible review history** - Again, Hard, and Know ratings show their next interval immediately and remain available in Stats
 - **Retry-first typing** - wrong typed answers can be attempted repeatedly; Show answer appears only after the first miss

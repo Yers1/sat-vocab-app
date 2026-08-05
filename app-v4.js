@@ -773,6 +773,7 @@ function renderAnalytics() {
 
 function renderAll() {
   renderDailyPlan();
+  renderMainRoadmap();
   renderProgress();
   renderActivity();
   renderFocusedCounts();
@@ -1085,8 +1086,35 @@ function profileMetrics() {
     });
   });
   const { streak } = calculateStreak();
-  const xp = reviews * 5 + mastered * 30 + streak * 50;
-  return { reviews, mastered, streak, xp, level: Math.floor(xp / 500) + 1 };
+  const collectionCount = Object.keys(appState.personalDecks || {}).length;
+  const todayCount = Number((appState.activity || {})[localDateKey()] || 0);
+  const goal = dailyGoal();
+  const rewardChecks = [
+    [reviews >= 1, 25], [reviews >= 10, 50], [reviews >= 50, 125], [reviews >= 100, 300],
+    [mastered >= 10, 200], [mastered >= 50, 800], [mastered >= 100, 1500],
+    [streak >= 3, 150], [streak >= 7, 400], [streak >= 30, 2000],
+    [collectionCount >= 2, 200], [todayCount >= goal * 2, 300]
+  ];
+  const achievementXp = rewardChecks.reduce((sum, [unlocked, reward]) => sum + (unlocked ? reward : 0), 0);
+  const xp = reviews * 5 + mastered * 30 + streak * 50 + achievementXp;
+  return { reviews, mastered, streak, achievementXp, xp, level: Math.floor(xp / 500) + 1 };
+}
+
+function renderMainRoadmap() {
+  const roadmap = document.getElementById('main-roadmap');
+  if (!roadmap) return;
+  const level = profileMetrics().level;
+  const steps = [
+    { level: 1, title: 'Wake Glyph' },
+    { level: 3, title: 'Silver' },
+    { level: 5, title: 'Jade' },
+    { level: 8, title: 'Gold' },
+    { level: 10, title: 'Emerald' },
+    { level: 15, title: 'Obsidian' }
+  ];
+  const next = steps.find(step => step.level > level);
+  document.getElementById('main-roadmap-next').textContent = next ? `Next: level ${next.level} · ${next.title}` : 'Final frame unlocked';
+  roadmap.innerHTML = steps.map(step => `<div class="main-road-step ${level >= step.level ? 'done' : ''} ${next && next.level === step.level ? 'current' : ''}"><span>LVL ${step.level}</span><strong>${step.title}</strong></div>`).join('');
 }
 
 function renderProfile(populateForm = false) {

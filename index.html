@@ -356,7 +356,8 @@
   .app-shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 56px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
   .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; background: var(--text); color: var(--card); border-radius: 8px 8px 8px 2px; font-weight: 600; }
+  .brand-mark { width: 38px; height: 38px; display: block; border-radius: 8px 8px 8px 2px; overflow: hidden; box-shadow: 0 5px 15px rgba(34,39,32,.15); }
+  .brand-mark img { width: 100%; height: 100%; display: block; }
   .brand h1 { margin: 0; color: var(--text); font: 700 1.3rem/1 'Playfair Display', serif; }
   .brand p { margin-top: 4px; color: var(--muted); font-size: .67rem; letter-spacing: .08em; }
   .day-chip { color: var(--ink-soft); font-size: .72rem; border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; background: rgba(255,253,247,.6); }
@@ -464,6 +465,20 @@
   .plan-actions { display: flex; gap: 6px; }
   .mini-btn { border: 1px solid #d8c79f; background: #fffaf0; color: #55461f; padding: 8px 10px; border-radius: 5px; cursor: pointer; font-size: .66rem; white-space: nowrap; }
   .mini-btn.primary { background: var(--text); border-color: var(--text); color: white; }
+  .study-roadmap { position: relative; margin: 0 0 22px; padding: 16px 17px 14px; background: #272c26; color: #fff8e9; overflow: hidden; isolation: isolate; }
+  .study-roadmap::before { content: ''; position: absolute; width: 260px; height: 260px; right: -100px; top: -170px; border: 1px solid rgba(239,128,104,.22); border-radius: 50%; box-shadow: 0 0 0 28px rgba(239,128,104,.035), 0 0 0 58px rgba(239,128,104,.025); animation: mainOrbit 12s linear infinite; z-index: -1; }
+  .roadmap-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 17px; }
+  .roadmap-head strong { font: 700 1rem 'Playfair Display', serif; }
+  .roadmap-head span { color: #aeb4aa; font-size: .61rem; margin-left: 6px; }
+  .roadmap-head a { color: #ef8068; font-size: .61rem; text-decoration: none; white-space: nowrap; }
+  .main-road-track { display: grid; grid-template-columns: repeat(6, 1fr); min-width: 590px; }
+  .main-road-scroll { min-width: 0; max-width: 100%; overflow-x: auto; padding: 4px 1px 3px; }
+  .main-road-step { position: relative; border-top: 2px solid #4a5047; padding: 17px 6px 0; color: #7f877c; font-size: .52rem; text-align: left; }
+  .main-road-step::before { content: ''; position: absolute; left: 6px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: #4a5047; box-shadow: 0 0 0 4px #272c26; }
+  .main-road-step strong { display: block; margin-top: 3px; color: #b9beb5; font: 700 .68rem 'Playfair Display', serif; }
+  .main-road-step.done { border-color: #d66b50; color: #ef8068; }
+  .main-road-step.done::before { background: #d66b50; box-shadow: 0 0 0 4px #272c26, 0 0 12px #d66b50; }
+  .main-road-step.current::before { animation: mainRoadPulse 1.6s ease-out infinite; }
   .mode-shell { min-height: 360px; }
   .recall-card { background: #262a24; color: #fff8e9; border-radius: 14px 14px 14px 4px; padding: clamp(24px, 4vw, 42px); min-height: 290px; display: flex; flex-direction: column; justify-content: center; }
   .recall-prompt { color: #bfc3ba; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 18px; }
@@ -529,8 +544,10 @@
     .study-panel { padding: 12px; border-radius: 12px 12px 12px 4px; }
     .flashcard-wrap { height: 360px; }
     .actions { grid-template-columns: 1fr; }
-    .quiz-options { grid-template-columns: 1fr; }
+    .session-grid > *, .study-panel, .study-roadmap { min-width: 0; max-width: 100%; }
+    .controls { flex-wrap: wrap; }
     .mode-btn.secondary { margin-left: 0; }
+    .quiz-options { grid-template-columns: 1fr; }
     .deck-tabs { grid-template-columns: 1fr; }
     .add-head { display: block; }
     .add-form { grid-template-columns: 1fr; }
@@ -546,6 +563,8 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
   }
+  @keyframes mainRoadPulse { 0% { box-shadow: 0 0 0 4px #272c26, 0 0 0 0 rgba(214,107,80,.65); } 100% { box-shadow: 0 0 0 4px #272c26, 0 0 0 14px transparent; } }
+  @keyframes mainOrbit { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -553,7 +572,7 @@
 <main class="app-shell" id="study">
   <header class="topbar">
     <div class="brand">
-      <div class="brand-mark" aria-hidden="true">SV</div>
+      <div class="brand-mark"><img src="icon.svg" alt=""></div>
       <div><h1>SAT Vocab</h1><p>focused recall trainer</p></div>
     </div>
     <div class="top-actions"><a class="install-btn profile-jump" href="profile.html" target="_blank" rel="noopener">Profile ↗</a><button class="install-btn hidden" id="install-app" onclick="installApp()">Install app</button><div class="day-chip" id="today-label">Today’s session</div></div>
@@ -587,6 +606,11 @@
         <div><strong id="plan-title">Today’s focused session</strong><p id="plan-copy">Building your plan…</p></div>
         <div class="plan-actions"><button class="mini-btn primary" onclick="startDailyPlan()">Start plan</button><button class="mini-btn" onclick="startExtraSession(20)">+20 more</button><button class="mini-btn" onclick="startExtraSession('all')">Study all</button></div>
       </div>
+
+      <section class="study-roadmap" aria-label="Vocabulary level roadmap">
+        <div class="roadmap-head"><div><strong>Road to Obsidian</strong><span id="main-roadmap-next">Next: level 3</span></div><a href="profile.html#roadmap-title" target="_blank" rel="noopener">Full roadmap ↗</a></div>
+        <div class="main-road-scroll"><div class="main-road-track" id="main-roadmap"></div></div>
+      </section>
 
       <div id="flash-mode">
         <div class="progress-head"><span>Session progress</span><span id="progress-copy">0 / 30 mastered</span></div>

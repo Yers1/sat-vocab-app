@@ -35,14 +35,27 @@
 .achievement-section,.contribution-section,.roadmap-section { margin-top:38px;padding-top:28px;border-top:1px solid var(--line); }
 .section-heading { display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:16px; }
 .section-heading h2 { margin:0;font-size:1.45rem; }.section-heading>strong,.section-heading>span { color:var(--muted);font-size:.62rem; }
-.achievement-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:8px; }
-.achievement { position:relative;min-height:132px;padding:15px;background:#30352e;border:1px solid transparent;overflow:hidden; }
-.achievement.unlocked { border-color:color-mix(in srgb,var(--tier) 65%,#555b52); }
-.achievement.locked { opacity:.43;filter:grayscale(1); }
-.achievement-icon { width:32px;height:32px;display:grid;place-items:center;background:#20241f;color:var(--tier);margin-bottom:15px;font:700 1rem 'Playfair Display',serif;transform:rotate(-3deg); }
-.achievement strong { display:block;font:700 .92rem 'Playfair Display',serif;margin-bottom:6px; }
-.achievement span { color:var(--muted);font-size:.58rem;line-height:1.5; }
-.achievement.unlocked::after { content:'UNLOCKED';position:absolute;right:-22px;top:13px;transform:rotate(35deg);background:var(--tier);color:#1b1f1a;padding:3px 24px;font-size:.45rem;font-weight:700; }
+.section-intro { color:var(--muted);font-size:.57rem;line-height:1.5;margin-top:7px;max-width:58ch; }
+.achievement-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:9px; }
+.achievement { --rarity:#90988d;position:relative;min-height:215px;padding:15px;background:linear-gradient(145deg,#30352e,#272c26);border:1px solid #454b43;overflow:hidden;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease; }
+.achievement:hover { transform:translateY(-3px); }
+.achievement[data-rarity="rare"] { --rarity:#aabdc4; }.achievement[data-rarity="epic"] { --rarity:#d7b15c; }.achievement[data-rarity="legendary"] { --rarity:#df775e; }.achievement[data-rarity="mythic"] { --rarity:#6fd69a; }
+.achievement.unlocked { border-color:color-mix(in srgb,var(--rarity) 75%,#555b52);box-shadow:inset 0 0 28px color-mix(in srgb,var(--rarity) 7%,transparent); }
+.achievement.locked { filter:saturate(.18); }
+.achievement.locked .achievement-art { opacity:.22;filter:grayscale(1) brightness(.65); }
+.achievement-art { position:absolute;right:-12px;top:-14px;width:132px;height:132px;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(0,0,0,.35));transition:transform .35s ease,filter .35s ease; }
+.achievement:hover .achievement-art { transform:translateY(-3px) rotate(2deg) scale(1.04); }
+.achievement.unlocked .achievement-art { animation:relicFloat 4.6s ease-in-out infinite; }
+.achievement-top { position:relative;z-index:1;display:flex;align-items:center;gap:7px;margin-bottom:57px; }
+.rarity { color:var(--rarity);font-size:.48rem;letter-spacing:.16em;text-transform:uppercase; }
+.reward { border:1px solid color-mix(in srgb,var(--rarity) 45%,#4a5047);color:var(--rarity);padding:3px 5px;font-size:.47rem; }
+.achievement strong { position:relative;z-index:1;display:block;max-width:62%;font:700 1rem 'Playfair Display',serif;margin-bottom:6px; }
+.achievement-copy { position:relative;z-index:1;display:block;color:var(--muted);font-size:.56rem;line-height:1.45;min-height:32px; }
+.achievement-progress { position:relative;z-index:1;margin-top:13px; }
+.achievement-progress div { display:flex;justify-content:space-between;color:#8e968b;font-size:.48rem;margin-bottom:5px; }
+.achievement-progress-track { height:3px;background:#181b18;overflow:hidden; }
+.achievement-progress-fill { height:100%;background:var(--rarity);box-shadow:0 0 9px var(--rarity);transition:width .8s cubic-bezier(.2,.8,.2,1); }
+.achievement.unlocked::after { content:'CLAIMED';position:absolute;right:-24px;bottom:15px;transform:rotate(-36deg);background:var(--rarity);color:#151814;padding:3px 25px;font-size:.43rem;font-weight:700;letter-spacing:.08em; }
 .year-chip { background:#2677e8;color:white;padding:9px 17px;border-radius:6px;font-size:.65rem; }
 .contribution-scroll { overflow-x:auto;padding:12px 0 6px; }
 .profile-heatmap { min-width:690px;display:grid;grid-template-rows:repeat(7,10px);grid-auto-flow:column;grid-auto-columns:10px;gap:3px; }
@@ -62,6 +75,8 @@
 @keyframes tierPulse { 0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)} }
 @keyframes obsidianFrame { 0%,100%{border-color:#e7af59}50%{border-color:#d66b50} }
 @keyframes roadPulse { 0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tier) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent} }
+@keyframes relicFloat { 0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(1deg)} }
+@keyframes statCharge { from{transform:scaleX(0)}to{transform:scaleX(1)} }
 @media(max-width:850px){.mascot-zone{grid-template-columns:1fr}.achievement-grid{grid-template-columns:1fr 1fr}.mascot-stage{min-height:260px}}
 @media(max-width:520px){.mascot-zone{padding:13px}.mascot-stage{min-height:235px}.mascot-stage img{height:235px}.mascot-collection{grid-template-columns:1fr 1fr}.achievement-grid{grid-template-columns:1fr}.section-heading{align-items:flex-start}.year-chip{padding:7px 10px}.avatar-options{grid-template-columns:1fr 1fr}}
-@media(prefers-reduced-motion:reduce){.profile,.mascot-stage img,.mascot-orbit,.road-step.current::before{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.profile,.mascot-stage img,.mascot-orbit,.road-step.current::before,.achievement-art,.stat::after{animation:none!important}}

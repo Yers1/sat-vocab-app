@@ -22,7 +22,8 @@
     .shell { width:min(1120px,100%); margin:0 auto; }
     .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:18px; }
     .brand { display:flex; align-items:center; gap:10px; }
-    .brand-mark { width:35px;height:35px;display:grid;place-items:center;background:var(--ink);color:white;border-radius:9px 9px 3px 9px;font:700 .72rem 'Playfair Display',serif; }
+    .brand-mark { width:35px;height:35px;display:block;border-radius:9px 9px 3px 9px;overflow:hidden;box-shadow:0 5px 15px rgba(34,39,32,.16); }
+    .brand-mark img { width:100%;height:100%;display:block; }
     .brand strong { display:block;font:700 1rem 'Playfair Display',serif; }
     .brand span { color:#756f64;font-size:.58rem; }
     .back { color:var(--ink);text-decoration:none;border:1px solid #d8d2c6;background:#fffdf7;padding:9px 12px;border-radius:6px;font-size:.66rem; }
@@ -35,10 +36,15 @@
     .subtitle { color:var(--muted);font-size:.68rem;line-height:1.65;margin-top:9px;max-width:62ch;text-wrap:pretty; }
     .cloud-state { border:1px solid #596057;color:#c8cec4;padding:9px 11px;border-radius:5px;font-size:.63rem;white-space:nowrap; }
     .cloud-state.online { border-color:#5a9c70;color:var(--green); }
-    .stats { display:grid;grid-template-columns:repeat(5,1fr);margin:30px 0;border-block:1px solid var(--line); }
-    .stat { padding:18px 14px;border-right:1px solid var(--line);color:var(--muted);font-size:.6rem; }
+    .stats { display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin:30px 0;background:var(--line);border-block:1px solid var(--line); }
+    .stat { position:relative;min-height:112px;padding:17px 14px 15px;background:#292e27;color:var(--muted);font-size:.6rem;overflow:hidden; }
     .stat:last-child { border-right:0; }
-    .stat strong { display:block;margin-top:8px;color:var(--cream);font:700 1.65rem 'Playfair Display',serif;font-variant-numeric:tabular-nums; }
+    .stat::after { content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--stat-color,var(--tier));transform-origin:left;animation:statCharge 1.2s cubic-bezier(.2,.8,.2,1) both; }
+    .stat-label { display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.11em; }
+    .stat-glyph { width:8px;height:8px;border:1px solid var(--stat-color,var(--tier));transform:rotate(45deg);box-shadow:0 0 9px var(--stat-color,var(--tier)); }
+    .stat strong { display:block;margin-top:10px;color:var(--cream);font:700 1.8rem 'Playfair Display',serif;font-variant-numeric:tabular-nums; }
+    .stat small { display:block;margin-top:5px;color:#7f877c;font-size:.5rem;line-height:1.35; }
+    .stat:nth-child(1){--stat-color:#d66b50}.stat:nth-child(2){--stat-color:#e7c46d}.stat:nth-child(3){--stat-color:#91d2aa}.stat:nth-child(4){--stat-color:#65c892}.stat:nth-child(5){--stat-color:#ef8068}
     .profile-body { display:grid;grid-template-columns:minmax(280px,.76fr) minmax(0,1.24fr);gap:34px; }
     h2 { font:700 1.25rem 'Playfair Display',serif;margin-bottom:12px; }
     .form { display:grid;gap:9px; }
@@ -68,7 +74,7 @@
 <body>
   <main class="shell">
     <header class="topbar">
-      <div class="brand"><div class="brand-mark">SV</div><div><strong>SAT Vocab</strong><span>learner profile</span></div></div>
+      <div class="brand"><div class="brand-mark"><img src="icon.svg" alt=""></div><div><strong>SAT Vocab</strong><span>learner profile</span></div></div>
       <a class="back" href="index.html">← Back to study</a>
     </header>
     <section class="profile tier-bronze" id="profile-card" aria-labelledby="profile-title">
@@ -78,11 +84,11 @@
         <div class="cloud-state" id="cloud-state">Saved on this device</div>
       </div>
       <div class="stats">
-        <div class="stat">Level<strong id="profile-level">1</strong></div>
-        <div class="stat">XP<strong id="profile-xp">0</strong></div>
-        <div class="stat">Reviews<strong id="profile-reviews">0</strong></div>
-        <div class="stat">Mastered<strong id="profile-mastered">0</strong></div>
-        <div class="stat">Streak<strong id="profile-streak">0d</strong></div>
+        <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Level</span><strong id="profile-level">1</strong><small>current rank</small></div>
+        <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>XP</span><strong id="profile-xp">0</strong><small>earned for real recall</small></div>
+        <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Reviews</span><strong id="profile-reviews">0</strong><small>answers recorded</small></div>
+        <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Mastered</span><strong id="profile-mastered">0</strong><small>in long-term memory</small></div>
+        <div class="stat"><span class="stat-label"><i class="stat-glyph"></i>Streak</span><strong id="profile-streak">0d</strong><small>signal held alive</small></div>
       </div>
       <div class="xp-progress"><div><span id="tier-name">Bronze frame</span><span id="xp-next">0 / 500 XP</span></div><div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div></div>
       <section class="mascot-zone" aria-labelledby="mascot-title">
@@ -107,7 +113,7 @@
           <div class="leaderboard"><h2>Leaderboard</h2><p class="leader-copy">Ranking uses XP from real reviews. Only opted-in profiles appear.</p><div id="leaderboard-list"></div></div>
         </div>
       </div>
-      <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow">Milestones</p><h2 id="achievement-title">Achievements</h2></div><strong id="achievement-total">0 / 8 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
+      <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow">Milestones</p><h2 id="achievement-title">Achievements</h2><p class="section-intro">Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.</p></div><strong id="achievement-total">0 / 12 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
       <section class="contribution-section" aria-labelledby="contribution-title"><div class="section-heading"><div><p class="eyebrow">Study history</p><h2 id="contribution-title">Reviews in the last year</h2></div><div class="year-chip" id="activity-year"></div></div><div class="contribution-scroll"><div class="profile-heatmap" id="profile-heatmap" aria-label="Review activity for the last year"></div></div><div class="heat-legend"><span>Less</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>More</span></div></section>
       <section class="roadmap-section" aria-labelledby="roadmap-title"><div class="section-heading"><div><p class="eyebrow">Vocabulary journey</p><h2 id="roadmap-title">Roadmap</h2></div><span id="roadmap-copy">Level 1</span></div><div class="roadmap" id="roadmap"></div></section>
     </section>

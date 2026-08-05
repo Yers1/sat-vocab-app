@@ -1040,6 +1040,7 @@ function profileMetrics() {
 }
 
 function renderProfile(populateForm = false) {
+  if (!document.getElementById('profile-title')) return;
   const profile = appState.profile || emptyState().profile;
   const metrics = profileMetrics();
   const name = profile.name || 'SAT learner';
@@ -1086,6 +1087,17 @@ function saveProfile(event) {
   renderProfile(true);
   if (typeof syncCloudNow === 'function') syncCloudNow();
   showToast('Profile saved.');
+}
+
+function applyRemoteCloudState(state) {
+  appState = state;
+  activeDeckId = appState.activeDeckId || MAIN_DECK_ID;
+  localStorage.setItem(APP_KEY, JSON.stringify(appState));
+  document.getElementById('daily-new').value = appState.settings.dailyNew;
+  document.getElementById('daily-reviews').value = appState.settings.dailyReviews;
+  document.getElementById('daily-goal').value = dailyGoal();
+  renderReminders();
+  switchDeck(activeDeckId);
 }
 
 function installApp() {

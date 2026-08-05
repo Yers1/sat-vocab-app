@@ -18,7 +18,7 @@ A focused SAT vocabulary app with a complete PDF-derived reference deck, indepen
 - **Backup and transfer** - export or share every deck, schedule, streak, and setting, then import it on another device
 - **Installable PWA** - install from a supported browser and keep studying after the core app has been cached
 - **Multiple reminders** - add up to eight daily times, remove them independently, and test browser notifications
-- **Learner profile** - GitHub-style identity, XP, level, review totals, streak, collections, and an opt-in leaderboard
+- **Separate learner profile page** - the Profile button opens a dedicated tab with GitHub-style identity, XP, level, review totals, streak, collections, and an opt-in leaderboard
 - **Pronunciation and keyboard controls** - browser speech plus Space, 1, 2, and 3 shortcuts
 
 ## Live Demo

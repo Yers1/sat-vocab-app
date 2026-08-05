@@ -109,15 +109,7 @@ async function handleCloudSession() {
   const localTime = new Date(appState.lastStudy || 0).getTime();
   if (remote && remote.state && remoteTime > localTime) {
     cloudApplying = true;
-    appState = remote.state;
-    activeDeckId = appState.activeDeckId || MAIN_DECK_ID;
-    localStorage.setItem(APP_KEY, JSON.stringify(appState));
-    document.getElementById('daily-new').value = appState.settings.dailyNew;
-    document.getElementById('daily-reviews').value = appState.settings.dailyReviews;
-    document.getElementById('daily-goal').value = dailyGoal();
-    renderReminders();
-    switchDeck(activeDeckId);
-    renderProfile(true);
+    if (typeof applyRemoteCloudState === 'function') applyRemoteCloudState(remote.state);
     cloudApplying = false;
     showToast('Newer progress restored from your cloud account.');
   } else await syncCloudNow();

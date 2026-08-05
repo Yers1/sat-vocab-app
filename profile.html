@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learner profile · SAT Vocab</title>
+  <meta name="description" content="Your SAT vocabulary profile, collections, progress, and leaderboard position.">
+  <meta name="theme-color" content="#222720">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#f2efe7; --ink:#222720; --panel:#262a24; --panel-2:#30352e; --line:#4a5047; --muted:#aeb4aa; --cream:#fff8e9; --accent:#d66b50; --green:#91d2aa; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body { min-height:100dvh; background-color:var(--bg); background-image:repeating-linear-gradient(0deg,rgba(44,48,41,.022) 0,rgba(44,48,41,.022) 1px,transparent 1px,transparent 4px); color:var(--ink); font-family:'DM Mono',monospace; padding:clamp(14px,3vw,34px); }
+    button,input,textarea { font:inherit; }
+    button,a { transition:transform .18s ease,background .18s ease,border-color .18s ease; }
+    button:active,a:active { transform:translateY(1px); }
+    :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    .shell { width:min(1120px,100%); margin:0 auto; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:18px; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand-mark { width:35px;height:35px;display:grid;place-items:center;background:var(--ink);color:white;border-radius:9px 9px 3px 9px;font:700 .72rem 'Playfair Display',serif; }
+    .brand strong { display:block;font:700 1rem 'Playfair Display',serif; }
+    .brand span { color:#756f64;font-size:.58rem; }
+    .back { color:var(--ink);text-decoration:none;border:1px solid #d8d2c6;background:#fffdf7;padding:9px 12px;border-radius:6px;font-size:.66rem; }
+    .back:hover { background:#ebe5d9; }
+    .profile { background:var(--panel);color:var(--cream);border-radius:18px 18px 6px 18px;padding:clamp(22px,5vw,52px);box-shadow:0 24px 70px rgba(40,43,36,.16); }
+    .profile-head { display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;padding-bottom:28px;border-bottom:1px solid var(--line); }
+    .avatar { width:78px;height:78px;display:grid;place-items:center;background:var(--accent);border-radius:20px 20px 6px 20px;color:white;font:700 1.7rem 'Playfair Display',serif; }
+    .eyebrow { color:#ef8068;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px; }
+    h1 { font:700 clamp(2rem,5vw,4rem)/.95 'Playfair Display',serif;letter-spacing:-.04em;text-wrap:balance; }
+    .subtitle { color:var(--muted);font-size:.68rem;line-height:1.65;margin-top:9px;max-width:62ch;text-wrap:pretty; }
+    .cloud-state { border:1px solid #596057;color:#c8cec4;padding:9px 11px;border-radius:5px;font-size:.63rem;white-space:nowrap; }
+    .cloud-state.online { border-color:#5a9c70;color:var(--green); }
+    .stats { display:grid;grid-template-columns:repeat(5,1fr);margin:30px 0;border-block:1px solid var(--line); }
+    .stat { padding:18px 14px;border-right:1px solid var(--line);color:var(--muted);font-size:.6rem; }
+    .stat:last-child { border-right:0; }
+    .stat strong { display:block;margin-top:8px;color:var(--cream);font:700 1.65rem 'Playfair Display',serif;font-variant-numeric:tabular-nums; }
+    .profile-body { display:grid;grid-template-columns:minmax(280px,.76fr) minmax(0,1.24fr);gap:34px; }
+    h2 { font:700 1.25rem 'Playfair Display',serif;margin-bottom:12px; }
+    .form { display:grid;gap:9px; }
+    .form input,.form textarea,.cloud-actions input { width:100%;border:1px solid #555b52;background:var(--panel-2);color:var(--cream);padding:12px;border-radius:5px;font-size:.69rem;resize:vertical; }
+    .check { display:flex;gap:8px;align-items:flex-start;color:var(--muted);font-size:.63rem;line-height:1.5;padding:5px 0; }
+    .check input { width:auto;margin-top:2px; }
+    .btn { border:1px solid #5c6358;background:transparent;color:var(--cream);padding:10px 12px;border-radius:5px;cursor:pointer;font-size:.66rem; }
+    .btn:hover { background:#3a4037; }
+    .btn.primary { background:var(--accent);border-color:var(--accent);font-weight:500; }
+    .section-gap { margin-top:26px; }
+    .cloud-actions { display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:11px; }
+    .collections { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+    .collection { background:var(--panel-2);padding:15px;min-height:94px; }
+    .collection strong { display:block;font:700 1.05rem 'Playfair Display',serif;margin-bottom:7px; }
+    .collection span { color:var(--muted);font-size:.61rem;line-height:1.5; }
+    .leaderboard { margin-top:26px; }
+    .leader-copy { color:var(--muted);font-size:.63rem;line-height:1.55;margin-top:-5px;margin-bottom:8px; }
+    .leader-row { display:grid;grid-template-columns:28px minmax(100px,1fr) auto auto;gap:11px;align-items:center;border-top:1px solid var(--line);padding:12px 0;font-size:.66rem; }
+    .leader-row span:last-child { color:var(--green);font-variant-numeric:tabular-nums; }
+    .toast { position:fixed;right:18px;bottom:18px;max-width:340px;background:#fffdf7;color:var(--ink);padding:13px 16px;border-radius:7px;font-size:.68rem;line-height:1.5;box-shadow:0 14px 45px rgba(23,26,21,.28); }
+    .hidden { display:none!important; }
+    @media(max-width:760px){ .profile-head{grid-template-columns:auto 1fr}.cloud-state{grid-column:1/-1}.profile-body{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)} }
+    @media(max-width:520px){ body{padding:10px}.brand span{display:none}.profile{padding:20px}.avatar{width:62px;height:62px}.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid var(--line)}.collections{grid-template-columns:1fr}.cloud-actions{grid-template-columns:1fr}.leader-row{grid-template-columns:24px 1fr auto}.leader-row span:nth-child(3){display:none} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">SV</div><div><strong>SAT Vocab</strong><span>learner profile</span></div></div>
+      <a class="back" href="index.html">← Back to study</a>
+    </header>
+    <section class="profile" aria-labelledby="profile-title">
+      <div class="profile-head">
+        <div class="avatar" id="profile-avatar">SL</div>
+        <div><p class="eyebrow">Learner profile</p><h1 id="profile-title">SAT learner</h1><p class="subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
+        <div class="cloud-state" id="cloud-state">Saved on this device</div>
+      </div>
+      <div class="stats">
+        <div class="stat">Level<strong id="profile-level">1</strong></div>
+        <div class="stat">XP<strong id="profile-xp">0</strong></div>
+        <div class="stat">Reviews<strong id="profile-reviews">0</strong></div>
+        <div class="stat">Mastered<strong id="profile-mastered">0</strong></div>
+        <div class="stat">Streak<strong id="profile-streak">0d</strong></div>
+      </div>
+      <div class="profile-body">
+        <div>
+          <h2>Profile details</h2>
+          <form class="form" onsubmit="saveProfile(event)">
+            <input id="profile-name" maxlength="32" placeholder="display name" aria-label="Display name">
+            <textarea id="profile-bio" maxlength="140" rows="3" placeholder="What are you studying for?" aria-label="Profile bio"></textarea>
+            <label class="check"><input id="leaderboard-opt-in" type="checkbox"> Show my stats on the public leaderboard</label>
+            <button class="btn primary" type="submit">Save profile</button>
+          </form>
+          <div class="section-gap"><h2>Cloud account</h2><p class="subtitle">Connect an account to keep the same decks and progress on phone and laptop.</p><div class="cloud-actions"><input id="cloud-email" type="email" autocomplete="email" placeholder="email@example.com" aria-label="Cloud account email"><button class="btn" onclick="sendLoginLink()">Send login link</button></div><button class="btn" style="width:100%;margin-top:8px" onclick="signOutCloud()">Sign out on this device</button></div>
+        </div>
+        <div>
+          <h2>Word collections</h2>
+          <div class="collections" id="profile-collections"></div>
+          <div class="leaderboard"><h2>Leaderboard</h2><p class="leader-copy">Ranking uses XP from real reviews. Only opted-in profiles appear.</p><div id="leaderboard-list"></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+  <script src="cloud-config.js"></script>
+  <script src="profile-page.js"></script>
+  <script src="cloud-sync.js"></script>
+  <script>initializeProfilePage();</script>
+</body>
+</html>

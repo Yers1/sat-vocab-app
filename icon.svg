@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SAT Vocab">
+  <rect width="512" height="512" rx="112" fill="#1e211d"/>
+  <path d="M112 114h288v48H112zm0 236h288v48H112z" fill="#cc4b2c"/>
+  <text x="256" y="314" fill="#fff8e9" font-family="Georgia,serif" font-size="178" font-weight="700" text-anchor="middle">SV</text>
+</svg>

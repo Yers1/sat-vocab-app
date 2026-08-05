@@ -1,23 +1,29 @@
 # SAT Vocab - focused recall trainer
 
-A focused SAT vocabulary app with a complete PDF-derived reference deck and a separate personal deck. No frameworks or build step required.
+A focused SAT vocabulary app with a complete PDF-derived reference deck, independent personal decks, adaptive spaced repetition, and offline support. No frameworks or build step required.
 
 ![SAT Vocab Trainer](https://img.shields.io/badge/SAT-1000%20words-e8c547?style=flat-square) ![HTML](https://img.shields.io/badge/built%20with-HTML%2FJS-e8c547?style=flat-square) ![No dependencies](https://img.shields.io/badge/dependencies-none-4caf72?style=flat-square)
 
 ## Features
 
-- **Two separate decks** - 990 entries extracted from `sat.vocab.pdf`, plus a personal deck that starts with 30 curated difficult words
-- **Active recall loop** - rate each reveal as Again, Hard, or Know; missed words return to the queue
-- **Persistent mastery** - independent progress for each deck is stored locally in the browser
-- **30-question test** - wrong answers move back into the learning queue
-- **Personal word tools** - add words manually or import TXT, CSV, TSV, and JSON files
+- **Separate libraries** - 990 entries extracted from `sat.vocab.pdf`, plus as many independent personal decks as you need
+- **Adaptive SRS** - Again, Hard, and Know ratings schedule every card with its own due date and interval
+- **Daily plan** - a short mix of due reviews and new words with an honest stopping point
+- **Five study modes** - flashcards, typed recall with hints, sentence context, multiple choice tests, and analytics
+- **Focused recovery** - launch sessions containing only recent mistakes or weak words
+- **Personal word tools** - create, rename, and delete decks; add words manually or import TXT, CSV, TSV, and JSON
+- **Analytics** - retention, due/mastered totals, hardest words, and a seven-day workload forecast
 - **Daily discipline** - GitHub-style 91-day activity heatmap, five-review daily minimum, and streak tracking
-- **Reminders** - optional browser notification at a chosen time while the site is open
+- **Backup and transfer** - export or share every deck, schedule, streak, and setting, then import it on another device
+- **Installable PWA** - install from a supported browser and keep studying after the core app has been cached
+- **Reminders** - optional browser notification at a chosen time while the site is open, plus a test button
 - **Pronunciation and keyboard controls** - browser speech plus Space, 1, 2, and 3 shortcuts
 
 ## Live Demo
 
-Open `index.html` in a modern browser, or serve the folder with any static server. Keep `index.html` and `pdf-words.js` together.
+Production: https://sat-vocab-app-eosin.vercel.app
+
+For local use, open `index.html` in a modern browser or serve the folder with any static server. Keep all repository files together.
 
 Or deploy for free on GitHub Pages:
 
@@ -43,6 +49,10 @@ open index.html   # macOS
 - Again and Hard cards return automatically; Know it marks the word mastered
 - Switch between PDF vocabulary and My words without mixing progress
 
+### Type and Context modes
+- Type the English word from its definition; reveal first-letter, length, and translation hints only when needed
+- Restore missing words inside real example sentences using four answer choices
+
 ### Test mode
 - Up to 30 randomly selected words per session
 - 4 multiple choice options per question
@@ -63,8 +73,8 @@ JSON may contain arrays in the app's five-field format or objects with `word`, `
 
 - Pure HTML + CSS + Vanilla JS
 - Zero dependencies
-- Two static files (`index.html` and the compressed `pdf-words.js` deck)
-- Works offline
+- Static PWA files with no server runtime
+- Offline shell caching through a service worker
 
 ## Word List
 
@@ -72,10 +82,6 @@ The PDF tab contains all 990 unique headword entries found in the supplied 70-pa
 
 ## Contributing
 
-Pull requests welcome. Ideas:
-- Spaced repetition algorithm
-- Local storage to persist progress between sessions
-- Filter by letter or difficulty
-- Typing mode (type the word from the definition)
+Pull requests are welcome.
 
 

@@ -1,0 +1,19 @@
+{
+  "name": "SAT Vocab - Focused Recall",
+  "short_name": "SAT Vocab",
+  "description": "Spaced-repetition SAT vocabulary trainer with personal decks, active recall, and offline study.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2efe7",
+  "theme_color": "#f2efe7",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

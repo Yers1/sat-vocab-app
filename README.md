@@ -1,21 +1,23 @@
-# SAT Vocab Trainer, flashcards
+# SAT Vocab - focused recall trainer
 
-A clean, dark-themed flashcard app to study the 1000 most common SAT vocabulary words — no frameworks, no dependencies, just a single HTML file.
+A focused SAT vocabulary app with a complete PDF-derived reference deck and a separate personal deck. No frameworks or build step required.
 
 ![SAT Vocab Trainer](https://img.shields.io/badge/SAT-1000%20words-e8c547?style=flat-square) ![HTML](https://img.shields.io/badge/built%20with-HTML%2FJS-e8c547?style=flat-square) ![No dependencies](https://img.shields.io/badge/dependencies-none-4caf72?style=flat-square)
 
 ## Features
 
-- **Flashcard mode** - flip cards to reveal definitions and example sentences, mark words as Known or Skip
-- **Quiz mode** - 20 random words per round, choose the correct definition from 4 options
-- **Progress tracking** - see how many words you've marked as known vs skipped
-- **Shuffle** - randomize card order for varied practice
-- **Score feedback** - end-of-quiz results with a motivational message
-- 1000 SAT words with definitions and real example sentences
+- **Two separate decks** - 990 entries extracted from `sat.vocab.pdf`, plus a personal deck that starts with 30 curated difficult words
+- **Active recall loop** - rate each reveal as Again, Hard, or Know; missed words return to the queue
+- **Persistent mastery** - independent progress for each deck is stored locally in the browser
+- **30-question test** - wrong answers move back into the learning queue
+- **Personal word tools** - add words manually or import TXT, CSV, TSV, and JSON files
+- **Daily discipline** - GitHub-style 91-day activity heatmap, five-review daily minimum, and streak tracking
+- **Reminders** - optional browser notification at a chosen time while the site is open
+- **Pronunciation and keyboard controls** - browser speech plus Space, 1, 2, and 3 shortcuts
 
 ## Live Demo
 
-Open `index.html` in any browser — no server required.
+Open `index.html` in a modern browser, or serve the folder with any static server. Keep `index.html` and `pdf-words.js` together.
 
 Or deploy for free on GitHub Pages:
 
@@ -35,30 +37,38 @@ open index.html   # macOS
 
 ## How It Works
 
-### Flashcard Mode
-- Tap a card to flip it and see the definition + example sentence
-- **Know** - marks the word as learned and advances
-- **Skip** - marks as skipped and advances
-- **Next** - advances without marking
-- Progress bar shows how far through the deck you are
+### Learn mode
+- Tap a card or press Space to reveal the definition, Russian translation when available, and example
+- Choose **Again**, **Hard**, or **Know it**; ratings stay disabled until the answer is revealed
+- Again and Hard cards return automatically; Know it marks the word mastered
+- Switch between PDF vocabulary and My words without mixing progress
 
-### Quiz Mode
-- 20 randomly selected words per session
+### Test mode
+- Up to 30 randomly selected words per session
 - 4 multiple choice options per question
 - Green = correct, Red = wrong
-- Auto-advances after 1 second
-- Final score shown with percentage
+- Wrong answers return to the active deck's learning queue
+
+### Import format
+
+For TXT, CSV, and TSV, use one row per word:
+
+```text
+word | English definition | Russian translation | example sentence
+```
+
+JSON may contain arrays in the app's five-field format or objects with `word`, `definition`, `translation`, `example`, and optional `partOfSpeech` fields.
 
 ## Stack
 
 - Pure HTML + CSS + Vanilla JS
 - Zero dependencies
-- Single file (`index.html`)
+- Two static files (`index.html` and the compressed `pdf-words.js` deck)
 - Works offline
 
 ## Word List
 
-All 1000 words sourced from the *SAT Vocabulary: The 1000 Most Common SAT Words* reference list, covering letters A–Z with part of speech, definition, and example sentence for each word.
+The PDF tab contains all 990 unique headword entries found in the supplied 70-page *The 1000 Most Common SAT Words* reference, covering A-Z with part of speech, definition, and example sentence.
 
 ## Contributing
 

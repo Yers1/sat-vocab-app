@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAT Vocab</title>
+<title>SAT Vocab - focused recall trainer</title>
+<meta name="description" content="Learn SAT vocabulary with separate PDF and personal decks, active recall, daily streaks, quizzes, and reminders.">
+<meta name="theme-color" content="#f2efe7">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -314,83 +316,293 @@
     text-align: center;
     margin-bottom: 8px;
   }
+
+  /* 2026 focused-study redesign */
+  :root {
+    --bg: #f2efe7;
+    --card: #fffdf7;
+    --border: #d9d3c5;
+    --accent: #cc4b2c;
+    --accent-soft: #f3d9cf;
+    --text: #1e211d;
+    --muted: #77776e;
+    --green: #26734d;
+    --red: #b13d31;
+    --ink-soft: #33372f;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    min-height: 100dvh;
+    display: block;
+    padding: 0;
+    background:
+      radial-gradient(circle at 88% 2%, rgba(204,75,44,.10), transparent 28rem),
+      linear-gradient(rgba(30,33,29,.025) 1px, transparent 1px),
+      var(--bg);
+    background-size: auto, 100% 4px, auto;
+    font-family: 'DM Mono', monospace;
+  }
+  button, select { font: inherit; }
+  button:focus-visible, select:focus-visible, .flashcard-wrap:focus-visible {
+    outline: 3px solid rgba(204,75,44,.35);
+    outline-offset: 3px;
+  }
+  .skip-link { position: fixed; left: 1rem; top: -4rem; z-index: 10; background: var(--text); color: white; padding: .75rem 1rem; }
+  .skip-link:focus { top: 1rem; }
+  .app-shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 56px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; background: var(--text); color: var(--card); border-radius: 8px 8px 8px 2px; font-weight: 600; }
+  .brand h1 { margin: 0; color: var(--text); font: 700 1.3rem/1 'Playfair Display', serif; }
+  .brand p { margin-top: 4px; color: var(--muted); font-size: .67rem; letter-spacing: .08em; }
+  .day-chip { color: var(--ink-soft); font-size: .72rem; border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; background: rgba(255,253,247,.6); }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(250px, .5fr); gap: 32px; padding: 58px 0 40px; align-items: end; }
+  .eyebrow { color: var(--accent); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 14px; }
+  .hero h2 { max-width: 760px; font: 700 clamp(2.8rem, 6vw, 5.6rem)/.92 'Playfair Display', serif; letter-spacing: -.055em; text-wrap: balance; }
+  .hero h2 em { color: var(--accent); font-weight: 400; }
+  .hero-copy { color: var(--muted); font-size: .78rem; line-height: 1.75; max-width: 36ch; justify-self: end; }
+  .session-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .65fr); gap: 20px; align-items: start; }
+  .study-panel, .side-panel { background: rgba(255,253,247,.86); border: 1px solid var(--border); }
+  .study-panel { padding: clamp(18px, 3vw, 34px); border-radius: 18px 18px 18px 5px; }
+  .side-panel { padding: 24px; border-radius: 12px 12px 4px 12px; position: sticky; top: 18px; }
+  .controls { justify-content: flex-start; margin: 0 0 24px; gap: 6px; }
+  .mode-btn { border: 0; border-radius: 5px; background: transparent; color: var(--muted); padding: 9px 12px; text-transform: none; letter-spacing: 0; }
+  .mode-btn.active, .mode-btn:hover { background: var(--text); color: var(--card); }
+  .mode-btn.secondary { margin-left: auto; border: 1px solid var(--border); }
+  .progress-head { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: .7rem; margin-bottom: 8px; }
+  .progress-bar-wrap { max-width: none; height: 7px; background: #e5dfd2; margin-bottom: 22px; border-radius: 0; }
+  .progress-bar { background: var(--accent); border-radius: 0; }
+  .flashcard-wrap { max-width: none; height: 330px; margin-bottom: 18px; }
+  .face { background: #262a24; border: 0; border-radius: 14px 14px 14px 4px; color: white; padding: clamp(24px, 5vw, 48px); align-items: flex-start; text-align: left; }
+  .face.back { background: #30352e; }
+  .face-label { color: #aeb2a9; margin-bottom: auto; }
+  .word { color: #fff8e9; font-size: clamp(2.7rem, 7vw, 5.3rem); line-height: .95; letter-spacing: -.04em; text-wrap: balance; }
+  .pos { color: #b8bcb3; }
+  .hint { color: #aeb2a9; margin-top: auto; }
+  .definition { color: #fff8e9; font: 400 clamp(1.25rem, 2.4vw, 1.75rem)/1.35 'Playfair Display', serif; margin: auto 0 10px; max-width: 38ch; }
+  .translation { color: #ef957d; font-size: .82rem; margin-bottom: 18px; }
+  .example { color: #c9cdc4; border-color: #697066; max-width: 62ch; }
+  .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 0; }
+  .btn { padding: 13px 12px; border-radius: 6px; text-transform: none; letter-spacing: 0; border: 1px solid transparent; }
+  .btn-again { background: #f0ddd7; color: var(--red); border-color: #dfbcb3; }
+  .btn-hard { background: #eee4ca; color: #775917; border-color: #ddca97; }
+  .btn-know { background: var(--green); color: white; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn:disabled { opacity: .42; cursor: not-allowed; transform: none; }
+  .speaker { position: absolute; right: 22px; top: 22px; border: 1px solid #596057; color: #d9ddd4; background: transparent; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; z-index: 2; }
+  .speaker:hover { background: #3c423a; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 0 0 26px; background: var(--border); }
+  .stat { background: var(--card); padding: 14px 10px; }
+  .stat strong { display: block; color: var(--text); font-size: 1.35rem; font-variant-numeric: tabular-nums; margin-top: 5px; }
+  .side-title { font: 700 1.3rem/1.1 'Playfair Display', serif; margin-bottom: 8px; }
+  .side-copy { color: var(--muted); font-size: .7rem; line-height: 1.6; margin-bottom: 20px; }
+  .word-list { display: grid; gap: 2px; max-height: 435px; overflow: auto; padding-right: 4px; }
+  .word-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 8px 2px; border-bottom: 1px solid #ebe6dc; font-size: .72rem; }
+  .word-row .num { color: #aaa79e; }
+  .mastery-dot { width: 8px; height: 8px; border-radius: 50%; background: #d2ccc0; }
+  .mastery-dot.learning { background: #d39242; }
+  .mastery-dot.mastered { background: var(--green); }
+  .quiz-wrap { max-width: none; }
+  .quiz-question { background: #262a24; border: 0; border-radius: 14px 14px 14px 4px; padding: 40px 28px; }
+  .quiz-word { color: #fff8e9; font-size: clamp(2.4rem, 6vw, 4.5rem); }
+  .quiz-instruction { color: #aeb2a9; }
+  .quiz-options { gap: 8px; }
+  .opt-btn { background: var(--card); color: var(--text); border-color: var(--border); border-radius: 6px; }
+  .opt-btn.correct { background: #dceade; color: #155f3b; }
+  .opt-btn.wrong { background: #f1dcd6; color: #96352b; }
+  .quiz-feedback { min-height: 38px; color: var(--muted); font-size: .72rem; line-height: 1.5; margin-top: 12px; }
+  .results { max-width: none; background: transparent; border: 0; padding: 50px 20px; }
+  .results h2 { color: var(--text); font-size: 2.4rem; }
+  .restart-btn { background: var(--accent); color: white; border-radius: 6px; text-transform: none; }
+  .footer-note { color: var(--muted); font-size: .66rem; line-height: 1.6; margin-top: 18px; }
+  .deck-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+  .deck-tab { text-align: left; padding: 13px 15px; border: 1px solid var(--border); background: rgba(255,253,247,.56); color: var(--muted); cursor: pointer; border-radius: 8px; transition: .2s ease; }
+  .deck-tab strong { display: block; color: var(--text); font-size: .78rem; margin-bottom: 4px; }
+  .deck-tab span { font-size: .65rem; }
+  .deck-tab.active { border-color: var(--text); background: var(--text); }
+  .deck-tab.active strong { color: white; }
+  .deck-tab.active span { color: #bfc3ba; }
+  .side-section { padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--border); }
+  .side-section h3 { font: 700 1rem/1.2 'Playfair Display', serif; margin-bottom: 7px; }
+  .heatmap { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; margin-top: 12px; }
+  .heat-cell { aspect-ratio: 1; background: #e3ded3; border-radius: 2px; }
+  .heat-cell.l1 { background: #b7d7bb; } .heat-cell.l2 { background: #75b281; } .heat-cell.l3 { background: #37835a; } .heat-cell.l4 { background: #195c3c; }
+  .streak-line { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .streak-line strong { font-size: 1.4rem; color: var(--green); font-variant-numeric: tabular-nums; }
+  .commitment { background: #f2ead6; padding: 13px; border-left: 3px solid #d39242; color: #655023; font-size: .68rem; line-height: 1.55; margin-top: 12px; }
+  .utility-btn { width: 100%; border: 1px solid var(--border); background: transparent; color: var(--text); padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 8px; font-size: .7rem; }
+  .utility-btn:hover { background: #eee9de; }
+  .reminder-row { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 10px; }
+  .reminder-row input { min-width: 0; border: 1px solid var(--border); background: var(--card); padding: 9px; border-radius: 5px; color: var(--text); font: inherit; }
+  .add-panel { grid-column: 1 / -1; background: rgba(255,253,247,.82); border: 1px solid var(--border); border-radius: 12px 12px 4px 12px; padding: 24px; }
+  .add-head { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 18px; }
+  .add-head p { color: var(--muted); font-size: .68rem; max-width: 62ch; line-height: 1.6; }
+  .add-form { display: grid; grid-template-columns: 1fr .5fr 1.35fr 1fr 1.35fr auto; gap: 7px; }
+  .add-form input { min-width: 0; border: 1px solid var(--border); background: var(--card); padding: 11px; border-radius: 5px; color: var(--text); font: inherit; font-size: .7rem; }
+  .add-form button { border: 0; background: var(--accent); color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+  .file-import { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; color: var(--muted); font-size: .65rem; }
+  .file-import label { color: var(--text); border-bottom: 1px solid var(--text); cursor: pointer; }
+  .file-import input { position: absolute; opacity: 0; pointer-events: none; }
+  .toast { position: fixed; right: 18px; bottom: 18px; max-width: 340px; background: var(--text); color: white; padding: 13px 16px; border-radius: 7px; font-size: .7rem; line-height: 1.5; box-shadow: 0 14px 40px rgba(38,42,36,.22); z-index: 5; }
+  .hidden { display: none !important; }
+
+  @media (max-width: 820px) {
+    .hero, .session-grid { grid-template-columns: 1fr; }
+    .hero { padding: 42px 0 28px; }
+    .hero-copy { justify-self: start; }
+    .side-panel { position: static; }
+    .add-form { grid-template-columns: 1fr 1fr; }
+    .add-form input:nth-child(3), .add-form input:nth-child(4) { grid-column: 1 / -1; }
+  }
+  @media (max-width: 560px) {
+    .app-shell { width: min(100% - 20px, 1180px); padding-top: 12px; }
+    .day-chip { display: none; }
+    .hero h2 { font-size: 2.7rem; }
+    .study-panel { padding: 12px; border-radius: 12px 12px 12px 4px; }
+    .flashcard-wrap { height: 360px; }
+    .actions { grid-template-columns: 1fr; }
+    .quiz-options { grid-template-columns: 1fr; }
+    .mode-btn.secondary { margin-left: 0; }
+    .deck-tabs { grid-template-columns: 1fr; }
+    .add-head { display: block; }
+    .add-form { grid-template-columns: 1fr; }
+    .add-form input:nth-child(3), .add-form input:nth-child(4) { grid-column: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
-
-<h1>SAT Vocab</h1>
-<p class="subtitle">1000 most common words</p>
-
-<div class="controls">
-  <button class="mode-btn active" onclick="setMode('flash')" id="btn-flash">Flashcards</button>
-  <button class="mode-btn" onclick="setMode('quiz')" id="btn-quiz">Quiz</button>
-  <button class="mode-btn" onclick="shuffle()">Shuffle</button>
-  <button class="mode-btn" onclick="resetProgress()">Reset</button>
-</div>
-
-<!-- FLASHCARD MODE -->
-<div id="flash-mode">
-  <div class="progress-bar-wrap">
-    <div class="progress-bar" id="progress-bar"></div>
-  </div>
-  <div class="stats">
-    <div>Card <span id="card-num">1</span> of <span id="card-total">0</span></div>
-    <div>Known <span id="known-count" style="color:var(--green)">0</span></div>
-    <div>Skipped <span id="skip-count" style="color:var(--red)">0</span></div>
-  </div>
-
-  <div class="flashcard-wrap" onclick="flipCard()">
-    <div class="flashcard" id="flashcard">
-      <div class="face front">
-        <div class="face-label">Word</div>
-        <div class="word" id="flash-word">—</div>
-        <div class="pos" id="flash-pos"></div>
-        <div class="hint">tap to reveal</div>
-      </div>
-      <div class="face back">
-        <div class="face-label">Definition</div>
-        <div class="definition" id="flash-def"></div>
-        <div class="example" id="flash-ex"></div>
-      </div>
+<a class="skip-link" href="#study">Skip to study</a>
+<main class="app-shell" id="study">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">SV</div>
+      <div><h1>SAT Vocab</h1><p>focused recall trainer</p></div>
     </div>
-  </div>
+    <div class="day-chip" id="today-label">Today’s session</div>
+  </header>
 
-  <div class="actions">
-    <button class="btn btn-skip" onclick="markCard(false)">✗ Skip</button>
-    <button class="btn btn-next" onclick="nextCard()">Next →</button>
-    <button class="btn btn-know" onclick="markCard(true)">✓ Know</button>
-  </div>
-</div>
+  <nav class="deck-tabs" aria-label="Vocabulary decks">
+    <button class="deck-tab" id="deck-pdf" onclick="switchDeck('pdf')"><strong>PDF vocabulary</strong><span id="pdf-deck-count">SAT reference · loading</span></button>
+    <button class="deck-tab active" id="deck-custom" onclick="switchDeck('custom')"><strong>My words</strong><span id="custom-deck-count">30 curated · add your own</span></button>
+  </nav>
 
-<!-- QUIZ MODE -->
-<div id="quiz-mode" class="hidden">
-  <div class="progress-bar-wrap">
-    <div class="progress-bar" id="quiz-progress-bar"></div>
-  </div>
-  <div class="quiz-score">
-    Question <span id="q-num">1</span> of <span id="q-total">20</span> &nbsp;|&nbsp;
-    Score: <span id="q-score" style="color:var(--accent)">0</span>
-  </div>
-  <div class="quiz-wrap">
-    <div class="quiz-question">
-      <div class="quiz-instruction">What does this word mean?</div>
-      <div class="quiz-word" id="quiz-word">—</div>
+  <section class="hero" aria-labelledby="session-title">
+    <div>
+      <p class="eyebrow" id="deck-eyebrow">Your focused deck · 30 words</p>
+      <h2 id="session-title">Learn the hard ones <em>today.</em></h2>
     </div>
-    <div class="quiz-options" id="quiz-options"></div>
+    <p class="hero-copy">Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.</p>
+  </section>
+
+  <div class="session-grid">
+    <section class="study-panel" aria-label="Study area">
+      <nav class="controls" aria-label="Study modes">
+        <button class="mode-btn active" onclick="setMode('flash')" id="btn-flash">Learn</button>
+        <button class="mode-btn" onclick="setMode('quiz')" id="btn-quiz">Test</button>
+        <button class="mode-btn secondary" onclick="resetProgress()">Reset progress</button>
+      </nav>
+
+      <div id="flash-mode">
+        <div class="progress-head"><span>Session progress</span><span id="progress-copy">0 / 30 mastered</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="flashcard-wrap" onclick="flipCard()" onkeydown="handleCardKey(event)" role="button" tabindex="0" aria-label="Flip vocabulary card">
+          <div class="flashcard" id="flashcard">
+            <article class="face front">
+              <button class="speaker" onclick="speakWord(event)" aria-label="Pronounce word">▶</button>
+              <div class="face-label">English word</div>
+              <div class="word" id="flash-word">—</div>
+              <div class="pos" id="flash-pos"></div>
+              <div class="hint">click card or press Space to reveal</div>
+            </article>
+            <article class="face back">
+              <div class="face-label">Meaning</div>
+              <div class="definition" id="flash-def"></div>
+              <div class="translation" id="flash-ru"></div>
+              <div class="example" id="flash-ex"></div>
+            </article>
+          </div>
+        </div>
+        <div class="actions" id="rating-actions">
+          <button class="btn btn-again" onclick="rateCard('again')">1 · Again</button>
+          <button class="btn btn-hard" onclick="rateCard('hard')">2 · Hard</button>
+          <button class="btn btn-know" onclick="rateCard('know')">3 · Know it</button>
+        </div>
+      </div>
+
+      <div id="quiz-mode" class="hidden">
+        <div class="progress-head"><span>Final test</span><span><span id="q-num">1</span> / <span id="q-total">30</span> · <span id="q-score">0</span> correct</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="quiz-progress-bar"></div></div>
+        <div class="quiz-wrap">
+          <div class="quiz-question">
+            <div class="quiz-instruction">Choose the closest meaning</div>
+            <div class="quiz-word" id="quiz-word">—</div>
+          </div>
+          <div class="quiz-options" id="quiz-options"></div>
+          <div class="quiz-feedback" id="quiz-feedback" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div id="results-mode" class="hidden results">
+        <p class="eyebrow">Session complete</p>
+        <h2 id="results-title">Good work.</h2>
+        <p id="results-msg"></p>
+        <div class="big-score" id="results-score"></div>
+        <button class="restart-btn" onclick="restartQuiz()">Test again</button>
+        <button class="restart-btn" style="background:transparent;color:var(--text);border:1px solid var(--border)" onclick="setMode('flash')">Review cards</button>
+      </div>
+    </section>
+
+    <aside class="side-panel" aria-label="Deck progress">
+      <p class="eyebrow">Live progress</p>
+      <h2 class="side-title" id="side-deck-title">Today’s 30</h2>
+      <p class="side-copy">A word is mastered after you recall it confidently. Orange words still need another pass.</p>
+      <div class="stats">
+        <div class="stat">New<strong id="new-count">30</strong></div>
+        <div class="stat">Learning<strong id="learning-count">0</strong></div>
+        <div class="stat">Mastered<strong id="mastered-count">0</strong></div>
+      </div>
+      <div class="word-list" id="word-list"></div>
+      <p class="footer-note">Keyboard: Space flips · 1 again · 2 hard · 3 know</p>
+
+      <section class="side-section" aria-labelledby="streak-title">
+        <div class="streak-line"><h3 id="streak-title">Study streak</h3><strong id="streak-count">0 days</strong></div>
+        <p class="side-copy">A day counts after 5 honest reviews. Small consistency beats a perfect plan.</p>
+        <div class="heatmap" id="heatmap" aria-label="Last 91 days of study activity"></div>
+        <div class="commitment" id="commitment-copy">Do just 5 cards now. You may stop after that - starting is the win.</div>
+      </section>
+
+      <section class="side-section" aria-labelledby="reminder-title">
+        <h3 id="reminder-title">Daily nudge</h3>
+        <p class="side-copy">Set a specific time. The reminder works while this site is open in the browser.</p>
+        <div class="reminder-row"><input type="time" id="reminder-time" value="19:00" aria-label="Reminder time"><button class="utility-btn" style="margin:0" onclick="enableReminder()">Enable</button></div>
+      </section>
+    </aside>
+
+    <section class="add-panel" id="add-panel" aria-labelledby="add-title">
+      <div class="add-head"><div><p class="eyebrow">Personal deck only</p><h2 class="side-title" id="add-title">Add your own words</h2></div><p>These words stay separate from the PDF deck. Everything is stored locally in this browser.</p></div>
+      <form class="add-form" onsubmit="addCustomWord(event)">
+        <input id="new-word" required placeholder="word" aria-label="New word">
+        <input id="new-pos" placeholder="part of speech" aria-label="Part of speech">
+        <input id="new-definition" required placeholder="English definition" aria-label="English definition">
+        <input id="new-translation" placeholder="Russian translation" aria-label="Russian translation">
+        <input id="new-example" placeholder="example sentence" aria-label="Example sentence">
+        <button type="submit">Add word</button>
+      </form>
+      <div class="file-import">
+        <label for="word-file">Import TXT, CSV, TSV or JSON</label><input id="word-file" type="file" accept=".txt,.csv,.tsv,.json" onchange="importWordFile(event)">
+        <span>Format: word | definition | translation | example (one row per word)</span>
+      </div>
+    </section>
   </div>
-</div>
+</main>
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-<!-- RESULTS -->
-<div id="results-mode" class="hidden results">
-  <h2>Done!</h2>
-  <p id="results-msg" style="color:var(--muted);font-size:0.85rem"></p>
-  <div class="big-score" id="results-score"></div>
-  <p style="color:var(--muted);font-size:0.8rem">correct answers</p>
-  <button class="restart-btn" onclick="restartQuiz()">Try Again</button>
-  <br>
-  <button class="restart-btn" style="background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:10px" onclick="setMode('flash')">Back to Flashcards</button>
-</div>
-
+<script src="pdf-words.js"></script>
 <script>
 const RAW = [
   ["abase","v.","to humiliate, degrade","After being overthrown, the deposed leader offered to bow down to his conqueror."],
@@ -876,165 +1088,298 @@ const RAW = [
   ["zephyr","n.","a gentle breeze","If not for the zephyrs cooling us, our room would have been unbearably hot."],
 ];
 
-let words = [...RAW];
-let currentIndex = 0;
-let flipped = false;
-let knownCount = 0;
-let skipCount = 0;
-let mode = 'flash';
+const TODAY = [
+  ["heritable","adj.","capable of being passed genetically from parent to offspring","Some traits are heritable, while others are shaped mainly by the environment.","наследуемый"],
+  ["tenuous","adj.","very weak, slight, or uncertain","The article drew a tenuous connection between the two events.","слабый; шаткий; неубедительный"],
+  ["intelligible","adj.","clear enough to be understood","Her explanation made the complex theory intelligible to beginners.","понятный; вразумительный"],
+  ["hindered","v.","slowed down or made more difficult","Limited evidence hindered the researchers' attempt to reach a firm conclusion.","препятствовал; затруднил"],
+  ["inconceivable","adj.","impossible or extremely difficult to imagine","A century ago, instant global communication seemed inconceivable.","невообразимый; немыслимый"],
+  ["conducive","adj.","making a particular result likely or possible","A quiet room is conducive to focused study.","способствующий; благоприятный"],
+  ["disseminating","v.","spreading information widely","The organization is responsible for disseminating the study's findings.","распространяющий информацию"],
+  ["rearing","v./n.","raising and caring for children or young animals","The paper examines how different methods of child rearing affect development.","воспитание; выращивание"],
+  ["contends","v.","argues or maintains that something is true","The historian contends that trade, not war, drove the expansion.","утверждает; настаивает"],
+  ["facilitate","v.","to make an action or process easier","The new archive will facilitate access to primary sources.","облегчать; содействовать"],
+  ["ossified","adj./v.","made rigid and resistant to change","Once innovative, the institution had become ossified by tradition.","окостеневший; закостенелый"],
+  ["interlocutors","n.","people taking part in a conversation or dialogue","Both interlocutors paused before answering the difficult question.","собеседники"],
+  ["affinity","n.","a natural liking for or connection with something","The composer felt a strong affinity for traditional folk melodies.","склонность; близость; сродство"],
+  ["disputed","adj./v.","questioned, challenged, or argued about","The origin of the ancient manuscript remains disputed.","оспариваемый; спорный"],
+  ["counterpart","n.","a person or thing with the same role in another place or system","The senator met with her foreign counterpart to discuss the treaty.","аналог; коллега с той же ролью"],
+  ["woe","n.","great sorrow, distress, or trouble","The poem transforms private woe into a universal lament.","горе; беда"],
+  ["commiserating","v.","expressing sympathy with someone who is unhappy","The two candidates spent the evening commiserating over their poor results.","сочувствуя; соболезнуя"],
+  ["divulge","v.","to reveal private or secret information","The witness refused to divulge the source's identity.","разглашать; раскрывать"],
+  ["archbishop","n.","a bishop of the highest rank who oversees other bishops","The archbishop addressed the assembled clergy.","архиепископ"],
+  ["conjecture","n./v.","a conclusion based on incomplete evidence; to form such a conclusion","Without additional records, the claim remains conjecture.","догадка; предположение"],
+  ["predate","v.","to exist or happen earlier than something else","The settlement may predate the kingdom by several centuries.","предшествовать по времени"],
+  ["imploring","adj./v.","begging urgently or desperately","She gave the committee an imploring look as it prepared to vote.","умоляющий"],
+  ["virtue","n.","a good moral quality or a useful advantage","The method's chief virtue is its simplicity.","добродетель; достоинство"],
+  ["circa","prep./adv.","approximately; used especially with dates","The sculpture was created circa 1450.","примерно; около (о дате)"],
+  ["abundance","n.","a very large quantity; more than enough","An abundance of rainfall transformed the dry landscape.","изобилие; обилие"],
+  ["impervious","adj.","not affected, influenced, or penetrated by something","The material is impervious to water and most chemicals.","невосприимчивый; непроницаемый"],
+  ["coarse","adj.","rough in texture or lacking refinement","The filter traps coarse particles but allows finer ones through.","грубый; шероховатый"],
+  ["counterintuitive","adj.","contrary to what common sense would lead one to expect","The experiment produced the counterintuitive result that less effort led to better performance.","противоречащий интуиции"],
+  ["engulfed","v.","completely surrounded, covered, or overwhelmed","Within minutes, smoke engulfed the building.","охватил; поглотил"],
+  ["ablation","n.","the removal or destruction of material, tissue, or a surface layer","Doctors used laser ablation to remove the damaged tissue.","абляция; удаление слоя или ткани"]
+];
 
-// QUIZ
+const STORAGE_KEY = 'sat-vocab-trainer-v3';
+const CUSTOM_KEY = 'sat-vocab-custom-words-v3';
+const ACTIVE_DECK_KEY = 'sat-vocab-active-deck';
+const defaultState = () => ({
+  decks: { pdf: { levels: {}, attempts: {} }, custom: { levels: {}, attempts: {} } },
+  activity: {}, reminder: { enabled: false, time: '19:00', lastSent: '' },
+  lastStudy: new Date().toISOString()
+});
+let customWords = loadCustomWords();
+let pdfWords = RAW;
+let activeDeck = localStorage.getItem(ACTIVE_DECK_KEY) || 'custom';
+let state = loadState();
+let queue = buildQueue();
+let flipped = false;
+let mode = 'flash';
 let quizWords = [];
 let quizIndex = 0;
 let quizScore = 0;
-const QUIZ_SIZE = 20;
 let quizAnswered = false;
+let missedWords = [];
 
-function shuffle() {
-  for (let i = words.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [words[i], words[j]] = [words[j], words[i]];
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const base = defaultState();
+    return { ...base, ...saved, decks: { ...base.decks, ...(saved.decks || {}) }, reminder: { ...base.reminder, ...(saved.reminder || {}) } };
   }
-  currentIndex = 0;
-  knownCount = 0;
-  skipCount = 0;
-  updateFlashcard();
+  catch { return defaultState(); }
 }
 
-function resetProgress() {
-  words = [...RAW];
-  currentIndex = 0;
-  knownCount = 0;
-  skipCount = 0;
-  flipped = false;
-  updateFlashcard();
+function loadCustomWords() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CUSTOM_KEY) || 'null');
+    return Array.isArray(saved) && saved.length ? saved : [...TODAY];
+  } catch { return [...TODAY]; }
 }
 
-function setMode(m) {
-  mode = m;
-  document.getElementById('flash-mode').classList.toggle('hidden', m !== 'flash');
-  document.getElementById('quiz-mode').classList.toggle('hidden', m !== 'quiz');
-  document.getElementById('results-mode').classList.toggle('hidden', true);
-  document.getElementById('btn-flash').classList.toggle('active', m === 'flash');
-  document.getElementById('btn-quiz').classList.toggle('active', m === 'quiz');
+function currentWords() {
+  return activeDeck === 'pdf' ? pdfWords : customWords;
+}
 
-  if (m === 'quiz') startQuiz();
-  else updateFlashcard();
+function deckState() {
+  if (!state.decks[activeDeck]) state.decks[activeDeck] = { levels: {}, attempts: {} };
+  return state.decks[activeDeck];
+}
+
+function saveState() {
+  state.lastStudy = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function saveCustomWords() {
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(customWords));
+}
+
+function shuffled(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildQueue() {
+  const words = currentWords();
+  const progress = deckState();
+  const unfinished = words.map((_, i) => i).filter(i => (progress.levels[i] || 0) < 2);
+  return shuffled(unfinished.length ? unfinished : words.map((_, i) => i));
+}
+
+function switchDeck(deck) {
+  activeDeck = deck;
+  localStorage.setItem(ACTIVE_DECK_KEY, deck);
+  queue = buildQueue();
+  document.getElementById('deck-pdf').classList.toggle('active', deck === 'pdf');
+  document.getElementById('deck-custom').classList.toggle('active', deck === 'custom');
+  document.getElementById('add-panel').classList.toggle('hidden', deck !== 'custom');
+  document.getElementById('deck-eyebrow').textContent = deck === 'pdf' ? `PDF vocabulary · ${pdfWords.length} entries` : `Your focused deck · ${customWords.length} words`;
+  document.getElementById('side-deck-title').textContent = deck === 'pdf' ? 'PDF vocabulary' : 'My words';
+  renderProgress();
+  setMode('flash');
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  document.getElementById('flash-mode').classList.toggle('hidden', mode !== 'flash');
+  document.getElementById('quiz-mode').classList.toggle('hidden', mode !== 'quiz');
+  document.getElementById('results-mode').classList.add('hidden');
+  document.getElementById('btn-flash').classList.toggle('active', mode === 'flash');
+  document.getElementById('btn-quiz').classList.toggle('active', mode === 'quiz');
+  if (mode === 'quiz') startQuiz(); else renderCard();
 }
 
 function flipCard() {
+  if (!queue.length) return;
   flipped = !flipped;
   document.getElementById('flashcard').classList.toggle('flipped', flipped);
+  document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = !flipped);
 }
 
-function updateFlashcard() {
-  if (currentIndex >= words.length) {
-    showFlashResults();
+function handleCardKey(event) {
+  if (event.code === 'Space' || event.code === 'Enter') {
+    event.preventDefault();
+    flipCard();
+  }
+}
+
+function speakWord(event) {
+  event.stopPropagation();
+  if (!queue.length || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(currentWords()[queue[0]][0]);
+  utterance.lang = 'en-US';
+  utterance.rate = .82;
+  speechSynthesis.speak(utterance);
+}
+
+function rateCard(rating) {
+  if (!flipped || !queue.length) return;
+  const index = queue.shift();
+  const progress = deckState();
+  progress.attempts[index] = (progress.attempts[index] || 0) + 1;
+  if (rating === 'know') {
+    progress.levels[index] = 2;
+  } else if (rating === 'hard') {
+    progress.levels[index] = 1;
+    queue.push(index);
+  } else {
+    progress.levels[index] = 1;
+    const insertAt = Math.min(3, queue.length);
+    queue.splice(insertAt, 0, index);
+  }
+  recordActivity();
+  saveState();
+  renderProgress();
+  renderCard();
+}
+
+function renderCard() {
+  if (!queue.length) {
+    showLearningComplete();
     return;
   }
-  const w = words[currentIndex];
-  document.getElementById('flash-word').textContent = w[0];
-  document.getElementById('flash-pos').textContent = w[1];
-  document.getElementById('flash-def').textContent = w[2];
-  document.getElementById('flash-ex').textContent = w[3];
-  document.getElementById('card-num').textContent = currentIndex + 1;
-  document.getElementById('card-total').textContent = words.length;
-  document.getElementById('known-count').textContent = knownCount;
-  document.getElementById('skip-count').textContent = skipCount;
-  document.getElementById('progress-bar').style.width = ((currentIndex / words.length) * 100) + '%';
+  const word = currentWords()[queue[0]];
+  document.getElementById('flash-word').textContent = word[0];
+  document.getElementById('flash-pos').textContent = word[1];
+  document.getElementById('flash-def').textContent = word[2];
+  document.getElementById('flash-ru').textContent = word[4];
+  document.getElementById('flash-ex').textContent = word[3];
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
+  document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
 }
 
-function showFlashResults() {
-  // just show a simple completion message
-  document.getElementById('flash-word').textContent = '✓';
-  document.getElementById('flash-pos').textContent = '';
-  document.getElementById('flash-def').textContent = `Done! Known: ${knownCount} / ${words.length}`;
-  document.getElementById('flash-ex').textContent = 'Press Shuffle or Reset to go again.';
+function showLearningComplete() {
+  document.getElementById('flash-word').textContent = `${currentWords().length} / ${currentWords().length}`;
+  document.getElementById('flash-pos').textContent = 'deck complete';
+  document.getElementById('flash-def').textContent = 'You rated every word as known. Take the final test to verify recall.';
+  document.getElementById('flash-ru').textContent = 'Теперь проверь себя без подсказок.';
+  document.getElementById('flash-ex').textContent = 'Open Test above. Any missed word will move back into learning.';
+  document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
 }
 
-function markCard(known) {
-  if (known) knownCount++;
-  else skipCount++;
-  currentIndex++;
-  updateFlashcard();
+function renderProgress() {
+  const words = currentWords();
+  const progress = deckState();
+  const levels = words.map((_, i) => progress.levels[i] || 0);
+  const mastered = levels.filter(level => level === 2).length;
+  const learning = levels.filter(level => level === 1).length;
+  const fresh = words.length - mastered - learning;
+  document.getElementById('new-count').textContent = fresh;
+  document.getElementById('learning-count').textContent = learning;
+  document.getElementById('mastered-count').textContent = mastered;
+  document.getElementById('progress-copy').textContent = `${mastered} / ${words.length} mastered`;
+  document.getElementById('progress-bar').style.width = `${words.length ? (mastered / words.length) * 100 : 0}%`;
+  document.getElementById('word-list').innerHTML = words.map((word, index) => {
+    const status = levels[index] === 2 ? 'mastered' : levels[index] === 1 ? 'learning' : '';
+    return `<div class="word-row"><span class="num">${String(index + 1).padStart(2, '0')}</span><span>${word[0]}</span><span class="mastery-dot ${status}" title="${status || 'new'}"></span></div>`;
+  }).join('');
 }
 
-function nextCard() {
-  currentIndex++;
-  updateFlashcard();
+function resetProgress() {
+  if (!confirm(`Reset progress for the ${activeDeck === 'pdf' ? 'PDF' : 'personal'} deck?`)) return;
+  state.decks[activeDeck] = { levels: {}, attempts: {} };
+  saveState();
+  queue = buildQueue();
+  renderProgress();
+  setMode('flash');
 }
 
-// ---- QUIZ ----
 function startQuiz() {
-  quizWords = [...RAW].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
+  quizWords = shuffled(currentWords().map((word, index) => ({ word, index }))).slice(0, Math.min(30, currentWords().length));
   quizIndex = 0;
   quizScore = 0;
   quizAnswered = false;
-  document.getElementById('q-total').textContent = QUIZ_SIZE;
+  missedWords = [];
+  document.getElementById('q-total').textContent = quizWords.length;
   renderQuizQuestion();
 }
 
 function renderQuizQuestion() {
-  if (quizIndex >= QUIZ_SIZE) {
-    showQuizResults();
-    return;
-  }
+  if (quizIndex >= quizWords.length) return showQuizResults();
   quizAnswered = false;
-  const w = quizWords[quizIndex];
-  document.getElementById('quiz-word').textContent = w[0];
+  const current = quizWords[quizIndex];
+  document.getElementById('quiz-word').textContent = current.word[0];
   document.getElementById('q-num').textContent = quizIndex + 1;
   document.getElementById('q-score').textContent = quizScore;
-  document.getElementById('quiz-progress-bar').style.width = ((quizIndex / QUIZ_SIZE) * 100) + '%';
-
-  // pick 3 wrong answers
-  const pool = RAW.filter(r => r[0] !== w[0]).sort(() => Math.random() - 0.5).slice(0, 3);
-  const options = [...pool, w].sort(() => Math.random() - 0.5);
-
+  document.getElementById('quiz-progress-bar').style.width = `${(quizIndex / quizWords.length) * 100}%`;
+  document.getElementById('quiz-feedback').textContent = '';
+  const distractors = shuffled(currentWords().filter(word => word[0] !== current.word[0])).slice(0, 3);
+  const options = shuffled([...distractors, current.word]);
   const container = document.getElementById('quiz-options');
   container.innerHTML = '';
-  options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'opt-btn';
-    btn.textContent = opt[2];
-    btn.onclick = () => checkAnswer(btn, opt, w);
-    container.appendChild(btn);
+  options.forEach(option => {
+    const button = document.createElement('button');
+    button.className = 'opt-btn';
+    button.textContent = option[2];
+    button.onclick = () => checkAnswer(button, option, current);
+    container.appendChild(button);
   });
 }
 
-function checkAnswer(btn, chosen, correct) {
+function checkAnswer(button, chosen, current) {
   if (quizAnswered) return;
   quizAnswered = true;
-  const btns = document.querySelectorAll('.opt-btn');
-  btns.forEach(b => {
-    b.disabled = true;
-    if (b.textContent === correct[2]) b.classList.add('correct');
+  const isCorrect = chosen[0] === current.word[0];
+  const progress = deckState();
+  document.querySelectorAll('.opt-btn').forEach(option => {
+    option.disabled = true;
+    if (option.textContent === current.word[2]) option.classList.add('correct');
   });
-  if (chosen[0] === correct[0]) {
-    btn.classList.add('correct');
+  if (isCorrect) {
     quizScore++;
+    progress.levels[current.index] = 2;
+    document.getElementById('quiz-feedback').textContent = `Correct · ${current.word[4]}`;
   } else {
-    btn.classList.add('wrong');
+    button.classList.add('wrong');
+    progress.levels[current.index] = 1;
+    missedWords.push(current.index);
+    document.getElementById('quiz-feedback').textContent = `${current.word[0]} — ${current.word[4]}`;
   }
+  recordActivity();
+  saveState();
+  renderProgress();
   document.getElementById('q-score').textContent = quizScore;
-  setTimeout(() => {
-    quizIndex++;
-    renderQuizQuestion();
-  }, 1000);
+  setTimeout(() => { quizIndex++; renderQuizQuestion(); }, 1250);
 }
 
 function showQuizResults() {
   document.getElementById('quiz-mode').classList.add('hidden');
   document.getElementById('results-mode').classList.remove('hidden');
-  const pct = Math.round((quizScore / QUIZ_SIZE) * 100);
-  document.getElementById('results-score').textContent = `${quizScore}/${QUIZ_SIZE}`;
-  let msg = '';
-  if (pct >= 90) msg = 'Excellent! You really know your SAT vocab.';
-  else if (pct >= 70) msg = 'Good job! Keep reviewing the ones you missed.';
-  else if (pct >= 50) msg = 'Not bad. More flashcard time will help!';
-  else msg = 'Keep studying — you\'ll get there!';
-  document.getElementById('results-msg').textContent = msg;
+  const percent = Math.round((quizScore / quizWords.length) * 100);
+  document.getElementById('results-score').textContent = `${quizScore}/${quizWords.length}`;
+  document.getElementById('results-title').textContent = percent >= 90 ? 'Ready for the SAT.' : 'One more focused pass.';
+  document.getElementById('results-msg').textContent = missedWords.length
+    ? `${missedWords.length} word${missedWords.length === 1 ? '' : 's'} moved back to your learning queue.`
+    : 'Perfect recall. This deck is complete for today.';
+  queue = missedWords.length ? shuffled([...new Set(missedWords)]) : buildQueue();
 }
 
 function restartQuiz() {
@@ -1043,8 +1388,162 @@ function restartQuiz() {
   startQuiz();
 }
 
-// init
-updateFlashcard();
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function recordActivity() {
+  const today = localDateKey();
+  state.activity[today] = (state.activity[today] || 0) + 1;
+  saveState();
+  renderActivity();
+}
+
+function renderActivity() {
+  const cells = [];
+  for (let offset = 90; offset >= 0; offset--) {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - offset);
+    const key = localDateKey(date);
+    const count = state.activity[key] || 0;
+    const level = count >= 25 ? 4 : count >= 15 ? 3 : count >= 5 ? 2 : count > 0 ? 1 : 0;
+    cells.push(`<span class="heat-cell ${level ? `l${level}` : ''}" title="${key}: ${count} reviews"></span>`);
+  }
+  document.getElementById('heatmap').innerHTML = cells.join('');
+
+  let streak = 0;
+  const cursor = new Date();
+  cursor.setHours(12, 0, 0, 0);
+  if ((state.activity[localDateKey(cursor)] || 0) < 5) cursor.setDate(cursor.getDate() - 1);
+  while ((state.activity[localDateKey(cursor)] || 0) >= 5) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  document.getElementById('streak-count').textContent = `${streak} day${streak === 1 ? '' : 's'}`;
+  const todayCount = state.activity[localDateKey()] || 0;
+  document.getElementById('commitment-copy').textContent = todayCount >= 5
+    ? `Daily minimum complete: ${todayCount} reviews. Continue only if you still have focus.`
+    : `Only ${5 - todayCount} honest review${5 - todayCount === 1 ? '' : 's'} to protect today. You may stop after that.`;
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.remove('hidden');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.add('hidden'), 4200);
+}
+
+function addCustomWord(event) {
+  event.preventDefault();
+  const word = document.getElementById('new-word').value.trim();
+  const part = document.getElementById('new-pos').value.trim() || '—';
+  const definition = document.getElementById('new-definition').value.trim();
+  const translation = document.getElementById('new-translation').value.trim();
+  const example = document.getElementById('new-example').value.trim() || `Write your own sentence with “${word}”.`;
+  if (customWords.some(item => item[0].toLowerCase() === word.toLowerCase())) {
+    showToast('This word is already in your personal deck.');
+    return;
+  }
+  customWords.push([word, part, definition, example, translation]);
+  saveCustomWords();
+  event.target.reset();
+  switchDeck('custom');
+  updateDeckLabels();
+  showToast(`${word} added to My words.`);
+}
+
+function parseImportedWords(text, extension) {
+  if (extension === 'json') {
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error('JSON must contain an array.');
+    return data.map(item => Array.isArray(item)
+      ? (item.length >= 5 ? item.slice(0, 5) : [item[0], item[1] || '—', item[2] || '', item[3] || '', item[4] || ''])
+      : [item.word, item.partOfSpeech || item.pos || '—', item.definition, item.example || '', item.translation || '']);
+  }
+  return text.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => {
+    const delimiter = line.includes('\t') ? '\t' : line.includes('|') ? '|' : line.includes(';') ? ';' : ',';
+    const parts = line.split(delimiter).map(part => part.trim().replace(/^"|"$/g, ''));
+    return [parts[0], '—', parts[1] || '', parts[3] || '', parts[2] || ''];
+  });
+}
+
+function importWordFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const extension = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = parseImportedWords(String(reader.result), extension).filter(item => item[0] && item[2]);
+      const existing = new Set(customWords.map(item => item[0].toLowerCase()));
+      const unique = imported.filter(item => !existing.has(String(item[0]).toLowerCase()));
+      customWords.push(...unique);
+      saveCustomWords();
+      switchDeck('custom');
+      updateDeckLabels();
+      showToast(`${unique.length} words imported into My words. ${imported.length - unique.length} duplicates skipped.`);
+    } catch (error) {
+      showToast(`Could not import file: ${error.message}`);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+async function enableReminder() {
+  const time = document.getElementById('reminder-time').value || '19:00';
+  state.reminder.time = time;
+  state.reminder.enabled = true;
+  if ('Notification' in window && Notification.permission === 'default') {
+    try { await Notification.requestPermission(); } catch { /* in-page reminder still works */ }
+  }
+  saveState();
+  showToast(`Daily reminder set for ${time}. Keep this site open for it to fire.`);
+}
+
+function checkReminder() {
+  if (!state.reminder.enabled) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const today = localDateKey(now);
+  if (time !== state.reminder.time || state.reminder.lastSent === today) return;
+  state.reminder.lastSent = today;
+  saveState();
+  const message = 'Five cards now keeps your SAT streak alive.';
+  showToast(message);
+  if ('Notification' in window && Notification.permission === 'granted') new Notification('SAT Vocab', { body: message });
+}
+
+function updateDeckLabels() {
+  document.getElementById('pdf-deck-count').textContent = `${pdfWords.length} entries · from sat.vocab.pdf`;
+  document.getElementById('custom-deck-count').textContent = `${customWords.length} words · add your own`;
+}
+
+document.addEventListener('keydown', event => {
+  if (mode !== 'flash' || event.target.tagName === 'BUTTON') return;
+  if (event.key === '1') rateCard('again');
+  if (event.key === '2') rateCard('hard');
+  if (event.key === '3') rateCard('know');
+});
+
+document.getElementById('today-label').textContent = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date()) + ' · today’s session';
+document.getElementById('reminder-time').value = state.reminder.time || '19:00';
+updateDeckLabels();
+renderActivity();
+switchDeck(activeDeck);
+checkReminder();
+setInterval(checkReminder, 30000);
+loadBundledPdfWords().then(words => {
+  if (!Array.isArray(words) || words.length < 900) return;
+  pdfWords = words;
+  updateDeckLabels();
+  if (activeDeck === 'pdf') switchDeck('pdf');
+}).catch(() => showToast('The full PDF deck could not be decoded; using the built-in fallback.'));
 </script>
 </body>
 </html>

@@ -46,6 +46,7 @@ const emptyState = () => ({
     [MAIN_DECK_ID]: { id: MAIN_DECK_ID, name: 'My words', words: STARTER_WORDS.map(word => [...word]) }
   },
   progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
+  dictionaryCache: {},
   activity: {},
   settings: { reminders: [], dailyNew: 20, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true, onboardingComplete: false, locale: 'en', satDate: '' },
   profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, translationLanguage: 'Russian' },
@@ -82,6 +83,8 @@ let diagnosticResults = [];
 let selectedLibraryWords = new Set();
 let editingWordIndex = -1;
 let pendingImportWords = [];
+let dictionaryResults = [];
+let dictionarySearchBusy = false;
 
 const UI_COPY = {
   en: {
@@ -962,6 +965,242 @@ function resetProgress() {
 function renderPersonalDeckSelect() {
   const select = document.getElementById('personal-deck-select');
   select.innerHTML = Object.values(appState.personalDecks).map(deck => `<option value="${deck.id}" ${deck.id === activeDeckId ? 'selected' : ''}>${deck.name} · ${deck.words.length} words</option>`).join('');
+  renderDictionaryDeckSelect();
+}
+
+function renderDictionaryDeckSelect() {
+  const select = document.getElementById('dictionary-target-deck');
+  if (!select) return;
+  const previous = select.value;
+  const fallback = activeDeckId !== 'pdf' && appState.personalDecks[activeDeckId] ? activeDeckId : appState.settings.lastPersonalDeck || MAIN_DECK_ID;
+  select.innerHTML = Object.values(appState.personalDecks).map(deck => `<option value="${deck.id}">${escapeHtml(deck.name)} · ${deck.words.length} words</option>`).join('');
+  select.value = appState.personalDecks[previous] ? previous : appState.personalDecks[fallback] ? fallback : MAIN_DECK_ID;
+}
+
+function dictionaryTargetDeckId() {
+  const selected = document.getElementById('dictionary-target-deck')?.value;
+  return appState.personalDecks[selected] ? selected : MAIN_DECK_ID;
+}
+
+function parseDictionaryQuery(value) {
+  const matches = String(value || '').toLowerCase().match(/[a-z]+(?:['-][a-z]+)*/g) || [];
+  return [...new Set(matches.map(normalizeWord).filter(Boolean))].slice(0, 30);
+}
+
+function satDictionaryEntry(query) {
+  const match = STARTER_WORDS.find(word => normalizeWord(word[0]) === query) || pdfWords.find(word => normalizeWord(word[0]) === query);
+  if (!match) return null;
+  return {
+    query,
+    word: match[0],
+    phonetic: '',
+    source: 'sat',
+    cached: false,
+    meanings: [{ part: match[1] || '—', definition: match[2], example: match[3] || '' }],
+    selectedMeaning: 0,
+    selected: true,
+    status: 'ready'
+  };
+}
+
+function cachedDictionaryEntry(query) {
+  const cache = appState.dictionaryCache || {};
+  const entry = cache[query];
+  if (!entry || !Array.isArray(entry.meanings) || !entry.meanings.length) return null;
+  return { query, word: entry.word || query, phonetic: entry.phonetic || '', source: 'dictionary', cached: true, meanings: entry.meanings, selectedMeaning: 0, selected: true, status: 'ready' };
+}
+
+function cacheDictionaryEntry(query, entry) {
+  appState.dictionaryCache = appState.dictionaryCache || {};
+  delete appState.dictionaryCache[query];
+  appState.dictionaryCache[query] = { word: entry.word, phonetic: entry.phonetic, meanings: entry.meanings, savedAt: new Date().toISOString() };
+  const keys = Object.keys(appState.dictionaryCache);
+  keys.slice(0, Math.max(0, keys.length - 500)).forEach(key => { delete appState.dictionaryCache[key]; });
+}
+
+async function fetchDictionaryEntry(query) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(query)}`, { signal: controller.signal });
+    if (response.status === 404) return { query, word: query, phonetic: '', source: 'dictionary', cached: false, meanings: [], selectedMeaning: 0, selected: false, status: 'not-found' };
+    if (!response.ok) throw new Error(`Dictionary returned ${response.status}`);
+    const entries = await response.json();
+    const phonetic = entries.find(entry => entry.phonetic)?.phonetic || entries.flatMap(entry => entry.phonetics || []).find(item => item.text)?.text || '';
+    const meanings = entries.flatMap(entry => entry.meanings || []).flatMap(meaning => (meaning.definitions || []).map(definition => ({
+      part: meaning.partOfSpeech || '—',
+      definition: definition.definition || '',
+      example: definition.example || ''
+    }))).filter(item => item.definition).slice(0, 8);
+    if (!meanings.length) return { query, word: query, phonetic, source: 'dictionary', cached: false, meanings: [], selectedMeaning: 0, selected: false, status: 'not-found' };
+    const result = { query, word: entries[0]?.word || query, phonetic, source: 'dictionary', cached: false, meanings, selectedMeaning: 0, selected: true, status: 'ready' };
+    cacheDictionaryEntry(query, result);
+    return result;
+  } catch {
+    const status = navigator.onLine ? 'not-found' : 'offline';
+    return { query, word: query, phonetic: '', source: 'dictionary', cached: false, meanings: [], selectedMeaning: 0, selected: false, status };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function findDictionaryWords() {
+  if (dictionarySearchBusy) return;
+  const input = document.getElementById('dictionary-query');
+  const allMatches = String(input.value || '').toLowerCase().match(/[a-z]+(?:['-][a-z]+)*/g) || [];
+  const words = parseDictionaryQuery(input.value);
+  if (!words.length) {
+    input.focus();
+    showToast('Enter at least one English word.');
+    return;
+  }
+  if (new Set(allMatches.map(normalizeWord)).size > 30) showToast('Searching the first 30 unique words.');
+  dictionarySearchBusy = true;
+  dictionaryResults = words.map(query => satDictionaryEntry(query) || cachedDictionaryEntry(query) || { query, word: query, phonetic: '', source: 'dictionary', cached: false, meanings: [], selectedMeaning: 0, selected: false, status: 'loading' });
+  setDictionarySearchBusy(true);
+  refreshDictionaryStatuses(false);
+  renderDictionaryResults();
+  const unresolved = dictionaryResults.map((result, index) => ({ result, index })).filter(item => item.result.status === 'loading');
+  let cursor = 0;
+  let completed = words.length - unresolved.length;
+  updateDictionaryProgress(completed, words.length);
+  async function worker() {
+    while (cursor < unresolved.length) {
+      const item = unresolved[cursor];
+      cursor += 1;
+      dictionaryResults[item.index] = await fetchDictionaryEntry(item.result.query);
+      completed += 1;
+      refreshDictionaryStatuses(false);
+      updateDictionaryProgress(completed, words.length);
+      renderDictionaryResults();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(4, unresolved.length) }, () => worker()));
+  dictionarySearchBusy = false;
+  setDictionarySearchBusy(false);
+  refreshDictionaryStatuses(false);
+  saveAppState();
+  renderDictionaryResults();
+}
+
+function setDictionarySearchBusy(busy) {
+  const button = document.getElementById('dictionary-find-button');
+  button.disabled = busy;
+  button.textContent = busy ? 'Searching…' : 'Find words';
+  document.getElementById('dictionary-progress').classList.toggle('hidden', !busy);
+}
+
+function updateDictionaryProgress(completed, total) {
+  const progress = total ? completed / total : 0;
+  document.getElementById('dictionary-progress-fill').style.transform = `scaleX(${progress})`;
+  document.getElementById('dictionary-summary-copy').textContent = dictionarySearchBusy ? `Checking ${completed} of ${total} words…` : `${total} words checked.`;
+}
+
+function refreshDictionaryStatuses(render = true) {
+  const target = appState.personalDecks[dictionaryTargetDeckId()];
+  const existing = new Set((target?.words || []).map(word => normalizeWord(word[0])));
+  dictionaryResults.forEach(result => {
+    if (['loading', 'not-found', 'offline'].includes(result.status)) return;
+    result.status = existing.has(normalizeWord(result.word)) ? 'duplicate' : 'ready';
+    if (result.status === 'duplicate') result.selected = false;
+  });
+  if (render) renderDictionaryResults();
+}
+
+function dictionaryStatusLabel(status) {
+  return ({ ready: 'Ready to add', duplicate: 'Already in deck', 'not-found': 'Not found', offline: 'Internet required', loading: 'Searching' })[status] || status;
+}
+
+function renderDictionaryResults() {
+  const container = document.getElementById('dictionary-results');
+  const actions = document.getElementById('dictionary-actions');
+  if (!container || !actions) return;
+  const hasResults = dictionaryResults.length > 0;
+  container.classList.toggle('hidden', !hasResults);
+  actions.classList.toggle('hidden', !hasResults);
+  if (!hasResults) return;
+  container.innerHTML = dictionaryResults.map((result, index) => {
+    const ready = result.status === 'ready';
+    const selectedMeaning = result.meanings[result.selectedMeaning] || null;
+    const source = result.source === 'sat' ? 'SAT Library' : result.cached ? 'Dictionary · cached' : 'Dictionary';
+    const statusClass = ready ? 'ready' : result.status === 'duplicate' ? 'duplicate' : ['not-found', 'offline'].includes(result.status) ? 'error' : '';
+    const meaningOptions = result.meanings.map((meaning, meaningIndex) => `<option value="${meaningIndex}" ${meaningIndex === result.selectedMeaning ? 'selected' : ''}>${escapeHtml(`${meaning.part} — ${meaning.definition.slice(0, 96)}`)}</option>`).join('');
+    const meaning = selectedMeaning
+      ? `<div class="dictionary-meaning">${result.meanings.length > 1 ? `<select aria-label="Meaning for ${escapeHtml(result.word)}" onchange="chooseDictionaryMeaning(${index},this.value)">${meaningOptions}</select>` : ''}<p class="dictionary-definition">${escapeHtml(selectedMeaning.definition)}</p><p class="dictionary-example">${escapeHtml(selectedMeaning.example || `Write a sentence using “${result.word}”.`)}</p></div>`
+      : `<div class="dictionary-meaning"><p class="dictionary-definition">${result.status === 'loading' ? 'Looking up definitions…' : result.status === 'offline' ? 'Connect to the internet and search again.' : 'No English definition was found.'}</p></div>`;
+    return `<article class="dictionary-result"><input type="checkbox" aria-label="Select ${escapeHtml(result.word)}" ${ready && result.selected ? 'checked' : ''} ${ready ? '' : 'disabled'} onchange="toggleDictionaryResult(${index},this.checked)"><div class="dictionary-word"><strong>${escapeHtml(result.word)}</strong><span>${escapeHtml(result.phonetic || 'pronunciation unavailable')}</span><div class="dictionary-badges"><i class="dictionary-badge ${result.source === 'sat' ? 'sat' : ''}">${source}</i><i class="dictionary-badge ${statusClass}">${dictionaryStatusLabel(result.status)}</i></div></div>${meaning}<button class="dictionary-add" type="button" ${ready ? '' : 'disabled'} onclick="addDictionaryResult(${index})">Add</button></article>`;
+  }).join('');
+  const readyCount = dictionaryResults.filter(result => result.status === 'ready').length;
+  const duplicateCount = dictionaryResults.filter(result => result.status === 'duplicate').length;
+  const missingCount = dictionaryResults.filter(result => ['not-found', 'offline'].includes(result.status)).length;
+  document.getElementById('dictionary-summary-copy').textContent = dictionarySearchBusy ? document.getElementById('dictionary-summary-copy').textContent : `${readyCount} ready · ${duplicateCount} already saved · ${missingCount} need attention`;
+  document.getElementById('dictionary-add-selected').disabled = !dictionaryResults.some(result => result.status === 'ready' && result.selected);
+}
+
+function chooseDictionaryMeaning(index, value) {
+  if (!dictionaryResults[index]) return;
+  dictionaryResults[index].selectedMeaning = Math.max(0, Math.min(dictionaryResults[index].meanings.length - 1, Number(value || 0)));
+  renderDictionaryResults();
+}
+
+function toggleDictionaryResult(index, checked) {
+  if (!dictionaryResults[index] || dictionaryResults[index].status !== 'ready') return;
+  dictionaryResults[index].selected = Boolean(checked);
+  document.getElementById('dictionary-add-selected').disabled = !dictionaryResults.some(result => result.status === 'ready' && result.selected);
+}
+
+function selectAllDictionaryResults() {
+  const ready = dictionaryResults.filter(result => result.status === 'ready');
+  const shouldSelect = ready.some(result => !result.selected);
+  ready.forEach(result => { result.selected = shouldSelect; });
+  renderDictionaryResults();
+}
+
+function dictionaryResultWord(result) {
+  const meaning = result.meanings[result.selectedMeaning] || result.meanings[0];
+  return [result.word, meaning.part || '—', meaning.definition, meaning.example || `Write a sentence using “${result.word}”.`, ''];
+}
+
+function addDictionaryEntries(results) {
+  const targetId = dictionaryTargetDeckId();
+  const deck = appState.personalDecks[targetId];
+  if (!deck) return 0;
+  const existing = new Set(deck.words.map(word => normalizeWord(word[0])));
+  let added = 0;
+  results.forEach(result => {
+    const key = normalizeWord(result.word);
+    if (result.status !== 'ready' || existing.has(key) || !result.meanings.length) return;
+    deck.words.push(dictionaryResultWord(result));
+    existing.add(key);
+    result.selected = false;
+    added += 1;
+  });
+  if (!added) return 0;
+  if (!appState.progress[targetId]) appState.progress[targetId] = { cards: {} };
+  saveAppState();
+  updateDeckLabels();
+  renderPersonalDeckSelect();
+  if (targetId === activeDeckId) {
+    queue = shuffled(dailyPlanIndices().plan);
+    renderAll();
+  }
+  refreshDictionaryStatuses(false);
+  renderDictionaryResults();
+  return added;
+}
+
+function addDictionaryResult(index) {
+  const result = dictionaryResults[index];
+  if (!result) return;
+  const added = addDictionaryEntries([result]);
+  showToast(added ? `${result.word} added to the selected deck.` : `${result.word} is already in the selected deck.`);
+}
+
+function addSelectedDictionaryResults() {
+  const selected = dictionaryResults.filter(result => result.status === 'ready' && result.selected);
+  if (!selected.length) return showToast('Select at least one ready word.');
+  const added = addDictionaryEntries(selected);
+  showToast(`${added} words added to the selected deck.`);
 }
 
 function libraryVisibleIndices() {
@@ -1640,6 +1879,12 @@ async function initializeApp() {
   defaultSatDate.setDate(defaultSatDate.getDate() + 90);
   document.getElementById('onboarding-sat-date').min = localDateKey();
   document.getElementById('onboarding-sat-date').value = appState.settings.satDate || localDateKey(defaultSatDate);
+  document.getElementById('dictionary-query').addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      findDictionaryWords();
+    }
+  });
   if (!appState.settings.onboardingComplete) setTimeout(() => document.getElementById('onboarding-dialog').showModal(), 0);
 }
 

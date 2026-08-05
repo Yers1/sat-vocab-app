@@ -19,6 +19,7 @@ The current release separates Study, Library, Progress, and Profile; adds EN/RU/
 - **Analytics** - retention, due/mastered totals, hardest words, and a seven-day workload forecast
 - **SAT pace plan** - set an exam date and see days left, words remaining, daily pace, weekly target, and deck completion
 - **Library control** - search and filter words, edit entries, select many words, reset schedules, delete safely, and preview imports before saving
+- **Dictionary search without AI** - paste up to 30 words, match the bundled SAT catalog first, use the free English Dictionary API for missing entries, choose meanings, and add selected results to any personal deck
 - **Daily discipline** - GitHub-style 91-day activity heatmap, five-review daily minimum, and streak tracking
 - **Backup and transfer** - export or share every deck, schedule, streak, and setting, then import it on another device
 - **Installable PWA** - install from a supported browser and keep studying after the core app has been cached

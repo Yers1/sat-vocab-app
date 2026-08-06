@@ -15,7 +15,8 @@ The current release separates Study, Library, Progress, and Profile; adds EN/RU/
 - **Adjustable workload** - choose daily new words, due reviews, and streak target; continue with 20 more cards or the full deck at any time
 - **Five study modes** - flashcards, typed recall with hints, sentence context, multiple choice tests, and analytics
 - **Focused recovery** - launch sessions containing only recent mistakes or weak words
-- **Personal word tools** - create, rename, and delete decks; add words manually or import TXT, CSV, TSV, and JSON
+- **One-field word entry** - type only an English word; SAT data fills instantly offline, while unknown words use the free dictionary and offer a meaning picker before saving
+- **Personal word tools** - create, rename, and delete decks; edit every auto-filled field, add an optional translation, or import TXT, CSV, TSV, and JSON
 - **Analytics** - retention, due/mastered totals, hardest words, and a seven-day workload forecast
 - **SAT pace plan** - set an exam date and see days left, words remaining, daily pace, weekly target, and deck completion
 - **Library control** - search and filter words, edit entries, select many words, reset schedules, delete safely, and preview imports before saving

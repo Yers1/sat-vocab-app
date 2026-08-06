@@ -85,6 +85,10 @@ let editingWordIndex = -1;
 let pendingImportWords = [];
 let dictionaryResults = [];
 let dictionarySearchBusy = false;
+let quickLookupTimer = null;
+let quickLookupRequest = 0;
+let quickLookupResult = null;
+let quickAutofilledWord = '';
 
 const UI_COPY = {
   en: {
@@ -1037,11 +1041,201 @@ async function fetchDictionaryEntry(query) {
     cacheDictionaryEntry(query, result);
     return result;
   } catch {
-    const status = navigator.onLine ? 'not-found' : 'offline';
+    const status = navigator.onLine ? 'network-error' : 'offline';
     return { query, word: query, phonetic: '', source: 'dictionary', cached: false, meanings: [], selectedMeaning: 0, selected: false, status };
   } finally {
     clearTimeout(timer);
   }
+}
+
+function quickLocalMatches(query) {
+  if (!query) return [];
+  const seen = new Set();
+  return [...STARTER_WORDS, ...pdfWords].filter(entry => {
+    const key = normalizeWord(entry[0]);
+    if (!key.startsWith(query) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 6);
+}
+
+function setQuickLookupStatus(copy, state = '') {
+  const status = document.getElementById('word-lookup-status');
+  if (!status) return;
+  status.textContent = copy;
+  status.className = `word-lookup-status${state ? ` ${state}` : ''}`;
+}
+
+function setQuickLookupBusy(busy) {
+  const autofill = document.getElementById('word-autofill-button');
+  const submit = document.getElementById('word-submit-button');
+  if (autofill) {
+    autofill.disabled = busy;
+    autofill.textContent = busy ? 'Finding…' : 'Auto-fill';
+  }
+  if (submit && editingWordIndex < 0) {
+    submit.disabled = busy;
+    submit.textContent = busy ? 'Finding…' : 'Add word';
+  }
+}
+
+function clearQuickAutofilledFields() {
+  ['new-pos', 'new-definition', 'new-example'].forEach(id => {
+    const field = document.getElementById(id);
+    if (field?.dataset.autofilled === 'true') field.value = '';
+    if (field) delete field.dataset.autofilled;
+  });
+  quickAutofilledWord = '';
+}
+
+function hideQuickSuggestions() {
+  const panel = document.getElementById('word-suggestions');
+  if (!panel) return;
+  panel.classList.add('hidden');
+  panel.innerHTML = '';
+}
+
+function renderQuickSuggestions(matches, result = null) {
+  const panel = document.getElementById('word-suggestions');
+  if (!panel) return;
+  const suggestions = matches.map(entry => `<button class="word-suggestion" type="button" onmousedown="event.preventDefault()" onclick="selectQuickLocalSuggestion(decodeURIComponent('${encodeURIComponent(entry[0])}'))"><strong>${escapeHtml(entry[0])}</strong><span>${escapeHtml(entry[1] || '—')} · ${escapeHtml(entry[2] || '')}</span></button>`).join('');
+  let meanings = '';
+  if (result?.meanings?.length > 1) {
+    meanings = `<div class="word-meaning-picker"><label for="quick-meaning-select">Choose the meaning for this card</label><select id="quick-meaning-select" onchange="chooseQuickMeaning(this.value)">${result.meanings.map((meaning, index) => `<option value="${index}" ${index === result.selectedMeaning ? 'selected' : ''}>${escapeHtml(meaning.part || '—')} · ${escapeHtml(meaning.definition)}</option>`).join('')}</select></div>`;
+  }
+  panel.innerHTML = suggestions + meanings;
+  panel.classList.toggle('hidden', !panel.innerHTML);
+}
+
+function applyQuickLookupEntry(result, meaningIndex = 0) {
+  if (!result?.meanings?.length) return false;
+  result.selectedMeaning = Math.max(0, Math.min(result.meanings.length - 1, Number(meaningIndex || 0)));
+  const meaning = result.meanings[result.selectedMeaning];
+  const wordInput = document.getElementById('new-word');
+  if (wordInput) wordInput.value = result.word || result.query;
+  const values = { 'new-pos': meaning.part || '—', 'new-definition': meaning.definition || '', 'new-example': meaning.example || `Write a sentence using “${result.word || result.query}”.` };
+  Object.entries(values).forEach(([id, value]) => {
+    const field = document.getElementById(id);
+    if (!field) return;
+    if (!field.value.trim() || field.dataset.autofilled === 'true') {
+      field.value = value;
+      field.dataset.autofilled = 'true';
+    }
+  });
+  quickLookupResult = result;
+  quickAutofilledWord = normalizeWord(result.word || result.query);
+  const source = result.source === 'sat' ? 'SAT Library · works offline' : result.cached ? 'Dictionary · saved offline' : 'Free Dictionary';
+  setQuickLookupStatus(`Ready · ${source}${result.meanings.length > 1 ? ' · choose another meaning below if needed' : ''}.`, 'ready');
+  renderQuickSuggestions([], result);
+  return true;
+}
+
+function selectQuickLocalSuggestion(word) {
+  const input = document.getElementById('new-word');
+  if (input) input.value = word;
+  const result = satDictionaryEntry(normalizeWord(word));
+  if (result) applyQuickLookupEntry(result);
+}
+
+function chooseQuickMeaning(value) {
+  if (quickLookupResult) applyQuickLookupEntry(quickLookupResult, Number(value));
+}
+
+function handleQuickWordKeydown(event) {
+  if (event.key === 'Escape') hideQuickSuggestions();
+  if (event.key === 'ArrowDown') {
+    const first = document.querySelector('#word-suggestions .word-suggestion');
+    if (first) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+}
+
+function handleQuickWordInput() {
+  if (editingWordIndex >= 0) return;
+  clearTimeout(quickLookupTimer);
+  quickLookupRequest += 1;
+  const query = normalizeWord(document.getElementById('new-word')?.value || '');
+  if (quickAutofilledWord && query !== quickAutofilledWord) clearQuickAutofilledFields();
+  quickLookupResult = null;
+  if (!query) {
+    hideQuickSuggestions();
+    setQuickLookupStatus('Type one English word. The definition and example will fill automatically.');
+    return;
+  }
+  const local = quickLocalMatches(query);
+  const exact = local.find(entry => normalizeWord(entry[0]) === query);
+  if (exact) {
+    applyQuickLookupEntry(satDictionaryEntry(query));
+    return;
+  }
+  renderQuickSuggestions(local);
+  setQuickLookupStatus(local.length ? 'Choose a SAT Library suggestion, or keep typing.' : 'Waiting to check the free dictionary…');
+  if (query.length >= 3 && /^[a-z]+(?:['-][a-z]+)*$/.test(query)) {
+    quickLookupTimer = setTimeout(() => autofillNewWord(false), 700);
+  }
+}
+
+async function autofillNewWord(showErrors = true) {
+  if (editingWordIndex >= 0) return null;
+  const input = document.getElementById('new-word');
+  const query = normalizeWord(input?.value || '');
+  if (!query) {
+    if (showErrors) {
+      input?.focus();
+      setQuickLookupStatus('Type an English word first.', 'error');
+    }
+    return null;
+  }
+  if (!/^[a-z]+(?:['-][a-z]+)*$/.test(query)) {
+    setQuickLookupStatus('Enter one English word only.', 'error');
+    return null;
+  }
+  const local = satDictionaryEntry(query);
+  if (local) {
+    applyQuickLookupEntry(local);
+    return local;
+  }
+  const cached = cachedDictionaryEntry(query);
+  if (cached) {
+    applyQuickLookupEntry(cached);
+    return cached;
+  }
+  const request = ++quickLookupRequest;
+  clearTimeout(quickLookupTimer);
+  setQuickLookupBusy(true);
+  setQuickLookupStatus('Searching the free English dictionary…');
+  const result = await fetchDictionaryEntry(query);
+  if (request !== quickLookupRequest || normalizeWord(input?.value || '') !== query) {
+    setQuickLookupBusy(false);
+    return null;
+  }
+  setQuickLookupBusy(false);
+  if (result.status === 'ready') {
+    applyQuickLookupEntry(result);
+    saveAppState();
+    return result;
+  }
+  hideQuickSuggestions();
+  const unavailable = ['offline', 'network-error'].includes(result.status);
+  setQuickLookupStatus(unavailable ? 'Dictionary unavailable. Check your connection, or fill the definition manually.' : 'No dictionary match. Fill the definition manually.', 'error');
+  if (showErrors) showToast(unavailable ? 'The online dictionary could not be reached.' : 'Word not found. You can still enter its definition manually.');
+  return null;
+}
+
+function resetQuickLookupUI() {
+  clearTimeout(quickLookupTimer);
+  quickLookupRequest += 1;
+  quickLookupResult = null;
+  quickAutofilledWord = '';
+  hideQuickSuggestions();
+  ['new-pos', 'new-definition', 'new-example'].forEach(id => {
+    const field = document.getElementById(id);
+    if (field) delete field.dataset.autofilled;
+  });
+  setQuickLookupBusy(false);
+  setQuickLookupStatus('Type one English word. The definition and example will fill automatically.');
 }
 
 async function findDictionaryWords() {
@@ -1100,7 +1294,7 @@ function refreshDictionaryStatuses(render = true) {
   const target = appState.personalDecks[dictionaryTargetDeckId()];
   const existing = new Set((target?.words || []).map(word => normalizeWord(word[0])));
   dictionaryResults.forEach(result => {
-    if (['loading', 'not-found', 'offline'].includes(result.status)) return;
+    if (['loading', 'not-found', 'offline', 'network-error'].includes(result.status)) return;
     result.status = existing.has(normalizeWord(result.word)) ? 'duplicate' : 'ready';
     if (result.status === 'duplicate') result.selected = false;
   });
@@ -1108,7 +1302,7 @@ function refreshDictionaryStatuses(render = true) {
 }
 
 function dictionaryStatusLabel(status) {
-  return ({ ready: 'Ready to add', duplicate: 'Already in deck', 'not-found': 'Not found', offline: 'Internet required', loading: 'Searching' })[status] || status;
+  return ({ ready: 'Ready to add', duplicate: 'Already in deck', 'not-found': 'Not found', offline: 'Internet required', 'network-error': 'Dictionary unavailable', loading: 'Searching' })[status] || status;
 }
 
 function renderDictionaryResults() {
@@ -1123,16 +1317,16 @@ function renderDictionaryResults() {
     const ready = result.status === 'ready';
     const selectedMeaning = result.meanings[result.selectedMeaning] || null;
     const source = result.source === 'sat' ? 'SAT Library' : result.cached ? 'Dictionary · cached' : 'Dictionary';
-    const statusClass = ready ? 'ready' : result.status === 'duplicate' ? 'duplicate' : ['not-found', 'offline'].includes(result.status) ? 'error' : '';
+    const statusClass = ready ? 'ready' : result.status === 'duplicate' ? 'duplicate' : ['not-found', 'offline', 'network-error'].includes(result.status) ? 'error' : '';
     const meaningOptions = result.meanings.map((meaning, meaningIndex) => `<option value="${meaningIndex}" ${meaningIndex === result.selectedMeaning ? 'selected' : ''}>${escapeHtml(`${meaning.part} — ${meaning.definition.slice(0, 96)}`)}</option>`).join('');
     const meaning = selectedMeaning
       ? `<div class="dictionary-meaning">${result.meanings.length > 1 ? `<select aria-label="Meaning for ${escapeHtml(result.word)}" onchange="chooseDictionaryMeaning(${index},this.value)">${meaningOptions}</select>` : ''}<p class="dictionary-definition">${escapeHtml(selectedMeaning.definition)}</p><p class="dictionary-example">${escapeHtml(selectedMeaning.example || `Write a sentence using “${result.word}”.`)}</p></div>`
-      : `<div class="dictionary-meaning"><p class="dictionary-definition">${result.status === 'loading' ? 'Looking up definitions…' : result.status === 'offline' ? 'Connect to the internet and search again.' : 'No English definition was found.'}</p></div>`;
+      : `<div class="dictionary-meaning"><p class="dictionary-definition">${result.status === 'loading' ? 'Looking up definitions…' : ['offline', 'network-error'].includes(result.status) ? 'The dictionary is unavailable. Check your connection and search again.' : 'No English definition was found.'}</p></div>`;
     return `<article class="dictionary-result"><input type="checkbox" aria-label="Select ${escapeHtml(result.word)}" ${ready && result.selected ? 'checked' : ''} ${ready ? '' : 'disabled'} onchange="toggleDictionaryResult(${index},this.checked)"><div class="dictionary-word"><strong>${escapeHtml(result.word)}</strong><span>${escapeHtml(result.phonetic || 'pronunciation unavailable')}</span><div class="dictionary-badges"><i class="dictionary-badge ${result.source === 'sat' ? 'sat' : ''}">${source}</i><i class="dictionary-badge ${statusClass}">${dictionaryStatusLabel(result.status)}</i></div></div>${meaning}<button class="dictionary-add" type="button" ${ready ? '' : 'disabled'} onclick="addDictionaryResult(${index})">Add</button></article>`;
   }).join('');
   const readyCount = dictionaryResults.filter(result => result.status === 'ready').length;
   const duplicateCount = dictionaryResults.filter(result => result.status === 'duplicate').length;
-  const missingCount = dictionaryResults.filter(result => ['not-found', 'offline'].includes(result.status)).length;
+  const missingCount = dictionaryResults.filter(result => ['not-found', 'offline', 'network-error'].includes(result.status)).length;
   document.getElementById('dictionary-summary-copy').textContent = dictionarySearchBusy ? document.getElementById('dictionary-summary-copy').textContent : `${readyCount} ready · ${duplicateCount} already saved · ${missingCount} need attention`;
   document.getElementById('dictionary-add-selected').disabled = !dictionaryResults.some(result => result.status === 'ready' && result.selected);
 }
@@ -1283,6 +1477,7 @@ function editLibraryWord(index) {
   if (activeDeckId === 'pdf' || !currentWords()[index]) return;
   const word = currentWords()[index];
   editingWordIndex = index;
+  resetQuickLookupUI();
   document.getElementById('new-word').value = word[0];
   document.getElementById('new-pos').value = word[1] || '';
   document.getElementById('new-definition').value = word[2] || '';
@@ -1301,6 +1496,7 @@ function cancelWordEdit(clearFields = true) {
   const button = document.getElementById('word-submit-button');
   if (button) button.textContent = 'Add word';
   if (clearFields) document.querySelector('.add-form')?.reset();
+  resetQuickLookupUI();
 }
 
 function makeDeckId() {
@@ -1359,13 +1555,27 @@ function deletePersonalDeck() {
   switchDeck(nextId);
 }
 
-function addCustomWord(event) {
+async function addCustomWord(event) {
   event.preventDefault();
   if (activeDeckId === 'pdf') return;
   const deck = appState.personalDecks[activeDeckId];
-  const word = document.getElementById('new-word').value.trim();
+  let word = document.getElementById('new-word').value.trim();
+  let definition = document.getElementById('new-definition').value.trim();
+  if (!definition && editingWordIndex < 0) {
+    const found = await autofillNewWord(true);
+    if (!found) {
+      document.getElementById('new-definition').focus();
+      return;
+    }
+    word = document.getElementById('new-word').value.trim();
+    definition = document.getElementById('new-definition').value.trim();
+  }
+  if (!definition) {
+    setQuickLookupStatus('Add an English definition before saving.', 'error');
+    document.getElementById('new-definition').focus();
+    return;
+  }
   const part = document.getElementById('new-pos').value.trim() || '—';
-  const definition = document.getElementById('new-definition').value.trim();
   const translation = document.getElementById('new-translation').value.trim();
   const example = document.getElementById('new-example').value.trim() || `Write a sentence using “${word}”.`;
   if (deck.words.some((item, index) => index !== editingWordIndex && normalizeWord(item[0]) === normalizeWord(word))) {

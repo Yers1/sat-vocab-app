@@ -8,7 +8,9 @@ let latestProfileMetrics = null;
 
 const CLOUD_CFG_KEY = 'sat_cloud_cfg';
 const GROUP_CODE_KEY = 'sat_group_code';
+const GROUP_NAME_KEY = 'sat_group_name';
 let groupCode = null;
+let groupName = '';
 let pendingGroupJoin = null;
 
 // Config can arrive three ways: the committed cloud-config.js, a value the owner
@@ -35,7 +37,10 @@ function bootstrapCloudConfig() {
 }
 
 bootstrapCloudConfig();
-try { groupCode = localStorage.getItem(GROUP_CODE_KEY) || null; } catch (error) { groupCode = null; }
+try {
+  groupCode = localStorage.getItem(GROUP_CODE_KEY) || null;
+  groupName = localStorage.getItem(GROUP_NAME_KEY) || '';
+} catch (error) { groupCode = null; }
 
 function saveCloudConfigValues(url, key) {
   url = String(url || '').trim().replace(/\/+$/, '');
@@ -233,8 +238,10 @@ async function createGroup(name) {
   const label = (name || 'Study group').trim().slice(0, 40) || 'Study group';
   const { error } = await cloudClient.from('study_groups').insert({ code, name: label });
   if (error) return showToast(`Could not create the group: ${error.message}`);
+  groupName = label;
+  try { localStorage.setItem(GROUP_NAME_KEY, label); } catch (e) { /* ignore */ }
   await joinGroupByCode(code, true);
-  showToast('Group created. Share the invite link with friends.');
+  showToast(`Group "${label}" created — share the code ${code}.`);
 }
 
 async function joinGroupByCode(code, quiet) {
@@ -253,7 +260,11 @@ async function joinGroupByCode(code, quiet) {
   const { error } = await cloudClient.from('group_members').upsert(row);
   if (error) return showToast(`Could not join: ${error.message}`);
   groupCode = code;
-  try { localStorage.setItem(GROUP_CODE_KEY, code); } catch (e) { /* ignore */ }
+  groupName = group.name || 'Study group';
+  try {
+    localStorage.setItem(GROUP_CODE_KEY, code);
+    localStorage.setItem(GROUP_NAME_KEY, groupName);
+  } catch (e) { /* ignore */ }
   if (!quiet) showToast(`Joined ${group.name}.`);
   await refreshGroupBoard();
   renderGroupPanel();
@@ -264,10 +275,10 @@ async function leaveGroup() {
     await cloudClient.from('group_members').delete().eq('code', groupCode).eq('user_id', cloudUser.id);
   }
   groupCode = null;
-  try { localStorage.removeItem(GROUP_CODE_KEY); } catch (e) { /* ignore */ }
+  groupName = '';
+  try { localStorage.removeItem(GROUP_CODE_KEY); localStorage.removeItem(GROUP_NAME_KEY); } catch (e) { /* ignore */ }
   showToast('Left the group.');
   renderGroupPanel();
-  refreshLeaderboard();
 }
 
 async function pushGroupStats() {
@@ -286,24 +297,30 @@ async function refreshGroupBoard() {
 }
 
 function renderGroupPanel() {
-  const panel = document.getElementById('group-panel');
-  if (!panel) return;
-  const configured = cloudConfigured();
-  const setup = document.getElementById('group-setup');
-  const controls = document.getElementById('group-controls');
-  const active = document.getElementById('group-active');
-  if (setup) setup.classList.toggle('hidden', configured);
-  if (controls) controls.classList.toggle('hidden', !configured || Boolean(groupCode));
-  if (active) active.classList.toggle('hidden', !groupCode);
-  if (groupCode) {
-    const link = document.getElementById('group-invite-link');
-    if (link) link.value = groupInviteLink();
+  const view = document.getElementById('groups-view');
+  if (!view) return;
+  const inGroup = Boolean(groupCode);
+  const joinCard = document.getElementById('group-join-card');
+  const liveCard = document.getElementById('group-live-card');
+  const note = document.getElementById('group-setup-note');
+  if (joinCard) joinCard.classList.toggle('hidden', inGroup);
+  if (liveCard) liveCard.classList.toggle('hidden', !inGroup);
+  if (note) note.classList.toggle('hidden', cloudConfigured());
+  if (inGroup) {
     const codeEl = document.getElementById('group-code-label');
     if (codeEl) codeEl.textContent = groupCode;
+    const nameEl = document.getElementById('group-name-label');
+    if (nameEl) nameEl.textContent = groupName || 'Group';
     refreshGroupBoard();
-  } else if (configured) {
-    refreshLeaderboard();
   }
+}
+
+function copyGroupCode() {
+  if (!groupCode) return;
+  navigator.clipboard.writeText(groupCode).then(
+    () => showToast(`Code ${groupCode} copied — send it to friends.`),
+    () => showToast(`Group code: ${groupCode}`)
+  );
 }
 
 function copyGroupInvite() {
@@ -311,7 +328,7 @@ function copyGroupInvite() {
   if (!link) return;
   navigator.clipboard.writeText(link).then(
     () => showToast('Invite link copied.'),
-    () => { const el = document.getElementById('group-invite-link'); if (el) { el.select(); document.execCommand('copy'); showToast('Invite link copied.'); } }
+    () => showToast(link)
   );
 }
 

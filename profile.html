@@ -126,23 +126,9 @@
         <section aria-labelledby="collections-title">
           <h2 id="collections-title" data-profile-i18n="collections.title">Word collections</h2>
           <div class="collections" id="profile-collections"></div>
-          <div class="leaderboard" id="group-panel">
+          <div class="leaderboard">
             <h2 data-profile-i18n="leader.title">Friends leaderboard</h2>
-            <div id="group-setup" class="hidden">
-              <p class="leader-copy">One-time setup by the group owner: make a free project at <b>supabase.com</b>, open <b>Project Settings → API</b>, paste the two values below, then in Supabase turn on <b>Authentication → Sign In / Providers → Anonymous</b> and paste <b>supabase-schema.sql</b> into the SQL editor and run it.</p>
-              <div class="group-form"><input id="cfg-url" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off" spellcheck="false"><span></span></div>
-              <div class="group-form"><input id="cfg-key" placeholder="anon / publishable key" autocomplete="off" spellcheck="false"><button type="button" onclick="saveCloudConfigValues(document.getElementById('cfg-url').value, document.getElementById('cfg-key').value)">Save &amp; connect</button></div>
-            </div>
-            <div id="group-controls" class="hidden">
-              <p class="leader-copy">Create a group, then send friends the invite link — they join in one tap, no signup.</p>
-              <div class="group-form"><input id="group-new-name" placeholder="Group name (e.g. SAT squad)" maxlength="40"><button type="button" onclick="createGroup(document.getElementById('group-new-name').value)">Create</button></div>
-              <div class="group-form"><input id="group-join-code" placeholder="or paste a group code" maxlength="12" style="text-transform:uppercase"><button type="button" onclick="joinGroupByCode(document.getElementById('group-join-code').value)">Join</button></div>
-            </div>
-            <div id="group-active" class="hidden">
-              <div class="group-invite"><span>Group code<b id="group-code-label">—</b></span><button type="button" onclick="leaveGroup()">Leave group</button></div>
-              <div class="group-form"><input id="group-invite-link" readonly onclick="this.select()"><button type="button" onclick="copyGroupInvite()">Copy link</button></div>
-            </div>
-            <div id="leaderboard-list"></div>
+            <p class="leader-copy">Create or join a study group and compare progress on the <a href="index.html?view=groups">Groups</a> tab.</p>
           </div>
         </section>
       </div>

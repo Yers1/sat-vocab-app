@@ -93,7 +93,8 @@ let quickAutofilledWord = '';
 
 const UI_COPY = {
   en: {
-    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.profile':'Profile','brand.tagline':'focused recall trainer',
+    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','brand.tagline':'focused recall trainer',
+    'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.',
     'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
     'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
     'plan.start':'Start plan','plan.more':'+20 more','plan.all':'Study all','road.title':'Road to Obsidian','road.full':'Full roadmap →',
@@ -105,7 +106,8 @@ const UI_COPY = {
     'onboarding.language':'Language','onboarding.plan':'Your plan','onboarding.diagnostic':'Diagnostic','onboarding.choose':'Choose your language','onboarding.build':'Build your SAT plan','onboarding.quick':'Quick diagnostic','action.back':'Back','action.continue':'Continue'
   },
   ru: {
-    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.profile':'Профиль','brand.tagline':'тренажёр активного запоминания',
+    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','brand.tagline':'тренажёр активного запоминания',
+    'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.',
     'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
     'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
     'plan.start':'Начать план','plan.more':'+20 ещё','plan.all':'Учить всё','road.title':'Путь к Obsidian','road.full':'Вся карта →',
@@ -117,7 +119,8 @@ const UI_COPY = {
     'onboarding.language':'Язык','onboarding.plan':'Твой план','onboarding.diagnostic':'Диагностика','onboarding.choose':'Выбери язык','onboarding.build':'Составь план SAT','onboarding.quick':'Быстрая диагностика','action.back':'Назад','action.continue':'Продолжить'
   },
   kk: {
-    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.profile':'Профиль','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
+    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
+    'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.',
     'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
     'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
     'plan.start':'Жоспарды бастау','plan.more':'+20 тағы','plan.all':'Бәрін оқу','road.title':'Obsidian жолы','road.full':'Толық жол картасы →',
@@ -145,13 +148,14 @@ function applyLocale(temporaryLocale = '') {
 
 function applyWorkspaceView() {
   const requested = new URLSearchParams(location.search).get('view');
-  const view = ['study','library','progress'].includes(requested) ? requested : 'study';
+  const view = ['study','library','progress','groups'].includes(requested) ? requested : 'study';
   document.body.dataset.view = view;
   document.querySelectorAll('[data-view-link]').forEach(link => link.classList.toggle('active', link.dataset.viewLink === view));
   if (view === 'library' && activeDeckId === 'pdf') openPersonalDeck();
   if (view === 'progress') setMode('analytics');
   else if (view === 'study' && mode === 'analytics') setMode('flash');
   if (view === 'library') renderLibraryWords();
+  if (view === 'groups' && typeof renderGroupPanel === 'function') renderGroupPanel();
 }
 
 function navigateWorkspace(event, view) {

@@ -484,6 +484,31 @@
   body[data-view="library"] .deck-tabs { margin-top:28px; }
   body[data-view="progress"] .session-grid { grid-template-columns:1fr;margin-top:34px; }
   body[data-view="progress"] #analytics-mode { display:block!important; }
+  .groups-surface { display:none; }
+  body[data-view="groups"] .groups-surface { display:block; }
+  body[data-view="groups"] .study-surface, body[data-view="groups"] .library-surface, body[data-view="groups"] .deck-tabs { display:none!important; }
+  .groups-hero { padding:40px 0 22px; }
+  .groups-hero h2 { font:700 clamp(2rem,5vw,3.2rem)/1 'Playfair Display',serif; letter-spacing:-.04em; }
+  .groups-sub { color:var(--muted); font-size:.75rem; line-height:1.7; max-width:54ch; margin-top:12px; }
+  .group-card { background:rgba(255,253,247,.86); border:1px solid var(--border); border-radius:16px 16px 4px 16px; padding:clamp(18px,3vw,30px); margin-bottom:16px; }
+  .group-block + .group-block { margin-top:18px; padding-top:18px; border-top:1px solid var(--border); }
+  .group-block h3 { font:700 1.05rem 'Playfair Display',serif; margin-bottom:10px; }
+  .group-form { display:grid; grid-template-columns:1fr auto; gap:8px; }
+  .group-form input { min-width:0; border:1px solid var(--border); background:var(--card); color:var(--text); padding:12px; border-radius:6px; font:inherit; font-size:.75rem; }
+  .group-form button { border:0; background:var(--accent); color:#fff; padding:12px 18px; border-radius:6px; cursor:pointer; font-size:.72rem; white-space:nowrap; }
+  .group-note { color:#8a5a2a; background:#f3ead6; border-left:3px solid #d39242; padding:10px 12px; font-size:.66rem; line-height:1.55; margin-top:14px; }
+  .group-code-box { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; background:#262a24; color:#fff8e9; border-radius:12px; padding:16px 18px; margin-bottom:18px; }
+  .group-code-box span { color:#aeb2a9; font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:4px; }
+  .group-code-box strong { font:700 1.7rem/1 'DM Mono',monospace; letter-spacing:.28em; }
+  .group-code-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .group-code-actions button { border:1px solid #596057; background:transparent; color:#fff8e9; padding:9px 12px; border-radius:6px; cursor:pointer; font-size:.63rem; }
+  .group-board-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:4px; }
+  .group-board-head h3 { font:700 1.2rem 'Playfair Display',serif; }
+  .group-leave { border:1px solid var(--border); background:transparent; color:var(--muted); padding:7px 11px; border-radius:6px; cursor:pointer; font-size:.62rem; }
+  .group-board .leader-row { display:grid; grid-template-columns:26px minmax(90px,1fr) auto auto; gap:12px; align-items:center; border-top:1px solid var(--border); padding:13px 2px; font-size:.7rem; }
+  .group-board .leader-row span:last-child { color:var(--green); font-variant-numeric:tabular-nums; }
+  .group-board .leader-row.is-me { background:var(--accent-soft); }
+  .group-board .leader-row strong { font:700 .9rem 'Playfair Display',serif; }
   .install-btn { display: inline-flex; align-items: center; border: 1px solid var(--border); color: var(--text); background: var(--card); padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: .68rem; text-decoration: none; }
   .daily-plan { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 18px; padding: 15px 17px; margin-bottom: 18px; background: #f1ead8; border-left: 3px solid #d39242; }
   .daily-plan strong { display: block; font: 700 1rem/1.25 'Playfair Display', serif; margin-bottom: 4px; }
@@ -629,6 +654,9 @@
     .new-today { flex-wrap: wrap; }
     .word { font-size: 2.4rem; }
     .definition, .example, .translation { overflow-wrap: anywhere; }
+    .group-form { grid-template-columns: 1fr; }
+    .group-board .leader-row { grid-template-columns: 22px 1fr auto; }
+    .group-board .leader-row span:nth-child(3) { display: none; }
     .app-nav { overflow-x:auto; }.app-nav a { white-space:nowrap; }
     .onboarding-shell { grid-template-columns:1fr; }.onboarding-rail { border-right:0;border-bottom:1px solid #454b43;padding:18px; }.onboarding-rail img{margin:0 0 14px}.onboarding-step-list{grid-template-columns:repeat(3,1fr)}.onboarding-fields,.choice-grid{grid-template-columns:1fr}
     .session-grid > *, .study-panel, .study-roadmap { min-width: 0; max-width: 100%; }
@@ -666,7 +694,7 @@
     </div>
     <div class="top-actions"><a class="install-btn profile-jump" href="profile.html" data-i18n="nav.profile">Profile</a><button class="install-btn hidden" id="install-app" onclick="installApp()">Install app</button><div class="day-chip" id="today-label">Today’s session</div></div>
   </header>
-  <nav class="app-nav" aria-label="App sections"><a href="index.html?view=study" data-view-link="study" data-i18n="nav.study" onclick="navigateWorkspace(event,'study')">Study</a><a href="index.html?view=library" data-view-link="library" data-i18n="nav.library" onclick="navigateWorkspace(event,'library')">Library</a><a href="index.html?view=progress" data-view-link="progress" data-i18n="nav.progress" onclick="navigateWorkspace(event,'progress')">Progress</a></nav>
+  <nav class="app-nav" aria-label="App sections"><a href="index.html?view=study" data-view-link="study" data-i18n="nav.study" onclick="navigateWorkspace(event,'study')">Study</a><a href="index.html?view=library" data-view-link="library" data-i18n="nav.library" onclick="navigateWorkspace(event,'library')">Library</a><a href="index.html?view=progress" data-view-link="progress" data-i18n="nav.progress" onclick="navigateWorkspace(event,'progress')">Progress</a><a href="index.html?view=groups" data-view-link="groups" data-i18n="nav.groups" onclick="navigateWorkspace(event,'groups')">Groups</a></nav>
 
   <nav class="deck-tabs" aria-label="Vocabulary decks">
     <button class="deck-tab" id="deck-pdf" onclick="switchDeck('pdf')"><strong>PDF vocabulary</strong><span id="pdf-deck-count">SAT reference · loading</span></button>
@@ -875,6 +903,38 @@
   <section class="utility-panel library-surface" aria-labelledby="backup-title">
     <div><h2 id="backup-title" data-i18n="backup.title">Backup and transfer</h2><p>Export every deck, review schedule, streak, and setting. Import the file on another device to continue there.</p></div>
     <div class="utility-actions"><button class="file-btn" onclick="exportBackup()">Export backup</button><label class="file-btn" for="backup-file">Import backup<input id="backup-file" type="file" accept=".json" onchange="importBackup(event)"></label><button class="file-btn" onclick="shareBackup()">Share</button><button class="file-btn" onclick="testNotification()">Test reminder</button></div>
+  </section>
+
+  <section class="groups-surface" id="groups-view" aria-labelledby="groups-title">
+    <div class="groups-hero">
+      <p class="eyebrow" data-i18n="groups.eyebrow">Compete with friends</p>
+      <h2 id="groups-title" data-i18n="groups.title">Study groups</h2>
+      <p class="groups-sub" data-i18n="groups.sub">One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.</p>
+    </div>
+
+    <div class="group-card" id="group-join-card">
+      <div class="group-block">
+        <h3 data-i18n="groups.create">Create a group</h3>
+        <div class="group-form"><input id="group-new-name" maxlength="40" placeholder="Group name (e.g. SAT squad)" autocomplete="off"><button type="button" onclick="createGroup(document.getElementById('group-new-name').value)" data-i18n="groups.createBtn">Create</button></div>
+      </div>
+      <div class="group-block">
+        <h3 data-i18n="groups.join">Join with a code</h3>
+        <div class="group-form"><input id="group-join-code" maxlength="12" placeholder="Paste the group code" autocomplete="off" style="text-transform:uppercase"><button type="button" onclick="joinGroupByCode(document.getElementById('group-join-code').value)" data-i18n="groups.joinBtn">Join</button></div>
+      </div>
+      <p class="group-note hidden" id="group-setup-note" data-i18n="groups.setupNote">Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.</p>
+    </div>
+
+    <div class="group-card hidden" id="group-live-card">
+      <div class="group-code-box">
+        <div><span data-i18n="groups.code">Invite code</span><strong id="group-code-label">——————</strong></div>
+        <div class="group-code-actions">
+          <button type="button" onclick="copyGroupCode()" data-i18n="groups.copyCode">Copy code</button>
+          <button type="button" onclick="copyGroupInvite()" data-i18n="groups.copyLink">Copy link</button>
+        </div>
+      </div>
+      <div class="group-board-head"><h3 id="group-name-label">Group</h3><button type="button" class="group-leave" onclick="leaveGroup()" data-i18n="groups.leave">Leave group</button></div>
+      <div class="group-board" id="leaderboard-list" aria-live="polite"></div>
+    </div>
   </section>
 </main>
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>

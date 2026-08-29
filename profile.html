@@ -66,9 +66,18 @@
     .collection strong { display:block;font:700 1.05rem 'Playfair Display',serif;margin-bottom:7px; }
     .collection span { color:var(--muted);font-size:.61rem;line-height:1.5; }
     .leaderboard { margin-top:26px; }
-    .leader-copy { color:var(--muted);font-size:.63rem;line-height:1.55;margin-top:-5px;margin-bottom:8px; }
+    .leader-copy { color:var(--muted);font-size:.63rem;line-height:1.6;margin-top:-2px;margin-bottom:10px; }
+    .leader-copy b { color:var(--cream); }
     .leader-row { display:grid;grid-template-columns:28px minmax(100px,1fr) auto auto;gap:11px;align-items:center;border-top:1px solid var(--line);padding:12px 0;font-size:.66rem; }
     .leader-row span:last-child { color:var(--green);font-variant-numeric:tabular-nums; }
+    .leader-row.is-me { background:rgba(214,107,80,.14); }
+    .group-form { display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:9px; }
+    .group-form input { width:100%;min-width:0;border:1px solid var(--line);background:var(--panel-2);color:var(--cream);padding:10px;border-radius:5px;font-size:.66rem; }
+    .group-form button { border:0;background:var(--accent);color:#fff;padding:10px 14px;border-radius:5px;cursor:pointer;font-size:.66rem;white-space:nowrap; }
+    .group-invite { display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0 2px;font-size:.64rem;color:var(--muted); }
+    .group-invite b { color:var(--cream);letter-spacing:.16em;margin-left:5px; }
+    .group-invite button { border:1px solid var(--line);background:transparent;color:var(--cream);padding:6px 11px;border-radius:5px;cursor:pointer;font-size:.6rem; }
+    @media(max-width:520px){ .group-form{grid-template-columns:1fr} }
     .toast { position:fixed;right:18px;bottom:18px;max-width:340px;background:#fffdf7;color:var(--ink);padding:13px 16px;border-radius:7px;font-size:.68rem;line-height:1.5;box-shadow:0 14px 45px rgba(23,26,21,.28); }
     .settings-dialog { width:min(780px,calc(100% - 28px));max-height:min(820px,calc(100dvh - 28px));margin:auto;border:1px solid #555b52;background:#262a24;color:var(--cream);padding:0;box-shadow:0 30px 90px rgba(13,16,12,.48);overflow:auto; }
     .settings-dialog::backdrop { background:rgba(20,23,19,.72);backdrop-filter:blur(5px); }
@@ -117,7 +126,24 @@
         <section aria-labelledby="collections-title">
           <h2 id="collections-title" data-profile-i18n="collections.title">Word collections</h2>
           <div class="collections" id="profile-collections"></div>
-          <div class="leaderboard"><h2 data-profile-i18n="leader.title">Leaderboard</h2><p class="leader-copy" data-profile-i18n="leader.local">Local preview until cloud accounts are connected.</p><div id="leaderboard-list"></div></div>
+          <div class="leaderboard" id="group-panel">
+            <h2 data-profile-i18n="leader.title">Friends leaderboard</h2>
+            <div id="group-setup" class="hidden">
+              <p class="leader-copy">One-time setup by the group owner: make a free project at <b>supabase.com</b>, open <b>Project Settings → API</b>, paste the two values below, then in Supabase turn on <b>Authentication → Sign In / Providers → Anonymous</b> and paste <b>supabase-schema.sql</b> into the SQL editor and run it.</p>
+              <div class="group-form"><input id="cfg-url" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off" spellcheck="false"><span></span></div>
+              <div class="group-form"><input id="cfg-key" placeholder="anon / publishable key" autocomplete="off" spellcheck="false"><button type="button" onclick="saveCloudConfigValues(document.getElementById('cfg-url').value, document.getElementById('cfg-key').value)">Save &amp; connect</button></div>
+            </div>
+            <div id="group-controls" class="hidden">
+              <p class="leader-copy">Create a group, then send friends the invite link — they join in one tap, no signup.</p>
+              <div class="group-form"><input id="group-new-name" placeholder="Group name (e.g. SAT squad)" maxlength="40"><button type="button" onclick="createGroup(document.getElementById('group-new-name').value)">Create</button></div>
+              <div class="group-form"><input id="group-join-code" placeholder="or paste a group code" maxlength="12" style="text-transform:uppercase"><button type="button" onclick="joinGroupByCode(document.getElementById('group-join-code').value)">Join</button></div>
+            </div>
+            <div id="group-active" class="hidden">
+              <div class="group-invite"><span>Group code<b id="group-code-label">—</b></span><button type="button" onclick="leaveGroup()">Leave group</button></div>
+              <div class="group-form"><input id="group-invite-link" readonly onclick="this.select()"><button type="button" onclick="copyGroupInvite()">Copy link</button></div>
+            </div>
+            <div id="leaderboard-list"></div>
+          </div>
         </section>
       </div>
       <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow" data-profile-i18n="achievements.eyebrow">Milestones</p><h2 id="achievement-title" data-profile-i18n="achievements.title">Achievements</h2><p class="section-intro" data-profile-i18n="achievements.copy">Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.</p></div><strong id="achievement-total">0 / 12 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>

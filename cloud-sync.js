@@ -6,6 +6,52 @@ let cloudSyncTimer = null;
 let cloudApplying = false;
 let latestProfileMetrics = null;
 
+const CLOUD_CFG_KEY = 'sat_cloud_cfg';
+const GROUP_CODE_KEY = 'sat_group_code';
+let groupCode = null;
+let pendingGroupJoin = null;
+
+// Config can arrive three ways: the committed cloud-config.js, a value the owner
+// pasted into Settings (localStorage), or an invite link (#cfg=... in the URL).
+// The publishable key is safe in a link — row-level security guards the data.
+function bootstrapCloudConfig() {
+  try {
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const packed = hash.get('cfg');
+    if (packed) {
+      const cfg = JSON.parse(atob(packed.replace(/-/g, '+').replace(/_/g, '/')));
+      if (cfg && cfg.u && cfg.k) localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(cfg));
+    }
+    const join = hash.get('join') || new URLSearchParams(location.search).get('join');
+    if (join) pendingGroupJoin = join.trim().toUpperCase().slice(0, 12);
+  } catch (error) { /* malformed link, ignore */ }
+
+  const file = window.SAT_CLOUD_CONFIG || {};
+  if (file.url && file.publishableKey) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem(CLOUD_CFG_KEY) || 'null');
+    if (saved && saved.u && saved.k) window.SAT_CLOUD_CONFIG = { url: saved.u, publishableKey: saved.k };
+  } catch (error) { /* ignore */ }
+}
+
+bootstrapCloudConfig();
+try { groupCode = localStorage.getItem(GROUP_CODE_KEY) || null; } catch (error) { groupCode = null; }
+
+function saveCloudConfigValues(url, key) {
+  url = String(url || '').trim().replace(/\/+$/, '');
+  key = String(key || '').trim();
+  if (!/^https:\/\/.+\.supabase\.co$/.test(url) || key.length < 20) {
+    showToast('Enter the Project URL (https://xxxx.supabase.co) and the anon/publishable key.');
+    return false;
+  }
+  localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify({ u: url, k: key }));
+  window.SAT_CLOUD_CONFIG = { url, publishableKey: key };
+  showToast('Cloud project saved on this device. Connecting…');
+  cloudClient = null;
+  initializeCloudSync().then(renderGroupPanel);
+  return true;
+}
+
 function cloudConfigured() {
   const config = window.SAT_CLOUD_CONFIG || {};
   return Boolean(config.url && config.publishableKey);
@@ -38,6 +84,7 @@ function loadSupabaseSdk() {
 async function initializeCloudSync() {
   if (!cloudConfigured()) {
     renderCloudUnavailable();
+    renderGroupPanel();
     return;
   }
   try {
@@ -57,11 +104,19 @@ async function initializeCloudSync() {
       }
     });
     cloudUser = data.session && data.session.user ? data.session.user : null;
+    // An invite link (or an existing membership) needs an account, but not an
+    // email — sign the friend in anonymously so the link just works.
+    if (!cloudUser && (pendingGroupJoin || groupCode)) {
+      const { data: anon, error: anonError } = await cloudClient.auth.signInAnonymously();
+      if (anonError) showToast(`Enable "Anonymous sign-ins" in Supabase Auth settings. (${anonError.message})`);
+      else cloudUser = anon.user;
+    }
     if (cloudUser) await handleCloudSession();
     else {
       setCloudState('Cloud ready · sign in');
       await refreshLeaderboard();
     }
+    renderGroupPanel();
   } catch (error) {
     setCloudState('Cloud connection failed');
     if (typeof showToast === 'function') showToast(error.message);
@@ -113,8 +168,151 @@ async function handleCloudSession() {
     cloudApplying = false;
     showToast('Newer progress restored from your cloud account.');
   } else await syncCloudNow();
-  setCloudState(`Synced · ${cloudUser.email}`, true);
+  setCloudState(`Synced · ${cloudUser.email || 'guest'}`, true);
+  if (pendingGroupJoin) {
+    const code = pendingGroupJoin;
+    pendingGroupJoin = null;
+    await joinGroupByCode(code, true);
+    if (groupCode === code) showToast('Joined the group — open Profile to see the leaderboard.');
+  }
+  await pushGroupStats();
   await refreshLeaderboard();
+  renderGroupPanel();
+}
+
+// ---------------------------------------------------------------------------
+// Friend groups
+// ---------------------------------------------------------------------------
+function groupDisplayName() {
+  return ((typeof appState !== 'undefined' && appState.profile && appState.profile.name) || 'SAT learner').slice(0, 32);
+}
+
+function groupStatRow() {
+  const metrics = latestProfileMetrics || (typeof profileMetrics === 'function' ? profileMetrics() : {});
+  let learned = 0;
+  const cards = (typeof appState !== 'undefined' && appState.progress) ? Object.values(appState.progress) : [];
+  cards.forEach(deck => Object.values((deck && deck.cards) || {}).forEach(r => { if (Number(r.reviews || 0) > 0) learned += 1; }));
+  const today = typeof localDateKey === 'function' ? localDateKey() : new Date().toISOString().slice(0, 10);
+  const newToday = Number(((typeof appState !== 'undefined' && appState.newActivity) || {})[today] || 0);
+  return {
+    username: groupDisplayName(),
+    xp: Number(metrics.xp || 0),
+    streak: Number(metrics.streak || 0),
+    mastered: Number(metrics.mastered || 0),
+    words_learned: learned,
+    new_today: newToday,
+    updated_at: new Date().toISOString()
+  };
+}
+
+function makeGroupCode() {
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i += 1) code += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return code;
+}
+
+function groupInviteLink() {
+  if (!groupCode) return '';
+  const config = window.SAT_CLOUD_CONFIG || {};
+  const packed = btoa(JSON.stringify({ u: config.url, k: config.publishableKey }))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const base = `${location.origin}${location.pathname.replace(/profile\.html$/, 'index.html')}`;
+  return `${base}?join=${groupCode}#cfg=${packed}`;
+}
+
+async function createGroup(name) {
+  if (!cloudClient) await initializeCloudSync();
+  if (!cloudClient) return showToast('Add your Supabase project first.');
+  if (!cloudUser) {
+    const { data: anon, error } = await cloudClient.auth.signInAnonymously();
+    if (error) return showToast(`Enable Anonymous sign-ins in Supabase. (${error.message})`);
+    cloudUser = anon.user;
+  }
+  const code = makeGroupCode();
+  const label = (name || 'Study group').trim().slice(0, 40) || 'Study group';
+  const { error } = await cloudClient.from('study_groups').insert({ code, name: label });
+  if (error) return showToast(`Could not create the group: ${error.message}`);
+  await joinGroupByCode(code, true);
+  showToast('Group created. Share the invite link with friends.');
+}
+
+async function joinGroupByCode(code, quiet) {
+  code = String(code || '').trim().toUpperCase();
+  if (!code) return showToast('Enter a group code.');
+  if (!cloudClient) await initializeCloudSync();
+  if (!cloudClient) return showToast('Add your Supabase project first.');
+  if (!cloudUser) {
+    const { data: anon, error } = await cloudClient.auth.signInAnonymously();
+    if (error) return showToast(`Enable Anonymous sign-ins in Supabase. (${error.message})`);
+    cloudUser = anon.user;
+  }
+  const { data: group, error: lookupError } = await cloudClient.from('study_groups').select('code,name').eq('code', code).maybeSingle();
+  if (lookupError || !group) return showToast('That group code was not found.');
+  const row = { code, user_id: cloudUser.id, ...groupStatRow() };
+  const { error } = await cloudClient.from('group_members').upsert(row);
+  if (error) return showToast(`Could not join: ${error.message}`);
+  groupCode = code;
+  try { localStorage.setItem(GROUP_CODE_KEY, code); } catch (e) { /* ignore */ }
+  if (!quiet) showToast(`Joined ${group.name}.`);
+  await refreshGroupBoard();
+  renderGroupPanel();
+}
+
+async function leaveGroup() {
+  if (cloudClient && cloudUser && groupCode) {
+    await cloudClient.from('group_members').delete().eq('code', groupCode).eq('user_id', cloudUser.id);
+  }
+  groupCode = null;
+  try { localStorage.removeItem(GROUP_CODE_KEY); } catch (e) { /* ignore */ }
+  showToast('Left the group.');
+  renderGroupPanel();
+  refreshLeaderboard();
+}
+
+async function pushGroupStats() {
+  if (!cloudClient || !cloudUser || !groupCode) return;
+  await cloudClient.from('group_members').upsert({ code: groupCode, user_id: cloudUser.id, ...groupStatRow() });
+}
+
+async function refreshGroupBoard() {
+  const list = document.getElementById('leaderboard-list');
+  if (!list || !cloudClient || !groupCode) return;
+  const { data, error } = await cloudClient.rpc('group_board', { p_code: groupCode });
+  if (error) { list.innerHTML = `<div class="leader-row"><span>—</span><strong>Could not load the group</strong><span>${escapeHtml(error.message)}</span><span></span></div>`; return; }
+  if (!data || !data.length) { list.innerHTML = '<div class="leader-row"><span>—</span><strong>No members yet</strong><span>Share the invite link</span><span>0 XP</span></div>'; return; }
+  const mine = groupDisplayName();
+  list.innerHTML = data.map((entry, index) => `<div class="leader-row${entry.username === mine ? ' is-me' : ''}"><span>${index + 1}</span><strong>${escapeHtml(entry.username)}</strong><span>${entry.new_today} today · ${entry.streak}d · ${entry.mastered} mastered</span><span>${Number(entry.xp).toLocaleString()} XP</span></div>`).join('');
+}
+
+function renderGroupPanel() {
+  const panel = document.getElementById('group-panel');
+  if (!panel) return;
+  const configured = cloudConfigured();
+  const setup = document.getElementById('group-setup');
+  const controls = document.getElementById('group-controls');
+  const active = document.getElementById('group-active');
+  if (setup) setup.classList.toggle('hidden', configured);
+  if (controls) controls.classList.toggle('hidden', !configured || Boolean(groupCode));
+  if (active) active.classList.toggle('hidden', !groupCode);
+  if (groupCode) {
+    const link = document.getElementById('group-invite-link');
+    if (link) link.value = groupInviteLink();
+    const codeEl = document.getElementById('group-code-label');
+    if (codeEl) codeEl.textContent = groupCode;
+    refreshGroupBoard();
+  } else if (configured) {
+    refreshLeaderboard();
+  }
+}
+
+function copyGroupInvite() {
+  const link = groupInviteLink();
+  if (!link) return;
+  navigator.clipboard.writeText(link).then(
+    () => showToast('Invite link copied.'),
+    () => { const el = document.getElementById('group-invite-link'); if (el) { el.select(); document.execCommand('copy'); showToast('Invite link copied.'); } }
+  );
 }
 
 function queueCloudSync() {
@@ -148,7 +346,9 @@ async function syncCloudNow() {
     setCloudState('Sync failed');
     return false;
   }
-  setCloudState(`Synced · ${cloudUser.email}`, true);
+  await pushGroupStats();
+  if (groupCode) refreshGroupBoard();
+  setCloudState(`Synced · ${cloudUser.email || 'guest'}`, true);
   return true;
 }
 
@@ -168,3 +368,5 @@ async function refreshLeaderboard() {
 }
 
 renderCloudUnavailable();
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderGroupPanel);
+else renderGroupPanel();

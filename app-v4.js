@@ -41,7 +41,7 @@ const STARTER_WORDS = [
 
 const emptyState = () => ({
   version: 4,
-  activeDeckId: MAIN_DECK_ID,
+  activeDeckId: 'pdf',
   personalDecks: {
     [MAIN_DECK_ID]: { id: MAIN_DECK_ID, name: 'My words', words: STARTER_WORDS.map(word => [...word]) }
   },
@@ -2037,13 +2037,16 @@ function renderOnboardingStep() {
   document.querySelectorAll('[data-onboarding-marker]').forEach(marker => marker.classList.toggle('active', Number(marker.dataset.onboardingMarker) === onboardingStep));
   document.getElementById('onboarding-back').classList.toggle('hidden', onboardingStep === 1);
   const next = document.getElementById('onboarding-next');
+  const ready = diagnosticResults.length >= 15;
   const nextCopy = {
-    en: onboardingStep === 3 ? (diagnosticResults.length >= 15 ? 'Build my plan' : 'Answer the diagnostic') : 'Continue',
-    ru: onboardingStep === 3 ? (diagnosticResults.length >= 15 ? 'Создать мой план' : 'Заверши диагностику') : 'Продолжить',
-    kk: onboardingStep === 3 ? (diagnosticResults.length >= 15 ? 'Жоспарымды құру' : 'Диагностиканы аяқта') : 'Жалғастыру'
+    en: onboardingStep === 3 ? (ready ? 'Build my plan' : 'Skip · build my plan') : 'Continue',
+    ru: onboardingStep === 3 ? (ready ? 'Создать план' : 'Пропустить · создать план') : 'Продолжить',
+    kk: onboardingStep === 3 ? (ready ? 'Жоспар құру' : 'Өткізіп · жоспар құру') : 'Жалғастыру'
   };
   next.textContent = nextCopy[onboardingLocale] || nextCopy.en;
-  next.disabled = onboardingStep === 3 && diagnosticResults.length < 15;
+  next.disabled = false;
+  const skipHint = document.getElementById('diagnostic-skip-hint');
+  if (skipHint) skipHint.classList.toggle('hidden', onboardingStep !== 3 || ready);
   if (onboardingStep === 3 && !diagnosticItems.length) startDiagnostic();
 }
 
@@ -2059,7 +2062,10 @@ function moveOnboarding(direction) {
     onboardingStep = 2;
   } else if (onboardingStep === 2) {
     onboardingStep = 3;
-  } else if (diagnosticResults.length >= 15) finishOnboarding();
+  } else {
+    finishOnboarding();
+    return;
+  }
   renderOnboardingStep();
 }
 

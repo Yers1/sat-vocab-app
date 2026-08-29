@@ -1,3 +1,8 @@
+-- Run this whole file in the Supabase SQL editor. Safe to run more than once.
+
+-- ---------------------------------------------------------------------------
+-- Per-account profile + full state backup (used by optional email sign-in)
+-- ---------------------------------------------------------------------------
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   username text not null check (char_length(username) between 2 and 32),
@@ -20,27 +25,33 @@ create table if not exists public.vocab_states (
 alter table public.profiles enable row level security;
 alter table public.vocab_states enable row level security;
 
+drop policy if exists "public opted-in profiles are readable" on public.profiles;
 create policy "public opted-in profiles are readable"
 on public.profiles for select
 using (leaderboard_opt_in = true or auth.uid() = user_id);
 
+drop policy if exists "users insert their own profile" on public.profiles;
 create policy "users insert their own profile"
 on public.profiles for insert
 with check (auth.uid() = user_id);
 
+drop policy if exists "users update their own profile" on public.profiles;
 create policy "users update their own profile"
 on public.profiles for update
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
+drop policy if exists "users read their own vocabulary state" on public.vocab_states;
 create policy "users read their own vocabulary state"
 on public.vocab_states for select
 using (auth.uid() = user_id);
 
+drop policy if exists "users insert their own vocabulary state" on public.vocab_states;
 create policy "users insert their own vocabulary state"
 on public.vocab_states for insert
 with check (auth.uid() = user_id);
 
+drop policy if exists "users update their own vocabulary state" on public.vocab_states;
 create policy "users update their own vocabulary state"
 on public.vocab_states for update
 using (auth.uid() = user_id)
@@ -74,17 +85,27 @@ alter table public.study_groups enable row level security;
 alter table public.group_members enable row level security;
 
 -- Anyone signed in can look up a group by code (needed to join) and create one.
+drop policy if exists "groups are readable" on public.study_groups;
 create policy "groups are readable" on public.study_groups for select using (true);
+
+drop policy if exists "signed-in users create groups" on public.study_groups;
 create policy "signed-in users create groups" on public.study_groups for insert
   with check (auth.uid() is not null);
 
 -- Each person only ever reads/writes their own membership row.
+drop policy if exists "read own membership" on public.group_members;
 create policy "read own membership" on public.group_members for select
   using (auth.uid() = user_id);
+
+drop policy if exists "join a group" on public.group_members;
 create policy "join a group" on public.group_members for insert
   with check (auth.uid() = user_id);
+
+drop policy if exists "update own membership" on public.group_members;
 create policy "update own membership" on public.group_members for update
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "leave a group" on public.group_members;
 create policy "leave a group" on public.group_members for delete
   using (auth.uid() = user_id);
 

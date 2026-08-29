@@ -491,6 +491,13 @@
   .plan-actions { display: flex; gap: 6px; }
   .mini-btn { border: 1px solid #d8c79f; background: #fffaf0; color: #55461f; padding: 8px 10px; border-radius: 5px; cursor: pointer; font-size: .66rem; white-space: nowrap; }
   .mini-btn.primary { background: var(--text); border-color: var(--text); color: white; }
+  .new-today { grid-column: 1 / -1; display: flex; align-items: center; gap: 11px; margin-top: 4px; }
+  .new-today-bar { flex: 1; height: 8px; background: #e3d7b8; border-radius: 999px; overflow: hidden; }
+  .new-today-fill { display: block; height: 100%; background: #d39242; transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
+  .new-today.met .new-today-fill { background: var(--green); }
+  .new-today b { font: 700 .66rem 'DM Mono', monospace; color: #6d6040; white-space: nowrap; }
+  .new-today.met b { color: var(--green); }
+  .ex-key { color: #ffd7c9; font-style: normal; border-bottom: 1px solid rgba(239,149,125,.6); padding-bottom: 1px; }
   .study-roadmap { position: relative; margin: 0 0 22px; padding: 16px 17px 14px; background: #272c26; color: #fff8e9; overflow: hidden; isolation: isolate; }
   .study-roadmap::before { content: ''; position: absolute; width: 260px; height: 260px; right: -100px; top: -170px; border: 1px solid rgba(239,128,104,.22); border-radius: 50%; box-shadow: 0 0 0 28px rgba(239,128,104,.035), 0 0 0 58px rgba(239,128,104,.025); animation: mainOrbit 12s linear infinite; z-index: -1; }
   .roadmap-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 17px; }
@@ -612,8 +619,16 @@
     .day-chip { display: none; }
     .hero h2 { font-size: 2.7rem; }
     .study-panel { padding: 12px; border-radius: 12px 12px 12px 4px; }
-    .flashcard-wrap { height: 360px; }
+    .flashcard-wrap { height: 400px; }
+    .face { padding: 24px 18px; overflow-y: auto; }
     .actions { grid-template-columns:1fr 1fr; }
+    .btn { padding: 15px 12px; }
+    .mode-btn { padding: 11px 13px; }
+    .mini-btn { padding: 11px 13px; }
+    .app-nav a { padding: 11px 13px; }
+    .new-today { flex-wrap: wrap; }
+    .word { font-size: 2.4rem; }
+    .definition, .example, .translation { overflow-wrap: anywhere; }
     .app-nav { overflow-x:auto; }.app-nav a { white-space:nowrap; }
     .onboarding-shell { grid-template-columns:1fr; }.onboarding-rail { border-right:0;border-bottom:1px solid #454b43;padding:18px; }.onboarding-rail img{margin:0 0 14px}.onboarding-step-list{grid-template-columns:repeat(3,1fr)}.onboarding-fields,.choice-grid{grid-template-columns:1fr}
     .session-grid > *, .study-panel, .study-roadmap { min-width: 0; max-width: 100%; }
@@ -680,6 +695,10 @@
       <div class="daily-plan" id="daily-plan">
         <div><strong id="plan-title">Today’s focused session</strong><p id="plan-copy">Building your plan…</p></div>
         <div class="plan-actions"><button class="mini-btn primary" onclick="startDailyPlan()" data-i18n="plan.start">Start plan</button><button class="mini-btn" onclick="startExtraSession(20)" data-i18n="plan.more">+20 more</button><button class="mini-btn" onclick="startExtraSession('all')" data-i18n="plan.all">Study all</button></div>
+        <div class="new-today" id="new-today">
+          <div class="new-today-bar"><span id="new-today-fill"></span></div>
+          <b id="new-today-label">0 / 75 new words today</b>
+        </div>
       </div>
 
       <section class="study-roadmap" aria-label="Vocabulary level roadmap">
@@ -806,7 +825,7 @@
         <h3 id="goals-title" data-i18n="side.load">Daily load</h3>
         <p class="side-copy">Choose how much you want. The app suggests a finish line, but never blocks extra study.</p>
         <div class="goal-grid">
-          <label class="goal-field">New words<input id="daily-new" type="number" min="1" max="200" value="20"></label>
+          <label class="goal-field">New words<input id="daily-new" type="number" min="1" max="200" value="75"></label>
           <label class="goal-field">Due reviews<input id="daily-reviews" type="number" min="1" max="300" value="30"></label>
           <label class="goal-field">Reviews to protect streak<input id="daily-goal" type="number" min="1" max="100" value="20"></label>
         </div>
@@ -869,6 +888,7 @@
 </dialog>
 
 <script src="pdf-words.js"></script>
+<script src="ru-pdf.js"></script>
 <script src="cloud-config.js"></script>
 <script src="cloud-sync.js"></script>
 <script type="text/plain" id="legacy-v3-source">

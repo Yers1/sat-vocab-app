@@ -48,7 +48,8 @@ const emptyState = () => ({
   progress: { pdf: { cards: {} }, [MAIN_DECK_ID]: { cards: {} } },
   dictionaryCache: {},
   activity: {},
-  settings: { reminders: [], dailyNew: 20, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true, onboardingComplete: false, locale: 'en', satDate: '' },
+  newActivity: {},
+  settings: { reminders: [], dailyNew: 75, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true, onboardingComplete: false, locale: 'en', satDate: '' },
   profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, translationLanguage: 'Russian' },
   lastStudy: new Date().toISOString()
 });
@@ -186,6 +187,19 @@ function escapeHtml(value) {
   return String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 }
 
+// Underline the headword (and short inflections like -s/-ed/-ing) inside an example
+// sentence so the word is always read in context. Input is escaped first.
+function highlightWord(sentence, headword) {
+  const safe = escapeHtml(sentence);
+  const stem = escapeHtml(headword).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!stem) return safe;
+  try {
+    return safe.replace(new RegExp(`\\b(${stem}\\w{0,3})\\b`, 'gi'), '<span class="ex-key">$1</span>');
+  } catch {
+    return safe;
+  }
+}
+
 function shuffled(items) {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -242,12 +256,13 @@ function loadAppState() {
     return {
       ...base,
       ...saved,
+      newActivity: saved.newActivity || {},
       personalDecks: { ...base.personalDecks, ...(saved.personalDecks || {}) },
       progress: { ...base.progress, ...(saved.progress || {}) },
       settings: {
         ...base.settings,
         ...savedSettings,
-        dailyNew: hasNewGoalSettings ? Number(savedSettings.dailyNew || 20) : 20,
+        dailyNew: hasNewGoalSettings ? Number(savedSettings.dailyNew || 75) : 75,
         dailyReviews: hasNewGoalSettings ? Number(savedSettings.dailyReviews || 30) : 30,
         dailyGoal: hasNewGoalSettings ? Number(savedSettings.dailyGoal || DEFAULT_DAILY_GOAL) : DEFAULT_DAILY_GOAL,
         reminders,
@@ -272,6 +287,15 @@ function saveAppState() {
 
 function dailyGoal() {
   return Math.max(1, Number(appState.settings.dailyGoal || DEFAULT_DAILY_GOAL));
+}
+
+// New words the day's mark is measured against (defaults to 75 for the SAT sprint).
+function newDailyTarget() {
+  return Math.max(1, Number(appState.settings.dailyNew || 75));
+}
+
+function newWordsToday() {
+  return (appState.newActivity || {})[localDateKey()] || 0;
 }
 
 function currentWords() {
@@ -346,6 +370,10 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
   record.history = Array.isArray(record.history) ? record.history : [];
   record.history.push({ at: record.lastReview, rating, source, ...metadata });
   record.history = record.history.slice(-24);
+  if (record.reviews === 1) {
+    if (!appState.newActivity) appState.newActivity = {};
+    appState.newActivity[today] = (appState.newActivity[today] || 0) + 1;
+  }
   recordActivity();
   saveAppState();
   return record;
@@ -368,7 +396,8 @@ function dailyPlanIndices() {
 
 function startDailyPlan() {
   const plan = dailyPlanIndices();
-  queue = shuffled(plan.plan);
+  // Reviews first, then new words (each group already shuffled inside dailyPlanIndices).
+  queue = plan.plan.slice();
   sessionKind = 'daily';
   if (!queue.length) {
     const weak = weakIndices().slice(0, 10);
@@ -517,7 +546,9 @@ function renderCard() {
   document.getElementById('flash-pos').textContent = `${word[1] || '—'}${record && record.reviews ? ` · next interval ${record.interval || '<1'}d` : ' · new'}`;
   document.getElementById('flash-def').textContent = word[2];
   document.getElementById('flash-ru').textContent = word[4] || 'No translation saved';
-  document.getElementById('flash-ex').textContent = word[3] || `Write a sentence using “${word[0]}”.`;
+  const exEl = document.getElementById('flash-ex');
+  if (word[3]) exEl.innerHTML = highlightWord(word[3], word[0]);
+  else exEl.textContent = `Write a sentence using “${word[0]}”.`;
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
   document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
@@ -751,10 +782,24 @@ function restartQuiz() {
 function renderDailyPlan() {
   const { due, fresh, plan } = dailyPlanIndices();
   const minutes = Math.max(1, Math.ceil(plan.length * 0.45));
-  document.getElementById('plan-title').textContent = plan.length ? `${plan.length} cards · about ${minutes} min` : 'Scheduled work complete';
-  document.getElementById('plan-copy').textContent = plan.length
-    ? `${Math.min(due.length, appState.settings.dailyReviews)} reviews due + ${Math.min(fresh.length, appState.settings.dailyNew)} new. This is a target, not a limit — continue whenever you want.`
-    : 'The planned set is complete. Continue with +20 more, Study all, Type, or Context.';
+  const target = newDailyTarget();
+  const newLeft = Math.max(0, target - newWordsToday());
+
+  document.getElementById('plan-title').textContent = plan.length
+    ? `${plan.length} cards · about ${minutes} min`
+    : (due.length ? `${due.length} reviews waiting` : 'All scheduled work done');
+
+  const reviewPart = due.length
+    ? `${due.length} review${due.length === 1 ? '' : 's'} due`
+    : 'Reviews cleared';
+  const newPart = fresh.length === 0
+    ? 'whole deck introduced'
+    : (newLeft > 0
+      ? `${Math.min(newLeft, fresh.length)} of today's ${target} new words left`
+      : `today's ${target} new words done`);
+  document.getElementById('plan-copy').textContent = plan.length || due.length
+    ? `${reviewPart} · ${newPart}. Reviews come first, then new words.`
+    : `${newPart}. Keep going with +20 more, Study all, Type, or Context.`;
 }
 
 function renderProgress() {
@@ -787,15 +832,22 @@ function recordActivity() {
   renderActivity();
 }
 
+// A day is "done" once you introduce the day's new-word target, or (once the deck
+// is exhausted) once you clear your review quota. Either keeps the streak alive.
+function dayComplete(dateKey) {
+  const newDone = (appState.newActivity || {})[dateKey] || 0;
+  const reviewsDone = appState.activity[dateKey] || 0;
+  return newDone >= newDailyTarget() || reviewsDone >= dailyGoal();
+}
+
 function calculateStreak() {
   let streak = 0;
   let recoveryUsed = 0;
   const cursor = new Date();
   cursor.setHours(12, 0, 0, 0);
-  if ((appState.activity[localDateKey(cursor)] || 0) < dailyGoal()) cursor.setDate(cursor.getDate() - 1);
+  if (!dayComplete(localDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
   for (let days = 0; days < 365; days += 1) {
-    const count = appState.activity[localDateKey(cursor)] || 0;
-    if (count >= dailyGoal()) streak += 1;
+    if (dayComplete(localDateKey(cursor))) streak += 1;
     else if (recoveryUsed < appState.settings.recoveryDays && streak > 0) recoveryUsed += 1;
     else break;
     cursor.setDate(cursor.getDate() - 1);
@@ -804,29 +856,44 @@ function calculateStreak() {
 }
 
 function renderActivity() {
+  const target = newDailyTarget();
   const cells = [];
   for (let offset = 90; offset >= 0; offset -= 1) {
     const date = new Date();
     date.setHours(12, 0, 0, 0);
     date.setDate(date.getDate() - offset);
     const key = localDateKey(date);
-    const count = appState.activity[key] || 0;
-    const level = count >= 25 ? 4 : count >= 15 ? 3 : count >= 5 ? 2 : count > 0 ? 1 : 0;
-    cells.push(`<span class="heat-cell ${level ? `l${level}` : ''}" title="${key}: ${count} reviews"></span>`);
+    const learned = (appState.newActivity || {})[key] || 0;
+    const reviews = appState.activity[key] || 0;
+    const share = learned / target;
+    let level = share >= 1 ? 4 : share >= 0.66 ? 3 : share >= 0.33 ? 2 : learned > 0 ? 1 : 0;
+    if (!level && reviews >= dailyGoal()) level = 2;
+    cells.push(`<span class="heat-cell ${level ? `l${level}` : ''}" title="${key}: ${learned}/${target} new words · ${reviews} reviews"></span>`);
   }
   document.getElementById('heatmap').innerHTML = cells.join('');
   const { streak, recoveryUsed } = calculateStreak();
   document.getElementById('streak-count').textContent = `${streak} day${streak === 1 ? '' : 's'}`;
-  const todayCount = appState.activity[localDateKey()] || 0;
-  const goal = dailyGoal();
-  document.getElementById('streak-rule').textContent = `A day counts after ${goal} honest review${goal === 1 ? '' : 's'}. The target is adjustable.`;
-  document.getElementById('commitment-copy').textContent = todayCount >= goal
-    ? `Daily minimum complete: ${todayCount} reviews. Continue only while your focus is good.`
-    : `${goal - todayCount} honest review${goal - todayCount === 1 ? '' : 's'} left today. ${recoveryUsed ? 'Your recovery day is currently protecting the streak.' : 'One recovery day is available.'}`;
+
+  const learnedToday = newWordsToday();
+  const fill = document.getElementById('new-today-fill');
+  const label = document.getElementById('new-today-label');
+  const wrap = document.getElementById('new-today');
+  if (fill && label && wrap) {
+    const done = Math.min(learnedToday, target);
+    fill.style.transform = `scaleX(${target ? done / target : 0})`;
+    label.textContent = `${learnedToday} / ${target} new words today`;
+    wrap.classList.toggle('met', learnedToday >= target);
+  }
+
+  document.getElementById('streak-rule').textContent = `A day counts once you learn ${target} new word${target === 1 ? '' : 's'} (or clear ${dailyGoal()} reviews). Adjustable in Daily load.`;
+  const left = target - learnedToday;
+  document.getElementById('commitment-copy').textContent = left <= 0
+    ? `Today's ${target} new words are done. Reviews and extra study still count — stop while your focus is good.`
+    : `${left} new word${left === 1 ? '' : 's'} left today.${recoveryUsed ? ' Your recovery day is currently protecting the streak.' : ''}`;
 }
 
 function saveStudySettings() {
-  appState.settings.dailyNew = Math.min(200, Math.max(1, Number(document.getElementById('daily-new').value || 20)));
+  appState.settings.dailyNew = Math.min(200, Math.max(1, Number(document.getElementById('daily-new').value || 75)));
   appState.settings.dailyReviews = Math.min(300, Math.max(1, Number(document.getElementById('daily-reviews').value || 30)));
   appState.settings.dailyGoal = Math.min(100, Math.max(1, Number(document.getElementById('daily-goal').value || DEFAULT_DAILY_GOAL)));
   appState.settings.goalsConfigured = true;
@@ -923,7 +990,7 @@ function renderSatPlan(masteredCount) {
   const daysLeft = Math.max(1, Math.ceil((new Date(`${appState.settings.satDate}T12:00:00`) - new Date()) / 86400000));
   const dailyWords = remaining ? Math.ceil(remaining / daysLeft) : 0;
   const weeklyWords = Math.min(remaining, dailyWords * 7);
-  const configured = Number(appState.settings.dailyNew || 20);
+  const configured = Number(appState.settings.dailyNew || 75);
   document.getElementById('sat-days-left').textContent = daysLeft.toLocaleString();
   document.getElementById('sat-daily-words').textContent = dailyWords.toLocaleString();
   document.getElementById('sat-weekly-words').textContent = weeklyWords.toLocaleString();
@@ -2069,6 +2136,11 @@ async function initializeApp() {
     pdfWords = Array.isArray(loadedWords) ? loadedWords : [];
   } catch {
     pdfWords = [];
+  }
+  if (window.RU_PDF) {
+    pdfWords.forEach(row => {
+      if (!row[4] && window.RU_PDF[row[0]]) row[4] = window.RU_PDF[row[0]];
+    });
   }
   if (!appState.personalDecks[activeDeckId] && activeDeckId !== 'pdf') activeDeckId = MAIN_DECK_ID;
   renderPersonalDeckSelect();

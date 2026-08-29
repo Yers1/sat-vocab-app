@@ -46,16 +46,27 @@ function dailyGoal() {
   return Math.max(1, Number((appState.settings || {}).dailyGoal || DEFAULT_DAILY_GOAL));
 }
 
+function newDailyTarget() {
+  return Math.max(1, Number((appState.settings || {}).dailyNew || 75));
+}
+
+// Mirror of the Study page rule: a day counts once you learn the day's new-word
+// target, or (deck exhausted) once you clear your review quota.
+function dayComplete(dateKey) {
+  const newDone = (appState.newActivity || {})[dateKey] || 0;
+  const reviewsDone = (appState.activity || {})[dateKey] || 0;
+  return newDone >= newDailyTarget() || reviewsDone >= dailyGoal();
+}
+
 function calculateStreak() {
   let streak = 0;
   let recoveryUsed = 0;
   const recoveryDays = Number((appState.settings || {}).recoveryDays || 1);
   const cursor = new Date();
   cursor.setHours(12, 0, 0, 0);
-  if ((appState.activity[localDateKey(cursor)] || 0) < dailyGoal()) cursor.setDate(cursor.getDate() - 1);
+  if (!dayComplete(localDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
   for (let day = 0; day < 365; day += 1) {
-    const count = appState.activity[localDateKey(cursor)] || 0;
-    if (count >= dailyGoal()) streak += 1;
+    if (dayComplete(localDateKey(cursor))) streak += 1;
     else if (recoveryUsed < recoveryDays && streak > 0) recoveryUsed += 1;
     else break;
     cursor.setDate(cursor.getDate() - 1);
@@ -327,9 +338,13 @@ function renderProfileHeatmap() {
     const date = new Date(start);
     date.setDate(start.getDate() + offset);
     const key = localDateKey(date);
-    const count = Number((appState.activity || {})[key] || 0);
-    const level = count >= 30 ? 4 : count >= 20 ? 3 : count >= 10 ? 2 : count > 0 ? 1 : 0;
-    cells.push(`<span class="heat-day ${level ? `l${level}` : ''}" title="${key}: ${count} reviews"></span>`);
+    const learned = Number((appState.newActivity || {})[key] || 0);
+    const reviews = Number((appState.activity || {})[key] || 0);
+    const target = newDailyTarget();
+    const share = learned / target;
+    let level = share >= 1 ? 4 : share >= 0.66 ? 3 : share >= 0.33 ? 2 : learned > 0 ? 1 : 0;
+    if (!level && reviews >= dailyGoal()) level = 2;
+    cells.push(`<span class="heat-day ${level ? `l${level}` : ''}" title="${key}: ${learned}/${target} new words · ${reviews} reviews"></span>`);
   }
   document.getElementById('profile-heatmap').innerHTML = cells.join('');
   document.getElementById('activity-year').textContent = new Date().getFullYear();

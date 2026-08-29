@@ -192,6 +192,34 @@ function groupDisplayName() {
   return ((typeof appState !== 'undefined' && appState.profile && appState.profile.name) || 'SAT learner').slice(0, 32);
 }
 
+// Pull the name from the Groups-view field into the profile before create/join,
+// so nobody lands on the leaderboard as the default "SAT learner".
+function ensureDisplayName() {
+  const el = document.getElementById('group-display-name');
+  const typed = (el && el.value || '').trim().slice(0, 32);
+  if (typed) {
+    if (typeof appState !== 'undefined') {
+      appState.profile = appState.profile || {};
+      appState.profile.name = typed;
+      if (typeof saveAppState === 'function') saveAppState();
+    }
+    return true;
+  }
+  const current = (typeof appState !== 'undefined' && appState.profile && appState.profile.name) || '';
+  return Boolean(current) && current !== 'SAT learner';
+}
+
+function nameNeededMsg() {
+  return (typeof localText === 'function' && localText('groups.nameNeeded')) || 'Enter your name first — it shows on the leaderboard.';
+}
+
+// Editing the name field while already in a group updates the leaderboard live.
+async function onGroupNameChange() {
+  if (!ensureDisplayName() || !groupCode) return;
+  await pushGroupStats();
+  await refreshGroupBoard();
+}
+
 function groupStatRow() {
   const metrics = latestProfileMetrics || (typeof profileMetrics === 'function' ? profileMetrics() : {});
   let learned = 0;
@@ -227,6 +255,7 @@ function groupInviteLink() {
 }
 
 async function createGroup(name) {
+  if (!ensureDisplayName()) return showToast(nameNeededMsg());
   if (!cloudClient) await initializeCloudSync();
   if (!cloudClient) return showToast('Add your Supabase project first.');
   if (!cloudUser) {
@@ -247,6 +276,7 @@ async function createGroup(name) {
 async function joinGroupByCode(code, quiet) {
   code = String(code || '').trim().toUpperCase();
   if (!code) return showToast('Enter a group code.');
+  if (!quiet && !ensureDisplayName()) return showToast(nameNeededMsg());
   if (!cloudClient) await initializeCloudSync();
   if (!cloudClient) return showToast('Add your Supabase project first.');
   if (!cloudUser) {
@@ -299,6 +329,11 @@ async function refreshGroupBoard() {
 function renderGroupPanel() {
   const view = document.getElementById('groups-view');
   if (!view) return;
+  const nameInput = document.getElementById('group-display-name');
+  if (nameInput && !nameInput.value) {
+    const current = (typeof appState !== 'undefined' && appState.profile && appState.profile.name) || '';
+    if (current && current !== 'SAT learner') nameInput.value = current;
+  }
   const inGroup = Boolean(groupCode);
   const joinCard = document.getElementById('group-join-card');
   const liveCard = document.getElementById('group-live-card');

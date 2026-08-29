@@ -494,7 +494,8 @@
   .group-block + .group-block { margin-top:18px; padding-top:18px; border-top:1px solid var(--border); }
   .group-block h3 { font:700 1.05rem 'Playfair Display',serif; margin-bottom:10px; }
   .group-form { display:grid; grid-template-columns:1fr auto; gap:8px; }
-  .group-form input { min-width:0; border:1px solid var(--border); background:var(--card); color:var(--text); padding:12px; border-radius:6px; font:inherit; font-size:.75rem; }
+  .group-form input, .group-name-field { min-width:0; border:1px solid var(--border); background:var(--card); color:var(--text); padding:12px; border-radius:6px; font:inherit; font-size:.75rem; }
+  .group-name-field { width:100%; }
   .group-form button { border:0; background:var(--accent); color:#fff; padding:12px 18px; border-radius:6px; cursor:pointer; font-size:.72rem; white-space:nowrap; }
   .group-note { color:#8a5a2a; background:#f3ead6; border-left:3px solid #d39242; padding:10px 12px; font-size:.66rem; line-height:1.55; margin-top:14px; }
   .group-code-box { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; background:#262a24; color:#fff8e9; border-radius:12px; padding:16px 18px; margin-bottom:18px; }
@@ -912,6 +913,13 @@
       <p class="groups-sub" data-i18n="groups.sub">One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.</p>
     </div>
 
+    <div class="group-card">
+      <div class="group-block">
+        <h3 data-i18n="groups.you">Your name</h3>
+        <input class="group-name-field" id="group-display-name" maxlength="32" autocomplete="off" onchange="onGroupNameChange()" data-i18n-ph="groups.youPh" placeholder="shown on the leaderboard">
+      </div>
+    </div>
+
     <div class="group-card" id="group-join-card">
       <div class="group-block">
         <h3 data-i18n="groups.create">Create a group</h3>
@@ -941,7 +949,7 @@
 <dialog class="onboarding-dialog" id="onboarding-dialog" aria-labelledby="onboarding-title">
   <div class="onboarding-shell"><aside class="onboarding-rail"><img src="icon.svg" alt="SAT Vocab"><div class="onboarding-step-list"><span class="active" data-onboarding-marker="1"><i></i><b data-i18n="onboarding.language">Language</b></span><span data-onboarding-marker="2"><i></i><b data-i18n="onboarding.plan">Your plan</b></span><span data-onboarding-marker="3"><i></i><b data-i18n="onboarding.diagnostic">Diagnostic</b></span></div></aside><section class="onboarding-main">
     <div class="onboarding-step active" data-onboarding-step="1"><h2 id="onboarding-title" data-i18n="onboarding.choose">Choose your language</h2><p>The interface and your translation field will follow this choice. You can change it later.</p><div class="choice-grid" id="locale-choices"><button class="choice-card selected" type="button" data-locale="en"><strong>English</strong>English interface</button><button class="choice-card" type="button" data-locale="ru"><strong>Русский</strong>Русский интерфейс</button><button class="choice-card" type="button" data-locale="kk"><strong>Қазақша</strong>Қазақша интерфейс</button></div></div>
-    <div class="onboarding-step" data-onboarding-step="2"><h2 data-i18n="onboarding.build">Build your SAT plan</h2><p>Set a real deadline and a sustainable daily minimum. You can always study more.</p><div class="onboarding-fields"><label>SAT date<input id="onboarding-sat-date" type="date"></label><label>Daily reviews<input id="onboarding-daily-goal" type="number" min="5" max="100" value="20"></label></div></div>
+    <div class="onboarding-step" data-onboarding-step="2"><h2 data-i18n="onboarding.build">Build your SAT plan</h2><p>Set a real deadline and a sustainable daily minimum. You can always study more.</p><div class="onboarding-fields"><label style="grid-column:1/-1"><span data-i18n="groups.you">Your name</span><input id="onboarding-name" maxlength="32" autocomplete="off" data-i18n-ph="groups.youPh" placeholder="shown on the group leaderboard"></label><label>SAT date<input id="onboarding-sat-date" type="date"></label><label>Daily reviews<input id="onboarding-daily-goal" type="number" min="5" max="100" value="20"></label></div></div>
     <div class="onboarding-step" data-onboarding-step="3"><h2 data-i18n="onboarding.quick">Quick diagnostic</h2><p>Fifteen questions estimate what you already know so your first session does not waste time. Optional — you can skip straight to studying.</p><div class="diagnostic-card"><small id="diagnostic-progress">1 / 15</small><h3 id="diagnostic-word">Preparing…</h3><div class="diagnostic-options" id="diagnostic-options"></div></div><p class="side-copy hidden" id="diagnostic-skip-hint" style="margin-top:12px">No time? The button below skips the diagnostic and builds your plan now.</p></div>
     <div class="onboarding-actions"><button type="button" id="onboarding-back" class="hidden" onclick="moveOnboarding(-1)" data-i18n="action.back">Back</button><button type="button" class="primary" id="onboarding-next" onclick="moveOnboarding(1)" data-i18n="action.continue">Continue</button></div>
   </section></div>

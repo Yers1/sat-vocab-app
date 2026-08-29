@@ -22,7 +22,8 @@
     .shell { width:min(1120px,100%); margin:0 auto; }
     .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:18px; }
     .profile-nav { display:flex;gap:4px;align-items:center; }.profile-nav a { color:#756f64;text-decoration:none;padding:8px 9px;border-radius:5px;font-size:.61rem; }.profile-nav a:hover,.profile-nav a.active { background:var(--ink);color:white; }
-    .brand { display:flex; align-items:center; gap:10px; }
+    .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); }
+    .brand:hover strong { text-decoration:underline; }
     .brand-mark { width:35px;height:35px;display:block;border-radius:9px 9px 3px 9px;overflow:hidden;box-shadow:0 5px 15px rgba(34,39,32,.16); }
     .brand-mark img { width:100%;height:100%;display:block; }
     .brand strong { display:block;font:700 1rem 'Playfair Display',serif; }
@@ -101,8 +102,8 @@
 <body>
   <main class="shell">
     <header class="topbar">
-      <div class="brand"><div class="brand-mark"><img src="icon.svg" alt=""></div><div><strong>SAT Vocab</strong><span data-profile-i18n="brand.profile">learner profile</span></div></div>
-      <nav class="profile-nav" aria-label="App sections"><a href="index.html?view=study" data-profile-i18n="nav.study">Study</a><a href="index.html?view=library" data-profile-i18n="nav.library">Library</a><a href="index.html?view=progress" data-profile-i18n="nav.progress">Progress</a><a class="active" href="profile.html" data-profile-i18n="nav.profile">Profile</a></nav>
+      <a class="brand" href="index.html?view=study" aria-label="Back to SAT Vocab"><div class="brand-mark"><img src="icon.svg" alt=""></div><div><strong>SAT Vocab</strong><span data-profile-i18n="brand.profile">learner profile</span></div></a>
+      <nav class="profile-nav" aria-label="App sections"><a href="index.html?view=study" data-profile-i18n="nav.study">Study</a><a href="index.html?view=library" data-profile-i18n="nav.library">Library</a><a href="index.html?view=progress" data-profile-i18n="nav.progress">Progress</a><a href="index.html?view=groups" data-profile-i18n="nav.groups">Groups</a><a class="active" href="profile.html" data-profile-i18n="nav.profile">Profile</a></nav>
     </header>
     <section class="profile tier-bronze" id="profile-card" aria-labelledby="profile-title">
       <div class="profile-head">

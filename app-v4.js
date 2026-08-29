@@ -94,7 +94,7 @@ let quickAutofilledWord = '';
 const UI_COPY = {
   en: {
     'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','brand.tagline':'focused recall trainer',
-    'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.',
+    'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.you':'Your name','groups.youPh':'shown on the leaderboard','groups.nameNeeded':'Enter your name first — it shows on the leaderboard.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.',
     'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
     'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
     'plan.start':'Start plan','plan.more':'+20 more','plan.all':'Study all','road.title':'Road to Obsidian','road.full':'Full roadmap →',
@@ -107,7 +107,7 @@ const UI_COPY = {
   },
   ru: {
     'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','brand.tagline':'тренажёр активного запоминания',
-    'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.',
+    'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.you':'Твоё имя','groups.youPh':'видно в таблице лидеров','groups.nameNeeded':'Сначала впиши имя — оно видно в таблице лидеров.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.',
     'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
     'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
     'plan.start':'Начать план','plan.more':'+20 ещё','plan.all':'Учить всё','road.title':'Путь к Obsidian','road.full':'Вся карта →',
@@ -120,7 +120,7 @@ const UI_COPY = {
   },
   kk: {
     'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
-    'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.',
+    'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.you':'Атың','groups.youPh':'көшбасшылар кестесінде көрінеді','groups.nameNeeded':'Алдымен атыңды жаз — ол кестеде көрінеді.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.',
     'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
     'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
     'plan.start':'Жоспарды бастау','plan.more':'+20 тағы','plan.all':'Бәрін оқу','road.title':'Obsidian жолы','road.full':'Толық жол картасы →',
@@ -144,6 +144,7 @@ function applyLocale(temporaryLocale = '') {
   const localText = key => (UI_COPY[locale] && UI_COPY[locale][key]) || UI_COPY.en[key] || key;
   document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = localText(element.dataset.i18n); });
   document.querySelectorAll('[data-i18n-html]').forEach(element => { element.innerHTML = localText(element.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(element => { element.setAttribute('placeholder', localText(element.dataset.i18nPh)); });
 }
 
 function applyWorkspaceView() {
@@ -2114,6 +2115,8 @@ function finishOnboarding() {
   appState.settings.locale = onboardingLocale;
   appState.settings.satDate = document.getElementById('onboarding-sat-date').value;
   appState.settings.dailyGoal = Math.min(100, Math.max(5, Number(document.getElementById('onboarding-daily-goal').value || 20)));
+  const onboardName = (document.getElementById('onboarding-name').value || '').trim().slice(0, 32);
+  if (onboardName) appState.profile.name = onboardName;
   appState.settings.onboardingComplete = true;
   appState.profile.translationLanguage = languageNames[onboardingLocale];
   saveAppState();

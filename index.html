@@ -396,6 +396,19 @@
   .btn:hover { transform: translateY(-2px); }
   .btn:active { transform: translateY(1px) scale(.99); }
   .btn:disabled { opacity: .42; cursor: not-allowed; transform: none; }
+  .srs-counts { display:flex; align-items:center; gap:14px; font:600 .66rem 'DM Mono',monospace; color:var(--muted); margin-bottom:8px; flex-wrap:wrap; }
+  .srs-counts b { font-size:.92rem; margin-right:4px; font-variant-numeric:tabular-nums; }
+  .srs-counts .srs-new b { color:#3f6fa5; }
+  .srs-counts .srs-learn b { color:#b6842f; }
+  .srs-counts .srs-due b { color:#2f7d54; }
+  .srs-spacer { flex:1; }
+  .card-state { align-self:flex-start; margin-bottom:14px; font:700 .56rem/1 'DM Mono',monospace; letter-spacing:.16em; text-transform:uppercase; padding:5px 8px; border-radius:4px; background:#3a4038; color:#c7ccc2; }
+  .card-state.new { background:#26415f; color:#bcd6f2; }
+  .card-state.learning { background:#6f521c; color:#f2d9a4; }
+  .card-state.review { background:#1e5236; color:#a6e0bf; }
+  .card-state:empty { display:none; }
+  .btn .btn-ivl { display:block; margin-top:3px; font:400 .55rem/1 'DM Mono',monospace; opacity:.78; }
+  .btn-ivl:empty { display:none; }
   .speaker { position: absolute; right: 22px; top: 22px; border: 1px solid #596057; color: #d9ddd4; background: transparent; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; z-index: 2; }
   .speaker:hover { background: #3c423a; }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 0 0 26px; background: var(--border); }
@@ -736,18 +749,26 @@
       </section>
 
       <div id="flash-mode">
-        <div class="progress-head"><span data-i18n="study.progress">Session progress</span><span id="progress-copy">0 / 30 mastered</span></div>
+        <div class="srs-counts" id="srs-counts" aria-label="Cards left in this session">
+          <span class="srs-new"><b id="srs-new">0</b><span data-i18n="srs.new">new</span></span>
+          <span class="srs-learn"><b id="srs-learn">0</b><span data-i18n="srs.learning">learning</span></span>
+          <span class="srs-due"><b id="srs-due">0</b><span data-i18n="srs.review">review</span></span>
+          <span class="srs-spacer"></span>
+          <span id="progress-copy">0 / 30 mastered</span>
+        </div>
         <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
         <div class="flashcard-wrap" onclick="flipCard()" onkeydown="handleCardKey(event)" role="button" tabindex="0" aria-label="Flip vocabulary card">
           <div class="flashcard" id="flashcard">
             <article class="face front">
               <button class="speaker" onclick="speakWord(event)" aria-label="Pronounce word">▶</button>
+              <span class="card-state" id="flash-state"></span>
               <div class="face-label" data-i18n="card.word">English word</div>
               <div class="word" id="flash-word">—</div>
               <div class="pos" id="flash-pos"></div>
               <div class="hint" data-i18n="card.reveal">click card or press Space to reveal</div>
             </article>
             <article class="face back">
+              <span class="card-state" id="flash-state-back"></span>
               <div class="face-label" data-i18n="card.meaning">Meaning</div>
               <div class="definition" id="flash-def"></div>
               <div class="translation" id="flash-ru"></div>
@@ -756,10 +777,10 @@
           </div>
         </div>
         <div class="actions" id="rating-actions">
-          <button class="btn btn-again" onclick="rateCard('again')" data-i18n="rating.again">1 · Again</button>
-          <button class="btn btn-hard" onclick="rateCard('hard')" data-i18n="rating.hard">2 · Hard</button>
-          <button class="btn btn-know" onclick="rateCard('know')" data-i18n="rating.know">3 · Know it</button>
-          <button class="btn btn-easy" onclick="rateCard('easy')" data-i18n="rating.easy">4 · Easy</button>
+          <button class="btn btn-again" onclick="rateCard('again')"><span data-i18n="rating.again">1 · Again</span><small class="btn-ivl" id="ivl-again"></small></button>
+          <button class="btn btn-hard" onclick="rateCard('hard')"><span data-i18n="rating.hard">2 · Hard</span><small class="btn-ivl" id="ivl-hard"></small></button>
+          <button class="btn btn-know" onclick="rateCard('know')"><span data-i18n="rating.know">3 · Know it</span><small class="btn-ivl" id="ivl-know"></small></button>
+          <button class="btn btn-easy" onclick="rateCard('easy')"><span data-i18n="rating.easy">4 · Easy</span><small class="btn-ivl" id="ivl-easy"></small></button>
         </div>
         <div class="rating-receipt" id="rating-receipt"><span>Your next rating will appear here.</span><span>Again · Hard · Know · Easy</span></div>
       </div>

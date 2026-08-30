@@ -93,7 +93,7 @@ let quickAutofilledWord = '';
 
 const UI_COPY = {
   en: {
-    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','brand.tagline':'focused recall trainer',
+    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','srs.new':'new','srs.learning':'learning','srs.review':'review','srs.today':'end of day','srs.d':'d','srs.mo':'mo','brand.tagline':'focused recall trainer',
     'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.you':'Your name','groups.youPh':'shown on the leaderboard','groups.nameNeeded':'Enter your name first — it shows on the leaderboard.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.',
     'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
     'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
@@ -106,7 +106,7 @@ const UI_COPY = {
     'onboarding.language':'Language','onboarding.plan':'Your plan','onboarding.diagnostic':'Diagnostic','onboarding.choose':'Choose your language','onboarding.build':'Build your SAT plan','onboarding.quick':'Quick diagnostic','action.back':'Back','action.continue':'Continue'
   },
   ru: {
-    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','brand.tagline':'тренажёр активного запоминания',
+    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','srs.new':'новых','srs.learning':'учу','srs.review':'повтор','srs.today':'сегодня','srs.d':'д','srs.mo':'мес','brand.tagline':'тренажёр активного запоминания',
     'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.you':'Твоё имя','groups.youPh':'видно в таблице лидеров','groups.nameNeeded':'Сначала впиши имя — оно видно в таблице лидеров.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.',
     'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
     'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
@@ -119,7 +119,7 @@ const UI_COPY = {
     'onboarding.language':'Язык','onboarding.plan':'Твой план','onboarding.diagnostic':'Диагностика','onboarding.choose':'Выбери язык','onboarding.build':'Составь план SAT','onboarding.quick':'Быстрая диагностика','action.back':'Назад','action.continue':'Продолжить'
   },
   kk: {
-    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
+    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','srs.new':'жаңа','srs.learning':'үйренуде','srs.review':'қайталау','srs.today':'бүгін','srs.d':'к','srs.mo':'ай','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
     'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.you':'Атың','groups.youPh':'көшбасшылар кестесінде көрінеді','groups.nameNeeded':'Алдымен атыңды жаз — ол кестеде көрінеді.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.',
     'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
     'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
@@ -138,10 +138,15 @@ function t(key) {
   return (UI_COPY[locale] && UI_COPY[locale][key]) || UI_COPY.en[key] || key;
 }
 
+let activeLocale = 'en';
+function localText(key) {
+  return (UI_COPY[activeLocale] && UI_COPY[activeLocale][key]) || UI_COPY.en[key] || key;
+}
+
 function applyLocale(temporaryLocale = '') {
   const locale = temporaryLocale || (appState.settings || {}).locale || 'en';
+  activeLocale = locale;
   document.documentElement.lang = locale;
-  const localText = key => (UI_COPY[locale] && UI_COPY[locale][key]) || UI_COPY.en[key] || key;
   document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = localText(element.dataset.i18n); });
   document.querySelectorAll('[data-i18n-html]').forEach(element => { element.innerHTML = localText(element.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-ph]').forEach(element => { element.setAttribute('placeholder', localText(element.dataset.i18nPh)); });
@@ -340,6 +345,33 @@ function isMasteredCard(record) {
   return Boolean(record && record.interval >= 7 && record.lastRating !== 'again');
 }
 
+// Anki-style card state for the badge shown on each card.
+function cardState(record) {
+  if (!record || !record.reviews) return 'new';
+  if (record.interval >= 7 && record.lastRating !== 'again') return 'review';
+  return 'learning';
+}
+
+// Approximate the interval a rating would produce, for the Anki-style preview
+// under each button. Mirrors updateSrs closely enough to guide the choice.
+function previewInterval(record, rating) {
+  if (rating === 'again') return localText('srs.today');
+  const first = !record || !record.reviews;
+  const prevStab = Math.max(.1, Number((record && (record.stability || record.interval)) || .2));
+  const diff = Math.min(10, Math.max(1, Number((record && record.difficulty) || 5)));
+  let days;
+  if (rating === 'hard') {
+    days = first ? 1 : Math.max(1, Math.round(prevStab * (1.15 + (10 - Math.min(10, diff + .15)) * .02)));
+  } else if (rating === 'easy') {
+    const nd = Math.max(1, diff - .45);
+    days = first ? 7 : Math.max(7, Math.round(Math.min(365, prevStab * (2.35 + (10 - nd) * .04))));
+  } else {
+    const nd = Math.max(1, diff - .2);
+    days = first ? 3 : Math.max(3, Math.round(Math.min(365, prevStab * (1.75 + (10 - nd) * .035))));
+  }
+  return days >= 30 ? `${Math.round(days / 30)}${localText('srs.mo')}` : `${days}${localText('srs.d')}`;
+}
+
 function updateSrs(index, rating, source = 'learn', metadata = {}) {
   const record = cardRecord(index, true);
   const today = localDateKey();
@@ -384,19 +416,26 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
   return record;
 }
 
+const KNOWN_REINFORCE = 6;
+
 function dailyPlanIndices() {
   const words = currentWords();
   const today = localDateKey();
   const due = [];
   const fresh = [];
+  const known = [];
   words.forEach((word, index) => {
     const record = cardRecord(index);
     if (isDueCard(record, today)) due.push(index);
     else if (isNewCard(record)) fresh.push(index);
+    else if (isMasteredCard(record)) known.push(index);
   });
   const selectedDue = shuffled(due).slice(0, appState.settings.dailyReviews);
   const selectedNew = shuffled(fresh).slice(0, appState.settings.dailyNew);
-  return { due, fresh, plan: [...selectedDue, ...selectedNew] };
+  // Cycle a few already-known words back in each session, like Quizlet — so words
+  // you've learned keep showing up instead of vanishing until their due date.
+  const selectedKnown = shuffled(known).slice(0, KNOWN_REINFORCE);
+  return { due, fresh, known, plan: [...selectedDue, ...selectedNew, ...selectedKnown] };
 }
 
 function startDailyPlan() {
@@ -542,18 +581,55 @@ function renderRatingReceipt(index, rating, record) {
   receipt.innerHTML = `<span><strong>${labels[rating]}</strong> · ${escapeHtml(currentWords()[index][0])}</span><span>${record.interval || '<1'} day interval · ${dueCopy}</span>`;
 }
 
+function renderStateBadge(record) {
+  const state = cardState(record);
+  const seen = record && record.reviews ? ` ×${record.reviews}` : '';
+  ['flash-state', 'flash-state-back'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `card-state ${state}`;
+    el.textContent = localText(`srs.${state}`) + seen;
+  });
+}
+
+function renderIntervalPreviews(record) {
+  ['again', 'hard', 'know', 'easy'].forEach(rating => {
+    const el = document.getElementById(`ivl-${rating}`);
+    if (el) el.textContent = previewInterval(record, rating);
+  });
+}
+
+function renderSrsCounts() {
+  let fresh = 0;
+  let learning = 0;
+  let review = 0;
+  queue.forEach(index => {
+    const state = cardState(cardRecord(index));
+    if (state === 'new') fresh += 1;
+    else if (state === 'learning') learning += 1;
+    else review += 1;
+  });
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  set('srs-new', fresh);
+  set('srs-learn', learning);
+  set('srs-due', review);
+}
+
 function renderCard() {
+  renderSrsCounts();
   if (!queue.length) return showLearningComplete();
   const index = queue[0];
   const word = currentWords()[index];
   const record = cardRecord(index);
   document.getElementById('flash-word').textContent = word[0];
-  document.getElementById('flash-pos').textContent = `${word[1] || '—'}${record && record.reviews ? ` · next interval ${record.interval || '<1'}d` : ' · new'}`;
+  document.getElementById('flash-pos').textContent = `${word[1] || '—'}${record && record.reviews ? ` · ${record.interval || '<1'}${localText('srs.d')}` : ` · ${localText('srs.new')}`}`;
   document.getElementById('flash-def').textContent = word[2];
   document.getElementById('flash-ru').textContent = word[4] || 'No translation saved';
   const exEl = document.getElementById('flash-ex');
   if (word[3]) exEl.innerHTML = highlightWord(word[3], word[0]);
   else exEl.textContent = `Write a sentence using “${word[0]}”.`;
+  renderStateBadge(record);
+  renderIntervalPreviews(record);
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
   document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
@@ -565,6 +641,8 @@ function showLearningComplete() {
   document.getElementById('flash-def').textContent = 'The current set is complete — your study is not limited.';
   document.getElementById('flash-ru').textContent = 'This set is complete. Continue with 20 more cards or study the full deck.';
   document.getElementById('flash-ex').textContent = 'Use “+20 more”, “Study all”, Type, or Context to continue.';
+  ['flash-state', 'flash-state-back'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = ''; el.className = 'card-state'; } });
+  ['again', 'hard', 'know', 'easy'].forEach(r => { const el = document.getElementById(`ivl-${r}`); if (el) el.textContent = ''; });
   document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
 }
 

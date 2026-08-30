@@ -93,7 +93,7 @@ let quickAutofilledWord = '';
 
 const UI_COPY = {
   en: {
-    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','srs.new':'new','srs.learning':'learning','srs.review':'review','srs.today':'end of day','srs.d':'d','srs.mo':'mo','brand.tagline':'focused recall trainer',
+    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','srs.new':'new','srs.learning':'learning','srs.review':'review','srs.today':'end of day','srs.d':'d','srs.mo':'mo','ql.learning':'Still learning','ql.know':'Know','ql.restart':'Restart','ql.roundDone':'Keep it up!','ql.allDone':'You know all of them!','ql.keep':'Review {n} terms','ql.round':'Round','brand.tagline':'focused recall trainer',
     'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.you':'Your name','groups.youPh':'shown on the leaderboard','groups.nameNeeded':'Enter your name first — it shows on the leaderboard.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.',
     'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
     'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
@@ -106,7 +106,7 @@ const UI_COPY = {
     'onboarding.language':'Language','onboarding.plan':'Your plan','onboarding.diagnostic':'Diagnostic','onboarding.choose':'Choose your language','onboarding.build':'Build your SAT plan','onboarding.quick':'Quick diagnostic','action.back':'Back','action.continue':'Continue'
   },
   ru: {
-    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','srs.new':'новых','srs.learning':'учу','srs.review':'повтор','srs.today':'сегодня','srs.d':'д','srs.mo':'мес','brand.tagline':'тренажёр активного запоминания',
+    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','srs.new':'новых','srs.learning':'учу','srs.review':'повтор','srs.today':'сегодня','srs.d':'д','srs.mo':'мес','ql.learning':'Ещё учу','ql.know':'Знаю','ql.restart':'Заново','ql.roundDone':'Так держать!','ql.allDone':'Ты знаешь их все!','ql.keep':'Повторить {n}','ql.round':'Раунд','brand.tagline':'тренажёр активного запоминания',
     'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.you':'Твоё имя','groups.youPh':'видно в таблице лидеров','groups.nameNeeded':'Сначала впиши имя — оно видно в таблице лидеров.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.',
     'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
     'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
@@ -119,7 +119,7 @@ const UI_COPY = {
     'onboarding.language':'Язык','onboarding.plan':'Твой план','onboarding.diagnostic':'Диагностика','onboarding.choose':'Выбери язык','onboarding.build':'Составь план SAT','onboarding.quick':'Быстрая диагностика','action.back':'Назад','action.continue':'Продолжить'
   },
   kk: {
-    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','srs.new':'жаңа','srs.learning':'үйренуде','srs.review':'қайталау','srs.today':'бүгін','srs.d':'к','srs.mo':'ай','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
+    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','srs.new':'жаңа','srs.learning':'үйренуде','srs.review':'қайталау','srs.today':'бүгін','srs.d':'к','srs.mo':'ай','ql.learning':'Әлі үйренуде','ql.know':'Білемін','ql.restart':'Қайта','ql.roundDone':'Жарайсың!','ql.allDone':'Барлығын білесің!','ql.keep':'{n} сөзді қайтала','ql.round':'Раунд','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
     'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.you':'Атың','groups.youPh':'көшбасшылар кестесінде көрінеді','groups.nameNeeded':'Алдымен атыңды жаз — ол кестеде көрінеді.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.',
     'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
     'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
@@ -352,26 +352,6 @@ function cardState(record) {
   return 'learning';
 }
 
-// Approximate the interval a rating would produce, for the Anki-style preview
-// under each button. Mirrors updateSrs closely enough to guide the choice.
-function previewInterval(record, rating) {
-  if (rating === 'again') return localText('srs.today');
-  const first = !record || !record.reviews;
-  const prevStab = Math.max(.1, Number((record && (record.stability || record.interval)) || .2));
-  const diff = Math.min(10, Math.max(1, Number((record && record.difficulty) || 5)));
-  let days;
-  if (rating === 'hard') {
-    days = first ? 1 : Math.max(1, Math.round(prevStab * (1.15 + (10 - Math.min(10, diff + .15)) * .02)));
-  } else if (rating === 'easy') {
-    const nd = Math.max(1, diff - .45);
-    days = first ? 7 : Math.max(7, Math.round(Math.min(365, prevStab * (2.35 + (10 - nd) * .04))));
-  } else {
-    const nd = Math.max(1, diff - .2);
-    days = first ? 3 : Math.max(3, Math.round(Math.min(365, prevStab * (1.75 + (10 - nd) * .035))));
-  }
-  return days >= 30 ? `${Math.round(days / 30)}${localText('srs.mo')}` : `${days}${localText('srs.d')}`;
-}
-
 function updateSrs(index, rating, source = 'learn', metadata = {}) {
   const record = cardRecord(index, true);
   const today = localDateKey();
@@ -439,29 +419,26 @@ function dailyPlanIndices() {
 }
 
 function startDailyPlan() {
-  const plan = dailyPlanIndices();
-  // Reviews first, then new words (each group already shuffled inside dailyPlanIndices).
-  queue = plan.plan.slice();
-  sessionKind = 'daily';
-  if (!queue.length) {
+  let idx = dailyPlanIndices().plan.slice();
+  let kind = 'daily';
+  if (!idx.length) {
     const weak = weakIndices().slice(0, 10);
-    queue = weak.length ? weak : shuffled(currentWords().map((word, index) => index)).slice(0, 10);
-    sessionKind = 'refresh';
+    idx = weak.length ? weak : shuffled(currentWords().map((word, index) => index)).slice(0, 10);
+    kind = 'refresh';
   }
+  startFlashcards(idx, kind);
   setMode('flash');
-  renderCard();
-  showToast(`${queue.length} cards ready in your ${sessionKind} session.`);
+  showToast(`${idx.length} cards ready in your ${kind} session.`);
 }
 
 function startExtraSession(amount = 20) {
   const { due, fresh } = dailyPlanIndices();
   const prioritized = [...new Set([...due, ...fresh, ...weakIndices(), ...currentWords().map((word, index) => index)])];
   const limit = amount === 'all' ? prioritized.length : Math.max(1, Number(amount || 20));
-  queue = shuffled(prioritized).slice(0, limit);
-  sessionKind = amount === 'all' ? 'full deck' : 'extra';
+  const idx = shuffled(prioritized).slice(0, limit);
+  startFlashcards(idx, amount === 'all' ? 'full deck' : 'extra');
   setMode('flash');
-  renderCard();
-  showToast(`${queue.length} cards added. You can keep studying as long as your focus is good.`);
+  showToast(`${idx.length} cards added. You can keep studying as long as your focus is good.`);
 }
 
 function weakIndices() {
@@ -484,10 +461,8 @@ function startMistakeSession(kind) {
     showToast(kind === 'mistakes' ? 'No recent mistakes in this deck.' : 'No weak words yet. Complete a few reviews first.');
     return;
   }
-  queue = shuffled(selected).slice(0, 20);
-  sessionKind = kind;
+  startFlashcards(shuffled(selected).slice(0, 20), kind);
   setMode('flash');
-  renderCard();
 }
 
 function switchDeck(deckId) {
@@ -503,10 +478,10 @@ function switchDeck(deckId) {
   document.getElementById('personal-tab-name').textContent = deckId === 'pdf' ? appState.personalDecks[MAIN_DECK_ID].name : currentDeckName();
   document.getElementById('deck-eyebrow').textContent = `${currentDeckName()} · ${currentWords().length} words`;
   document.getElementById('side-deck-title').textContent = currentDeckName();
-  queue = shuffled(dailyPlanIndices().plan);
   updateDeckLabels();
   renderPersonalDeckSelect();
   renderAll();
+  startFlashcards(dailyPlanIndices().plan, 'daily');
   setMode('flash');
 }
 
@@ -529,8 +504,8 @@ function setMode(nextMode) {
   });
   document.getElementById('results-mode').classList.add('hidden');
   if (mode === 'flash') {
-    if (!queue.length) queue = shuffled(dailyPlanIndices().plan);
-    renderCard();
+    if (!flashTotal && !queue.length) startFlashcards(dailyPlanIndices().plan, 'daily');
+    else renderCard();
   } else if (mode === 'type') startTypeSession();
   else if (mode === 'context') startContextSession();
   else if (mode === 'quiz') startQuiz();
@@ -541,7 +516,7 @@ function flipCard() {
   if (!queue.length) return;
   flipped = !flipped;
   document.getElementById('flashcard').classList.toggle('flipped', flipped);
-  document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = !flipped);
+  document.querySelectorAll('#ql-sort button').forEach(button => button.disabled = !flipped);
 }
 
 function handleCardKey(event) {
@@ -561,25 +536,17 @@ function speakWord(event) {
   speechSynthesis.speak(utterance);
 }
 
-function rateCard(rating) {
-  if (!flipped || !queue.length) return;
-  const index = queue.shift();
-  const record = updateSrs(index, rating, 'learn');
-  renderRatingReceipt(index, rating, record);
-  if (rating === 'again') queue.splice(Math.min(3, queue.length), 0, index);
-  else if (rating === 'hard' && queue.length < 18) queue.push(index);
-  renderAll();
-  renderCard();
-}
-
-function renderRatingReceipt(index, rating, record) {
-  const receipt = document.getElementById('rating-receipt');
-  if (!receipt) return;
-  const labels = { again: 'Again', hard: 'Hard', know: 'Know it', easy: 'Easy' };
-  const dueCopy = record.due === localDateKey() ? 'returns today' : `next ${record.due}`;
-  receipt.className = `rating-receipt ${rating}`;
-  receipt.innerHTML = `<span><strong>${labels[rating]}</strong> · ${escapeHtml(currentWords()[index][0])}</span><span>${record.interval || '<1'} day interval · ${dueCopy}</span>`;
-}
+// ---------------------------------------------------------------------------
+// Learn mode — Quizlet-style flashcards: flip, sort each card into
+// "Still learning" or "Know", finish the round, then re-study the
+// still-learning pile until everything is known.
+// ---------------------------------------------------------------------------
+let flashTotal = 0;
+let flashLearn = [];
+let flashKnow = 0;
+let flashSeen = 0;
+let flashRoundNo = 1;
+let flashKnownTotal = 0;
 
 function renderStateBadge(record) {
   const state = cardState(record);
@@ -592,32 +559,48 @@ function renderStateBadge(record) {
   });
 }
 
-function renderIntervalPreviews(record) {
-  ['again', 'hard', 'know', 'easy'].forEach(rating => {
-    const el = document.getElementById(`ivl-${rating}`);
-    if (el) el.textContent = previewInterval(record, rating);
-  });
+function renderQlProgress() {
+  const learnN = flashLearn.length;
+  const total = flashTotal || 1;
+  const learnEl = document.getElementById('ql-seg-learn');
+  const knowEl = document.getElementById('ql-seg-know');
+  if (learnEl) learnEl.style.width = `${(learnN / total) * 100}%`;
+  if (knowEl) knowEl.style.width = `${(flashKnow / total) * 100}%`;
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  set('ql-learn-n', learnN);
+  set('ql-know-n', flashKnow);
+  set('ql-counter', `${Math.min(flashSeen + 1, flashTotal)} / ${flashTotal}`);
 }
 
-function renderSrsCounts() {
-  let fresh = 0;
-  let learning = 0;
-  let review = 0;
-  queue.forEach(index => {
-    const state = cardState(cardRecord(index));
-    if (state === 'new') fresh += 1;
-    else if (state === 'learning') learning += 1;
-    else review += 1;
-  });
-  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  set('srs-new', fresh);
-  set('srs-learn', learning);
-  set('srs-due', review);
+function showFlashSubviews(studying) {
+  const toggle = (id, hide) => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', hide); };
+  toggle('flashcard-wrap', !studying);
+  toggle('ql-nav', !studying);
+  toggle('ql-sort', !studying);
+  toggle('ql-recap', studying);
+}
+
+function startFlashcards(indices, kind) {
+  const list = (indices || []).slice();
+  sessionKind = kind || sessionKind || 'daily';
+  flashTotal = list.length;
+  flashLearn = [];
+  flashKnow = 0;
+  flashSeen = 0;
+  flashRoundNo = 1;
+  flashKnownTotal = 0;
+  queue = shuffled(list);
+  renderCard();
 }
 
 function renderCard() {
-  renderSrsCounts();
-  if (!queue.length) return showLearningComplete();
+  if (!queue.length) {
+    if (flashTotal) return showRoundRecap();
+    showFlashSubviews(true);
+    ['flash-word', 'flash-pos', 'flash-def', 'flash-ru', 'flash-ex'].forEach(id => { document.getElementById(id).textContent = id === 'flash-word' ? '—' : ''; });
+    return;
+  }
+  showFlashSubviews(true);
   const index = queue[0];
   const word = currentWords()[index];
   const record = cardRecord(index);
@@ -629,21 +612,63 @@ function renderCard() {
   if (word[3]) exEl.innerHTML = highlightWord(word[3], word[0]);
   else exEl.textContent = `Write a sentence using “${word[0]}”.`;
   renderStateBadge(record);
-  renderIntervalPreviews(record);
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
-  document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
+  document.querySelectorAll('#ql-sort button').forEach(button => button.disabled = true);
+  renderQlProgress();
 }
 
-function showLearningComplete() {
-  document.getElementById('flash-word').textContent = 'Done';
-  document.getElementById('flash-pos').textContent = `${sessionKind} session complete`;
-  document.getElementById('flash-def').textContent = 'The current set is complete — your study is not limited.';
-  document.getElementById('flash-ru').textContent = 'This set is complete. Continue with 20 more cards or study the full deck.';
-  document.getElementById('flash-ex').textContent = 'Use “+20 more”, “Study all”, Type, or Context to continue.';
-  ['flash-state', 'flash-state-back'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = ''; el.className = 'card-state'; } });
-  ['again', 'hard', 'know', 'easy'].forEach(r => { const el = document.getElementById(`ivl-${r}`); if (el) el.textContent = ''; });
-  document.querySelectorAll('#rating-actions button').forEach(button => button.disabled = true);
+function markCard(kind) {
+  if (!flipped || !queue.length) return;
+  const index = queue.shift();
+  flashSeen += 1;
+  if (kind === 'know') {
+    flashKnow += 1;
+    flashKnownTotal += 1;
+    updateSrs(index, 'know', 'learn');
+  } else {
+    flashLearn.push(index);
+    updateSrs(index, 'again', 'learn');
+  }
+  renderAll();
+  renderCard();
+}
+
+function stepCard(direction) {
+  if (queue.length < 2) return;
+  if (direction > 0) queue.push(queue.shift());
+  else queue.unshift(queue.pop());
+  renderCard();
+}
+
+function showRoundRecap() {
+  showFlashSubviews(false);
+  const learnN = flashLearn.length;
+  const done = learnN === 0;
+  document.getElementById('ql-recap-know-n').textContent = flashKnow;
+  document.getElementById('ql-recap-learn-n').textContent = learnN;
+  document.getElementById('ql-recap-title').textContent = done
+    ? localText('ql.allDone')
+    : `${localText('ql.round')} ${flashRoundNo} · ${localText('ql.roundDone')}`;
+  const cont = document.getElementById('ql-recap-continue');
+  cont.classList.toggle('hidden', done);
+  cont.textContent = localText('ql.keep').replace('{n}', learnN);
+}
+
+function nextRound() {
+  if (!flashLearn.length) return;
+  const again = flashLearn.slice();
+  flashRoundNo += 1;
+  flashTotal = again.length;
+  flashLearn = [];
+  flashKnow = 0;
+  flashSeen = 0;
+  queue = shuffled(again);
+  renderCard();
+}
+
+function restartFlashcards() {
+  startFlashcards(dailyPlanIndices().plan, 'daily');
 }
 
 function practicePool(limit = 10) {
@@ -899,8 +924,10 @@ function renderProgress() {
   document.getElementById('new-count').textContent = fresh;
   document.getElementById('learning-count').textContent = learning;
   document.getElementById('mastered-count').textContent = mastered;
-  document.getElementById('progress-copy').textContent = `${mastered} / ${words.length} mastered`;
-  document.getElementById('progress-bar').style.width = `${words.length ? (mastered / words.length) * 100 : 0}%`;
+  const progressCopy = document.getElementById('progress-copy');
+  if (progressCopy) progressCopy.textContent = `${mastered} / ${words.length} mastered`;
+  const progressBar = document.getElementById('progress-bar');
+  if (progressBar) progressBar.style.width = `${words.length ? (mastered / words.length) * 100 : 0}%`;
   document.getElementById('word-list').innerHTML = words.slice(0, 300).map((word, index) => {
     const record = cardRecord(index);
     const status = isMasteredCard(record) ? 'mastered' : !isNewCard(record) ? 'learning' : '';
@@ -2207,10 +2234,9 @@ function finishOnboarding() {
 
 document.addEventListener('keydown', event => {
   if (mode !== 'flash' || ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(event.target.tagName)) return;
-  if (event.key === '1') rateCard('again');
-  if (event.key === '2') rateCard('hard');
-  if (event.key === '3') rateCard('know');
-  if (event.key === '4') rateCard('easy');
+  if (event.code === 'Space') { event.preventDefault(); flipCard(); }
+  else if (event.key === 'ArrowLeft' || event.key === '1') markCard('learning');
+  else if (event.key === 'ArrowRight' || event.key === '2') markCard('know');
 });
 
 async function initializeApp() {

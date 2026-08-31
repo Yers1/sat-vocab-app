@@ -49,6 +49,7 @@ const emptyState = () => ({
   dictionaryCache: {},
   activity: {},
   newActivity: {},
+  flashSessions: {},
   settings: { reminders: [], dailyNew: 75, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true, onboardingComplete: false, locale: 'en', satDate: '' },
   profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, translationLanguage: 'Russian' },
   lastStudy: new Date().toISOString()
@@ -94,7 +95,7 @@ let quickAutofilledWord = '';
 const UI_COPY = {
   en: {
     'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','srs.new':'new','srs.learning':'learning','srs.review':'review','srs.today':'end of day','srs.d':'d','srs.mo':'mo','ql.learning':'Still learning','ql.know':'Know','ql.restart':'Restart','ql.roundDone':'Keep it up!','ql.allDone':'You know all of them!','ql.keep':'Review {n} terms','ql.round':'Round','brand.tagline':'focused recall trainer',
-    'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.you':'Your name','groups.youPh':'shown on the leaderboard','groups.nameNeeded':'Enter your name first — it shows on the leaderboard.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.',
+    'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.you':'Your name','groups.youPh':'shown on the leaderboard','groups.nameNeeded':'Enter your name first — it shows on the leaderboard.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.','acct.title':'Account (optional)','acct.sub':'Sign up with email to back up your words and your current stack, and study on any device.','acct.pw':'password (6+ characters)','acct.login':'Log in','acct.signup':'Sign up','acct.logout':'Log out',
     'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
     'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
     'plan.start':'Start plan','plan.more':'+20 more','plan.all':'Study all','road.title':'Road to Obsidian','road.full':'Full roadmap →',
@@ -107,7 +108,7 @@ const UI_COPY = {
   },
   ru: {
     'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','srs.new':'новых','srs.learning':'учу','srs.review':'повтор','srs.today':'сегодня','srs.d':'д','srs.mo':'мес','ql.learning':'Ещё учу','ql.know':'Знаю','ql.restart':'Заново','ql.roundDone':'Так держать!','ql.allDone':'Ты знаешь их все!','ql.keep':'Повторить {n}','ql.round':'Раунд','brand.tagline':'тренажёр активного запоминания',
-    'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.you':'Твоё имя','groups.youPh':'видно в таблице лидеров','groups.nameNeeded':'Сначала впиши имя — оно видно в таблице лидеров.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.',
+    'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.you':'Твоё имя','groups.youPh':'видно в таблице лидеров','groups.nameNeeded':'Сначала впиши имя — оно видно в таблице лидеров.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.','acct.title':'Аккаунт (необязательно)','acct.sub':'Зарегистрируйся по эмайл, чтобы сохранить слова и текущую стопку и учиться с любого устройства.','acct.pw':'пароль (6+ символов)','acct.login':'Войти','acct.signup':'Регистрация','acct.logout':'Выйти',
     'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
     'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
     'plan.start':'Начать план','plan.more':'+20 ещё','plan.all':'Учить всё','road.title':'Путь к Obsidian','road.full':'Вся карта →',
@@ -120,7 +121,7 @@ const UI_COPY = {
   },
   kk: {
     'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','srs.new':'жаңа','srs.learning':'үйренуде','srs.review':'қайталау','srs.today':'бүгін','srs.d':'к','srs.mo':'ай','ql.learning':'Әлі үйренуде','ql.know':'Білемін','ql.restart':'Қайта','ql.roundDone':'Жарайсың!','ql.allDone':'Барлығын білесің!','ql.keep':'{n} сөзді қайтала','ql.round':'Раунд','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
-    'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.you':'Атың','groups.youPh':'көшбасшылар кестесінде көрінеді','groups.nameNeeded':'Алдымен атыңды жаз — ол кестеде көрінеді.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.',
+    'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.you':'Атың','groups.youPh':'көшбасшылар кестесінде көрінеді','groups.nameNeeded':'Алдымен атыңды жаз — ол кестеде көрінеді.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.','acct.title':'Аккаунт (міндетті емес)','acct.sub':'Сөздерің мен ағымдағы стегіңді сақтап, кез келген құрылғыдан оқу үшін эмайлмен тіркел.','acct.pw':'құпиясөз (6+ таңба)','acct.login':'Кіру','acct.signup':'Тіркелу','acct.logout':'Шығу',
     'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
     'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
     'plan.start':'Жоспарды бастау','plan.more':'+20 тағы','plan.all':'Бәрін оқу','road.title':'Obsidian жолы','road.full':'Толық жол картасы →',
@@ -467,6 +468,7 @@ function startMistakeSession(kind) {
 
 function switchDeck(deckId) {
   if (deckId !== 'pdf' && !appState.personalDecks[deckId]) deckId = MAIN_DECK_ID;
+  saveFlashSession();
   activeDeckId = deckId;
   selectedLibraryWords.clear();
   cancelWordEdit(false);
@@ -481,7 +483,7 @@ function switchDeck(deckId) {
   updateDeckLabels();
   renderPersonalDeckSelect();
   renderAll();
-  startFlashcards(dailyPlanIndices().plan, 'daily');
+  if (!restoreFlashSession()) startFlashcards(dailyPlanIndices().plan, 'daily');
   setMode('flash');
 }
 
@@ -548,6 +550,43 @@ let flashSeen = 0;
 let flashRoundNo = 1;
 let flashKnownTotal = 0;
 
+// Keep the in-progress stack (per deck) in appState so closing the tab, opening
+// Profile, or switching decks and coming back resumes exactly where you stopped.
+function saveFlashSession() {
+  if (!flashTotal && !queue.length) return;
+  if (!appState.flashSessions) appState.flashSessions = {};
+  appState.flashSessions[activeDeckId] = {
+    queue: queue.slice(),
+    learn: flashLearn.slice(),
+    know: flashKnow,
+    seen: flashSeen,
+    round: flashRoundNo,
+    total: flashTotal,
+    knownTotal: flashKnownTotal,
+    kind: sessionKind
+  };
+  saveAppState();
+}
+
+function restoreFlashSession() {
+  const s = (appState.flashSessions || {})[activeDeckId];
+  if (!s) return false;
+  const size = currentWords().length;
+  const valid = list => Array.isArray(list) && list.every(i => Number.isInteger(i) && i >= 0 && i < size);
+  if (!valid(s.queue) || !valid(s.learn)) return false;
+  if (!s.queue.length && !s.learn.length) return false;
+  queue = s.queue.slice();
+  flashLearn = s.learn.slice();
+  flashKnow = Number(s.know) || 0;
+  flashSeen = Number(s.seen) || 0;
+  flashRoundNo = Number(s.round) || 1;
+  flashTotal = Number(s.total) || (queue.length + flashLearn.length);
+  flashKnownTotal = Number(s.knownTotal) || 0;
+  sessionKind = s.kind || 'daily';
+  renderCard();
+  return true;
+}
+
 function renderStateBadge(record) {
   const state = cardState(record);
   const seen = record && record.reviews ? ` ×${record.reviews}` : '';
@@ -590,6 +629,7 @@ function startFlashcards(indices, kind) {
   flashRoundNo = 1;
   flashKnownTotal = 0;
   queue = shuffled(list);
+  saveFlashSession();
   renderCard();
 }
 
@@ -630,6 +670,7 @@ function markCard(kind) {
     flashLearn.push(index);
     updateSrs(index, 'again', 'learn');
   }
+  saveFlashSession();
   renderAll();
   renderCard();
 }
@@ -638,6 +679,7 @@ function stepCard(direction) {
   if (queue.length < 2) return;
   if (direction > 0) queue.push(queue.shift());
   else queue.unshift(queue.pop());
+  saveFlashSession();
   renderCard();
 }
 
@@ -664,6 +706,7 @@ function nextRound() {
   flashKnow = 0;
   flashSeen = 0;
   queue = shuffled(again);
+  saveFlashSession();
   renderCard();
 }
 

@@ -527,6 +527,7 @@
   .group-form input, .group-name-field { min-width:0; border:1px solid var(--border); background:var(--card); color:var(--text); padding:12px; border-radius:6px; font:inherit; font-size:.75rem; }
   .group-name-field { width:100%; }
   .group-form button { border:0; background:var(--accent); color:#fff; padding:12px 18px; border-radius:6px; cursor:pointer; font-size:.72rem; white-space:nowrap; }
+  .group-form button.acct-ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
   .group-note { color:#8a5a2a; background:#f3ead6; border-left:3px solid #d39242; padding:10px 12px; font-size:.66rem; line-height:1.55; margin-top:14px; }
   .group-code-box { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; background:#262a24; color:#fff8e9; border-radius:12px; padding:16px 18px; margin-bottom:18px; }
   .group-code-box span { color:#aeb2a9; font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:4px; }
@@ -960,6 +961,24 @@
       <p class="eyebrow" data-i18n="groups.eyebrow">Compete with friends</p>
       <h2 id="groups-title" data-i18n="groups.title">Study groups</h2>
       <p class="groups-sub" data-i18n="groups.sub">One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.</p>
+    </div>
+
+    <div class="group-card hidden" id="account-card">
+      <div class="group-block" id="account-signedout">
+        <h3 data-i18n="acct.title">Account (optional)</h3>
+        <p class="groups-sub" style="margin:0 0 11px" data-i18n="acct.sub">Sign up with email to back up your words and your current stack, and study on any device.</p>
+        <input class="group-name-field" id="acct-email" type="email" autocomplete="email" placeholder="email">
+        <input class="group-name-field" id="acct-pw" type="password" autocomplete="current-password" style="margin-top:7px" data-i18n-ph="acct.pw" placeholder="password (6+ characters)">
+        <div class="group-form" style="margin-top:8px;grid-template-columns:1fr 1fr">
+          <button type="button" onclick="emailSignIn(acctEmail(), acctPassword())" data-i18n="acct.login">Log in</button>
+          <button type="button" class="acct-ghost" onclick="emailSignUp(acctEmail(), acctPassword())" data-i18n="acct.signup">Sign up</button>
+        </div>
+      </div>
+      <div class="group-block hidden" id="account-signedin">
+        <h3 data-i18n="acct.title">Account</h3>
+        <p class="groups-sub" id="acct-who" style="margin:0 0 11px"></p>
+        <button type="button" class="group-leave" onclick="emailSignOut()" data-i18n="acct.logout">Log out</button>
+      </div>
     </div>
 
     <div class="group-card">

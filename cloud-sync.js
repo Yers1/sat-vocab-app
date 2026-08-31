@@ -154,7 +154,50 @@ async function signOutCloud() {
   cloudUser = null;
   setCloudState('Cloud ready · sign in');
   showToast('Signed out on this device. Local data was kept.');
+  renderGroupPanel();
 }
+
+// ---- Email + password accounts (backup + study across devices) ------------
+function validEmailPassword(email, password) {
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email || '').trim())) { showToast('Enter a valid email address.'); return false; }
+  if (String(password || '').length < 6) { showToast('Password must be at least 6 characters.'); return false; }
+  return true;
+}
+
+async function emailSignUp(email, password) {
+  if (!validEmailPassword(email, password)) return;
+  if (!cloudClient) await initializeCloudSync();
+  if (!cloudClient) return showToast('Add your Supabase project first.');
+  const { data, error } = await cloudClient.auth.signUp({ email: String(email).trim(), password });
+  if (error) return showToast(error.message);
+  if (data.user && !data.session) return showToast('Account made. Check your email to confirm it, then log in.');
+  cloudUser = data.user;
+  showToast('Account created — your words now back up to the cloud.');
+  renderGroupPanel();
+}
+
+async function emailSignIn(email, password) {
+  if (!validEmailPassword(email, password)) return;
+  if (!cloudClient) await initializeCloudSync();
+  if (!cloudClient) return showToast('Add your Supabase project first.');
+  const { data, error } = await cloudClient.auth.signInWithPassword({ email: String(email).trim(), password });
+  if (error) return showToast(error.message === 'Invalid login credentials' ? 'Wrong email or password.' : error.message);
+  cloudUser = data.user;
+  showToast('Signed in.');
+  renderGroupPanel();
+}
+
+async function emailSignOut() {
+  if (cloudClient) await cloudClient.auth.signOut({ scope: 'local' });
+  cloudUser = null;
+  groupCode = null;
+  try { localStorage.removeItem(GROUP_CODE_KEY); localStorage.removeItem(GROUP_NAME_KEY); } catch (e) { /* ignore */ }
+  showToast('Signed out. Your words stay on this device.');
+  renderGroupPanel();
+}
+
+function acctEmail() { const el = document.getElementById('acct-email'); return el ? el.value : ''; }
+function acctPassword() { const el = document.getElementById('acct-pw'); return el ? el.value : ''; }
 
 async function handleCloudSession() {
   if (!cloudClient || !cloudUser) return;
@@ -329,6 +372,17 @@ async function refreshGroupBoard() {
 function renderGroupPanel() {
   const view = document.getElementById('groups-view');
   if (!view) return;
+  // Account block: email login is optional, adds cloud backup + cross-device.
+  const signedIn = Boolean(cloudUser && cloudUser.email);
+  const outEl = document.getElementById('account-signedout');
+  const inEl = document.getElementById('account-signedin');
+  if (outEl) outEl.classList.toggle('hidden', signedIn);
+  if (inEl) inEl.classList.toggle('hidden', !signedIn);
+  const who = document.getElementById('acct-who');
+  if (who && signedIn) who.textContent = cloudUser.email;
+  const acctCard = document.getElementById('account-card');
+  if (acctCard) acctCard.classList.toggle('hidden', !cloudConfigured());
+
   const nameInput = document.getElementById('group-display-name');
   if (nameInput && !nameInput.value) {
     const current = (typeof appState !== 'undefined' && appState.profile && appState.profile.name) || '';

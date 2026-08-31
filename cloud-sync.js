@@ -169,8 +169,11 @@ async function emailSignUp(email, password) {
   if (!cloudClient) await initializeCloudSync();
   if (!cloudClient) return showToast('Add your Supabase project first.');
   const { data, error } = await cloudClient.auth.signUp({ email: String(email).trim(), password });
-  if (error) return showToast(error.message);
-  if (data.user && !data.session) return showToast('Account made. Check your email to confirm it, then log in.');
+  if (error) {
+    if (/already registered|already exists/i.test(error.message)) return emailSignIn(email, password);
+    return showToast(error.message);
+  }
+  if (data.user && !data.session) return showToast('Account made. Confirm it from your email, then log in.');
   cloudUser = data.user;
   showToast('Account created — your words now back up to the cloud.');
   renderGroupPanel();

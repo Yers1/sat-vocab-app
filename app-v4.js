@@ -94,7 +94,7 @@ let quickAutofilledWord = '';
 
 const UI_COPY = {
   en: {
-    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','srs.new':'new','srs.learning':'learning','srs.review':'review','srs.today':'end of day','srs.d':'d','srs.mo':'mo','ql.learning':'Still learning','ql.know':'Know','ql.restart':'Restart','ql.roundDone':'Keep it up!','ql.allDone':'You know all of them!','ql.keep':'Review {n} terms','ql.round':'Round','brand.tagline':'focused recall trainer',
+    'nav.study':'Study','nav.library':'Library','nav.progress':'Progress','nav.groups':'Groups','nav.profile':'Profile','srs.new':'new','srs.learning':'learning','srs.review':'review','srs.today':'end of day','srs.d':'d','srs.mo':'mo','ql.learning':'Still learning','ql.know':'Know','ql.restart':'Restart','ql.roundDone':'Keep it up!','ql.allDone':'You know all of them!','ql.keep':'Review {n} terms','ql.round':'Round','ql.kb':'Space flips · ← still learning · → know','brand.tagline':'focused recall trainer',
     'groups.eyebrow':'Compete with friends','groups.title':'Study groups','groups.sub':'One person creates a group and shares the code. Anyone with the code joins instantly — no account, no email.','groups.you':'Your name','groups.youPh':'shown on the leaderboard','groups.nameNeeded':'Enter your name first — it shows on the leaderboard.','groups.create':'Create a group','groups.createBtn':'Create','groups.join':'Join with a code','groups.joinBtn':'Join','groups.code':'Invite code','groups.copyCode':'Copy code','groups.copyLink':'Copy link','groups.leave':'Leave group','groups.setupNote':'Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.','acct.title':'Account (optional)','acct.sub':'Sign up with email to back up your words and your current stack, and study on any device.','acct.pw':'password (6+ characters)','acct.login':'Log in','acct.signup':'Sign up','acct.logout':'Log out',
     'hero.title':'Learn the hard ones <em>today.</em>','hero.copy':'Flip each card, then rate your recall honestly. Missed words return automatically. Your progress stays on this device.',
     'mode.learn':'Learn','mode.type':'Type','mode.context':'Context','mode.test':'Test','mode.stats':'Stats','mode.reset':'Reset progress',
@@ -107,7 +107,7 @@ const UI_COPY = {
     'onboarding.language':'Language','onboarding.plan':'Your plan','onboarding.diagnostic':'Diagnostic','onboarding.choose':'Choose your language','onboarding.build':'Build your SAT plan','onboarding.quick':'Quick diagnostic','action.back':'Back','action.continue':'Continue'
   },
   ru: {
-    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','srs.new':'новых','srs.learning':'учу','srs.review':'повтор','srs.today':'сегодня','srs.d':'д','srs.mo':'мес','ql.learning':'Ещё учу','ql.know':'Знаю','ql.restart':'Заново','ql.roundDone':'Так держать!','ql.allDone':'Ты знаешь их все!','ql.keep':'Повторить {n}','ql.round':'Раунд','brand.tagline':'тренажёр активного запоминания',
+    'nav.study':'Учиться','nav.library':'Слова','nav.progress':'Прогресс','nav.groups':'Группы','nav.profile':'Профиль','srs.new':'новых','srs.learning':'учу','srs.review':'повтор','srs.today':'сегодня','srs.d':'д','srs.mo':'мес','ql.learning':'Ещё учу','ql.know':'Знаю','ql.restart':'Заново','ql.roundDone':'Так держать!','ql.allDone':'Ты знаешь их все!','ql.keep':'Повторить {n}','ql.round':'Раунд','ql.kb':'Пробел — перевернуть · ← ещё учу · → знаю','brand.tagline':'тренажёр активного запоминания',
     'groups.eyebrow':'Соревнуйся с друзьями','groups.title':'Группы','groups.sub':'Один человек создаёт группу и делится кодом. Любой, у кого есть код, входит сразу — без аккаунта и почты.','groups.you':'Твоё имя','groups.youPh':'видно в таблице лидеров','groups.nameNeeded':'Сначала впиши имя — оно видно в таблице лидеров.','groups.create':'Создать группу','groups.createBtn':'Создать','groups.join':'Войти по коду','groups.joinBtn':'Войти','groups.code':'Код группы','groups.copyCode':'Копировать код','groups.copyLink':'Копировать ссылку','groups.leave':'Выйти из группы','groups.setupNote':'Группы для этого сайта ещё не подключены — владельцу нужно один раз настроить бэкенд.','acct.title':'Аккаунт (необязательно)','acct.sub':'Зарегистрируйся по эмайл, чтобы сохранить слова и текущую стопку и учиться с любого устройства.','acct.pw':'пароль (6+ символов)','acct.login':'Войти','acct.signup':'Регистрация','acct.logout':'Выйти',
     'hero.title':'Выучи сложные слова <em>сегодня.</em>','hero.copy':'Открой карточку и честно оцени ответ. Ошибки вернутся автоматически. Прогресс хранится на этом устройстве.',
     'mode.learn':'Карточки','mode.type':'Ввод','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Сбросить прогресс',
@@ -120,7 +120,7 @@ const UI_COPY = {
     'onboarding.language':'Язык','onboarding.plan':'Твой план','onboarding.diagnostic':'Диагностика','onboarding.choose':'Выбери язык','onboarding.build':'Составь план SAT','onboarding.quick':'Быстрая диагностика','action.back':'Назад','action.continue':'Продолжить'
   },
   kk: {
-    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','srs.new':'жаңа','srs.learning':'үйренуде','srs.review':'қайталау','srs.today':'бүгін','srs.d':'к','srs.mo':'ай','ql.learning':'Әлі үйренуде','ql.know':'Білемін','ql.restart':'Қайта','ql.roundDone':'Жарайсың!','ql.allDone':'Барлығын білесің!','ql.keep':'{n} сөзді қайтала','ql.round':'Раунд','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
+    'nav.study':'Оқу','nav.library':'Сөздер','nav.progress':'Прогресс','nav.groups':'Топтар','nav.profile':'Профиль','srs.new':'жаңа','srs.learning':'үйренуде','srs.review':'қайталау','srs.today':'бүгін','srs.d':'к','srs.mo':'ай','ql.learning':'Әлі үйренуде','ql.know':'Білемін','ql.restart':'Қайта','ql.roundDone':'Жарайсың!','ql.allDone':'Барлығын білесің!','ql.keep':'{n} сөзді қайтала','ql.round':'Раунд','ql.kb':'Бос орын — аудару · ← әлі үйренуде · → білемін','brand.tagline':'белсенді есте сақтау жаттықтырғышы',
     'groups.eyebrow':'Достармен жарыс','groups.title':'Топтар','groups.sub':'Біреу топ құрып, кодпен бөліседі. Коды бар кез келген адам бірден кіреді — аккаунтсыз, поштасыз.','groups.you':'Атың','groups.youPh':'көшбасшылар кестесінде көрінеді','groups.nameNeeded':'Алдымен атыңды жаз — ол кестеде көрінеді.','groups.create':'Топ құру','groups.createBtn':'Құру','groups.join':'Кодпен кіру','groups.joinBtn':'Кіру','groups.code':'Топ коды','groups.copyCode':'Кодты көшіру','groups.copyLink':'Сілтемені көшіру','groups.leave':'Топтан шығу','groups.setupNote':'Бұл сайт үшін топтар әлі қосылмаған — иесі бэкендті бір рет баптауы керек.','acct.title':'Аккаунт (міндетті емес)','acct.sub':'Сөздерің мен ағымдағы стегіңді сақтап, кез келген құрылғыдан оқу үшін эмайлмен тіркел.','acct.pw':'құпиясөз (6+ таңба)','acct.login':'Кіру','acct.signup':'Тіркелу','acct.logout':'Шығу',
     'hero.title':'Қиын сөздерді <em>бүгін</em> үйрен.','hero.copy':'Карточканы ашып, жауабыңды адал бағала. Қателер автоматты түрде қайта келеді. Прогресс осы құрылғыда сақталады.',
     'mode.learn':'Карточкалар','mode.type':'Жазу','mode.context':'Контекст','mode.test':'Тест','mode.stats':'Статистика','mode.reset':'Прогресті тазалау',
@@ -532,7 +532,7 @@ function speakWord(event) {
   event.stopPropagation();
   if (!queue.length || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(currentWords()[queue[0]][0]);
+  const utterance = new SpeechSynthesisUtterance(currentWords()[queue[flashCursor] ?? queue[0]][0]);
   utterance.lang = 'en-US';
   utterance.rate = 0.82;
   speechSynthesis.speak(utterance);
@@ -549,6 +549,7 @@ let flashKnow = 0;
 let flashSeen = 0;
 let flashRoundNo = 1;
 let flashKnownTotal = 0;
+let flashCursor = 0; // which card of the remaining queue is on screen (‹ › move it)
 
 // Keep the in-progress stack (per deck) in appState so closing the tab, opening
 // Profile, or switching decks and coming back resumes exactly where you stopped.
@@ -563,6 +564,7 @@ function saveFlashSession() {
     round: flashRoundNo,
     total: flashTotal,
     knownTotal: flashKnownTotal,
+    cursor: flashCursor,
     kind: sessionKind
   };
   saveAppState();
@@ -582,6 +584,7 @@ function restoreFlashSession() {
   flashRoundNo = Number(s.round) || 1;
   flashTotal = Number(s.total) || (queue.length + flashLearn.length);
   flashKnownTotal = Number(s.knownTotal) || 0;
+  flashCursor = Number.isInteger(s.cursor) && s.cursor < queue.length ? s.cursor : 0;
   sessionKind = s.kind || 'daily';
   renderCard();
   return true;
@@ -608,7 +611,8 @@ function renderQlProgress() {
   const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
   set('ql-learn-n', learnN);
   set('ql-know-n', flashKnow);
-  set('ql-counter', `${Math.min(flashSeen + 1, flashTotal)} / ${flashTotal}`);
+  const pos = Math.min(flashTotal - queue.length + flashCursor + 1, flashTotal);
+  set('ql-counter', `${Math.max(pos, 0)} / ${flashTotal}`);
 }
 
 function showFlashSubviews(studying) {
@@ -628,6 +632,7 @@ function startFlashcards(indices, kind) {
   flashSeen = 0;
   flashRoundNo = 1;
   flashKnownTotal = 0;
+  flashCursor = 0;
   queue = shuffled(list);
   saveFlashSession();
   renderCard();
@@ -641,7 +646,8 @@ function renderCard() {
     return;
   }
   showFlashSubviews(true);
-  const index = queue[0];
+  if (flashCursor >= queue.length || flashCursor < 0) flashCursor = 0;
+  const index = queue[flashCursor];
   const word = currentWords()[index];
   const record = cardRecord(index);
   document.getElementById('flash-word').textContent = word[0];
@@ -660,7 +666,8 @@ function renderCard() {
 
 function markCard(kind) {
   if (!flipped || !queue.length) return;
-  const index = queue.shift();
+  const index = queue.splice(flashCursor, 1)[0];
+  if (flashCursor >= queue.length) flashCursor = 0;
   flashSeen += 1;
   if (kind === 'know') {
     flashKnow += 1;
@@ -677,8 +684,7 @@ function markCard(kind) {
 
 function stepCard(direction) {
   if (queue.length < 2) return;
-  if (direction > 0) queue.push(queue.shift());
-  else queue.unshift(queue.pop());
+  flashCursor = (flashCursor + direction + queue.length) % queue.length;
   saveFlashSession();
   renderCard();
 }
@@ -705,6 +711,7 @@ function nextRound() {
   flashLearn = [];
   flashKnow = 0;
   flashSeen = 0;
+  flashCursor = 0;
   queue = shuffled(again);
   saveFlashSession();
   renderCard();

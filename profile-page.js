@@ -187,6 +187,8 @@ function renderProfile(populateForm = false) {
     return `<article class="collection"><strong>${escapeHtml(deck.name)}</strong><span>${deck.words} words · ${learned} mastered</span></article>`;
   }).join('');
   renderGamification(metrics);
+  if (typeof renderHero === 'function') renderHero();
+  if (typeof renderCollection === 'function') renderCollection();
   if (typeof updateCloudProfilePreview === 'function') updateCloudProfilePreview(metrics);
 }
 
@@ -405,9 +407,75 @@ function showToast(message) {
   showToast.timer = setTimeout(() => toast.classList.add('hidden'), 4200);
 }
 
+// ---- Cosmetics: hero on the profile head + the Collection shop -------------
+let collectTab = 'characters';
+
+function renderHero() {
+  if (typeof cosmeticState !== 'function') return;
+  const c = cosmeticState();
+  const av = document.getElementById('profile-avatar');
+  if (av) {
+    av.querySelectorAll('#profile-avatar-text, #profile-avatar-image').forEach(el => el.classList.add('hidden'));
+    let mount = av.querySelector('.hero-mount');
+    if (!mount) { mount = document.createElement('span'); av.appendChild(mount); }
+    mount.className = `hero-mount frame-${c.frame}`;
+    mount.innerHTML = characterSprite(characterSpec(c.character), 56);
+  }
+  const banner = document.getElementById('profile-banner');
+  if (banner) banner.className = `hero-banner banner-${c.banner}`;
+  if (typeof renderCrystalCounts === 'function') renderCrystalCounts();
+}
+
+function switchCollectTab(kind) {
+  collectTab = kind;
+  document.querySelectorAll('#collect-tabs .collect-tab').forEach(b => b.classList.toggle('active', b.dataset.collect === kind));
+  renderCollection();
+}
+
+function collectPreview(kind, item) {
+  if (kind === 'characters') return characterSprite(item.spec, 46);
+  if (kind === 'frames') return `<span class="hero-mount frame-${item.id} collect-frame-preview">${characterSprite(CHARACTERS[0].spec, 34)}</span>`;
+  return `<span class="ci-swatch hero-banner banner-${item.id}" style="height:34px;width:58px;display:block"></span>`;
+}
+
+function renderCollection() {
+  const grid = document.getElementById('collection-grid');
+  if (!grid || typeof CHARACTERS === 'undefined') return;
+  const kind = collectTab;
+  const list = { characters: CHARACTERS, frames: FRAMES, banners: BANNERS }[kind];
+  const c = cosmeticState();
+  const equipped = { characters: c.character, frames: c.frame, banners: c.banner }[kind];
+  const ctx = unlockContext();
+  grid.innerHTML = list.map(item => {
+    const owned = c.owned[kind].includes(item.id);
+    const isEq = item.id === equipped;
+    const canBuy = !owned && item.unlock.type === 'crystals' && ctx.crystals >= item.unlock.cost;
+    let state, btn;
+    if (isEq) { state = 'Equipped'; btn = ''; }
+    else if (owned) { state = 'Owned'; btn = `<button type="button" onclick="equipCosmeticAndRender('${kind}','${item.id}')">Equip</button>`; }
+    else if (item.unlock.type === 'crystals') { state = `${item.unlock.cost} crystals`; btn = `<button type="button" ${canBuy ? '' : 'disabled'} onclick="buyCosmeticAndRender('${kind}','${item.id}')">Buy</button>`; }
+    else { state = `Locked · ${unlockLabel(item)}`; btn = ''; }
+    return `<div class="collect-item${isEq ? ' equipped' : ''}${owned || isEq ? '' : ' locked'}">`
+      + collectPreview(kind, item)
+      + `<span class="ci-name">${escapeHtml(item.name)}</span>`
+      + `<span class="ci-state">${escapeHtml(state)}</span>`
+      + btn + `</div>`;
+  }).join('');
+}
+
+function equipCosmeticAndRender(kind, id) {
+  if (equipCosmetic(kind, id)) { renderHero(); renderCollection(); }
+}
+function buyCosmeticAndRender(kind, id) {
+  if (buyCosmetic(kind, id)) { renderCollection(); if (typeof renderCrystalCounts === 'function') renderCrystalCounts(); }
+}
+
 function initializeProfilePage() {
   localizeProfilePage();
+  if (typeof grantStartingCrystals === 'function') { grantStartingCrystals(); reconcileUnlocks(); }
   renderProfile(true);
+  renderHero();
+  renderCollection();
   document.getElementById('profile-settings').addEventListener('click', event => {
     if (event.target === event.currentTarget) closeProfileSettings();
   });

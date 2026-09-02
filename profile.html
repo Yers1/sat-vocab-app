@@ -107,6 +107,7 @@
       <nav class="profile-nav" aria-label="App sections"><a href="index.html?view=study" data-profile-i18n="nav.study">Study</a><a href="index.html?view=library" data-profile-i18n="nav.library">Library</a><a href="index.html?view=progress" data-profile-i18n="nav.progress">Progress</a><a href="index.html?view=groups" data-profile-i18n="nav.groups">Groups</a><a class="active" href="profile.html" data-profile-i18n="nav.profile">Profile</a></nav>
     </header>
     <section class="profile tier-bronze" id="profile-card" aria-labelledby="profile-title">
+      <div class="hero-banner banner-none" id="profile-banner"></div>
       <div class="profile-head">
         <div class="avatar" id="profile-avatar"><span id="profile-avatar-text">SL</span><img class="hidden" id="profile-avatar-image" alt="Selected profile avatar"></div>
         <div><p class="eyebrow" data-profile-i18n="profile.eyebrow">Learner profile</p><h1 id="profile-title">SAT learner</h1><p class="subtitle" id="profile-subtitle">Your vocabulary collections, consistency, and memory progress in one place.</p></div>
@@ -132,6 +133,16 @@
             <h2 data-profile-i18n="leader.title">Friends leaderboard</h2>
             <p class="leader-copy">Create or join a study group and compare progress on the <a href="index.html?view=groups">Groups</a> tab.</p>
           </div>
+        </section>
+        <section aria-labelledby="collection-title">
+          <div class="section-heading"><div><p class="eyebrow">Cosmetics</p><h2 id="collection-title">Collection</h2></div><span class="crystal-pill"><b data-crystal-count>0</b> crystals</span></div>
+          <p class="leader-copy">Earn crystals every time you learn a word. Heroes, frames and banners unlock by level, streak, mastery, achievements, or crystals.</p>
+          <div class="collect-tabs" id="collect-tabs">
+            <button type="button" class="collect-tab active" data-collect="characters" onclick="switchCollectTab('characters')">Heroes</button>
+            <button type="button" class="collect-tab" data-collect="frames" onclick="switchCollectTab('frames')">Frames</button>
+            <button type="button" class="collect-tab" data-collect="banners" onclick="switchCollectTab('banners')">Banners</button>
+          </div>
+          <div class="collection-grid" id="collection-grid"></div>
         </section>
       </div>
       <section class="achievement-section" aria-labelledby="achievement-title"><div class="section-heading"><div><p class="eyebrow" data-profile-i18n="achievements.eyebrow">Milestones</p><h2 id="achievement-title" data-profile-i18n="achievements.title">Achievements</h2><p class="section-intro" data-profile-i18n="achievements.copy">Permanent marks of discipline. Every unlocked relic adds bonus XP to your profile.</p></div><strong id="achievement-total">0 / 12 unlocked</strong></div><div class="achievement-grid" id="achievement-grid"></div></section>
@@ -159,6 +170,7 @@
   </main>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
   <script src="cloud-config.js"></script>
+  <script src="cosmetics.js"></script>
   <script src="profile-page.js"></script>
   <script src="cloud-sync.js"></script>
   <script>initializeProfilePage();</script>

@@ -539,10 +539,41 @@
   .group-board-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:4px; }
   .group-board-head h3 { font:700 1.2rem 'Playfair Display',serif; }
   .group-leave { border:1px solid var(--border); background:transparent; color:var(--muted); padding:7px 11px; border-radius:6px; cursor:pointer; font-size:.62rem; }
-  .group-board .leader-row { display:grid; grid-template-columns:26px minmax(90px,1fr) auto auto; gap:12px; align-items:center; border-top:1px solid var(--border); padding:13px 2px; font-size:.7rem; }
-  .group-board .leader-row span:last-child { color:var(--green); font-variant-numeric:tabular-nums; }
+  .group-board .leader-row { display:grid; grid-template-columns:22px 26px minmax(80px,1fr) auto auto; gap:10px; align-items:center; width:100%; text-align:left; border:0; border-top:1px solid var(--border); background:transparent; cursor:pointer; padding:12px 4px; font:inherit; font-size:.7rem; color:var(--text); }
+  .group-board .leader-row:hover { background:#f4efe3; }
+  .group-board .leader-row .lr-xp { color:var(--green); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .group-board .leader-row .lr-sub { color:var(--muted); font-size:.62rem; }
+  .group-board .leader-row .lr-rank { color:var(--muted); font-variant-numeric:tabular-nums; }
   .group-board .leader-row.is-me { background:var(--accent-soft); }
   .group-board .leader-row strong { font:700 .9rem 'Playfair Display',serif; }
+  .pixel-av { display:block; border-radius:5px; image-rendering:pixelated; }
+  .group-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .group-tab { border:1px solid var(--border); background:var(--card); color:var(--muted); padding:7px 12px; border-radius:999px; cursor:pointer; font-size:.64rem; }
+  .group-tab.active { background:var(--text); color:var(--card); border-color:var(--text); }
+  .group-podium { display:grid; grid-template-columns:repeat(3,1fr); align-items:end; gap:8px; margin:6px 0 18px; }
+  .group-podium:empty { display:none; }
+  .podium-slot { border:0; background:transparent; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; font:inherit; color:var(--text); }
+  .podium-medal { font-size:1.1rem; }
+  .podium-av { display:block; }
+  .podium-name { font:700 .68rem 'Playfair Display',serif; text-align:center; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .podium-xp { color:var(--green); font-size:.58rem; font-variant-numeric:tabular-nums; }
+  .podium-block { width:100%; border-radius:6px 6px 0 0; background:linear-gradient(#e7dec8,#d9cdae); }
+  .podium-slot.p1 .podium-block { height:64px; background:linear-gradient(#f0d98c,#e0b94b); }
+  .podium-slot.p2 .podium-block { height:44px; background:linear-gradient(#e2e2e2,#c7c7c7); }
+  .podium-slot.p3 .podium-block { height:32px; background:linear-gradient(#e6c8a6,#cfa77c); }
+  .podium-slot.is-me .podium-name { color:var(--accent); }
+  @media (prefers-reduced-motion:no-preference){ .podium-slot.p1 .podium-av { animation:podiumPop .5s ease; } }
+  @keyframes podiumPop { 0%{transform:scale(.6)} 70%{transform:scale(1.12)} 100%{transform:scale(1)} }
+  .member-overlay { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(30,33,29,.55); }
+  .member-card { position:relative; width:min(360px,100%); background:var(--card); border:1px solid var(--border); border-radius:16px 16px 6px 16px; padding:22px; box-shadow:0 24px 70px rgba(40,43,36,.3); }
+  .mc-close { position:absolute; right:12px; top:10px; border:0; background:transparent; font-size:1.3rem; line-height:1; cursor:pointer; color:var(--muted); }
+  .mc-head { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .mc-head strong { display:block; font:700 1.15rem 'Playfair Display',serif; }
+  .mc-head span { color:var(--muted); font-size:.62rem; }
+  .mc-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .mc-tile { background:#f5f0e5; border-radius:8px; padding:12px 8px; text-align:center; }
+  .mc-tile b { display:block; font:700 1.2rem 'Playfair Display',serif; font-variant-numeric:tabular-nums; }
+  .mc-tile span { color:var(--muted); font-size:.54rem; text-transform:uppercase; letter-spacing:.08em; }
   .install-btn { display: inline-flex; align-items: center; border: 1px solid var(--border); color: var(--text); background: var(--card); padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: .68rem; text-decoration: none; }
   .daily-plan { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 18px; padding: 15px 17px; margin-bottom: 18px; background: #f1ead8; border-left: 3px solid #d39242; }
   .daily-plan strong { display: block; font: 700 1rem/1.25 'Playfair Display', serif; margin-bottom: 4px; }
@@ -689,8 +720,9 @@
     .word { font-size: 2.4rem; }
     .definition, .example, .translation { overflow-wrap: anywhere; }
     .group-form { grid-template-columns: 1fr; }
-    .group-board .leader-row { grid-template-columns: 22px 1fr auto; }
-    .group-board .leader-row span:nth-child(3) { display: none; }
+    .group-board .leader-row { grid-template-columns: 26px 1fr auto; }
+    .group-board .leader-row .lr-rank, .group-board .leader-row .lr-sub { display: none; }
+    .mc-grid { grid-template-columns: 1fr 1fr; }
     .ql-kb { display: none; }
     .app-nav { overflow-x:auto; }.app-nav a { white-space:nowrap; }
     .onboarding-shell { grid-template-columns:1fr; }.onboarding-rail { border-right:0;border-bottom:1px solid #454b43;padding:18px; }.onboarding-rail img{margin:0 0 14px}.onboarding-step-list{grid-template-columns:repeat(3,1fr)}.onboarding-fields,.choice-grid{grid-template-columns:1fr}
@@ -993,6 +1025,20 @@
       </div>
     </div>
 
+    <div class="group-card hidden" id="group-live-card">
+      <div class="group-tabs" id="group-tabs"></div>
+      <div class="group-code-box">
+        <div><span data-i18n="groups.code">Invite code</span><strong id="group-code-label">——————</strong></div>
+        <div class="group-code-actions">
+          <button type="button" onclick="copyGroupCode()" data-i18n="groups.copyCode">Copy code</button>
+          <button type="button" onclick="copyGroupInvite()" data-i18n="groups.copyLink">Copy link</button>
+        </div>
+      </div>
+      <div class="group-board-head"><h3 id="group-name-label">Group</h3><button type="button" class="group-leave" onclick="leaveGroup()" data-i18n="groups.leave">Leave group</button></div>
+      <div class="group-podium" id="group-podium" aria-hidden="true"></div>
+      <div class="group-board" id="leaderboard-list" aria-live="polite"></div>
+    </div>
+
     <div class="group-card" id="group-join-card">
       <div class="group-block">
         <h3 data-i18n="groups.create">Create a group</h3>
@@ -1004,19 +1050,11 @@
       </div>
       <p class="group-note hidden" id="group-setup-note" data-i18n="groups.setupNote">Groups aren’t switched on for this site yet — the owner needs a one-time backend hookup.</p>
     </div>
-
-    <div class="group-card hidden" id="group-live-card">
-      <div class="group-code-box">
-        <div><span data-i18n="groups.code">Invite code</span><strong id="group-code-label">——————</strong></div>
-        <div class="group-code-actions">
-          <button type="button" onclick="copyGroupCode()" data-i18n="groups.copyCode">Copy code</button>
-          <button type="button" onclick="copyGroupInvite()" data-i18n="groups.copyLink">Copy link</button>
-        </div>
-      </div>
-      <div class="group-board-head"><h3 id="group-name-label">Group</h3><button type="button" class="group-leave" onclick="leaveGroup()" data-i18n="groups.leave">Leave group</button></div>
-      <div class="group-board" id="leaderboard-list" aria-live="polite"></div>
-    </div>
   </section>
+
+  <div class="member-overlay hidden" id="member-overlay" onclick="if(event.target===this)closeMemberCard()">
+    <div class="member-card" id="member-card" role="dialog" aria-modal="true"></div>
+  </div>
 </main>
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 <dialog class="onboarding-dialog" id="onboarding-dialog" aria-labelledby="onboarding-title">

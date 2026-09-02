@@ -397,7 +397,11 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
   return record;
 }
 
-const KNOWN_REINFORCE = 6;
+// Known words mixed back into each session for reinforcement: ~15% of the daily
+// new-word target, at least 4, capped at 25 so it never dominates.
+function knownReinforceCount() {
+  return Math.min(25, Math.max(4, Math.round(Number(appState.settings.dailyNew || 75) * 0.15)));
+}
 
 function dailyPlanIndices() {
   const words = currentWords();
@@ -415,7 +419,7 @@ function dailyPlanIndices() {
   const selectedNew = shuffled(fresh).slice(0, appState.settings.dailyNew);
   // Cycle a few already-known words back in each session, like Quizlet — so words
   // you've learned keep showing up instead of vanishing until their due date.
-  const selectedKnown = shuffled(known).slice(0, KNOWN_REINFORCE);
+  const selectedKnown = shuffled(known).slice(0, knownReinforceCount());
   return { due, fresh, known, plan: [...selectedDue, ...selectedNew, ...selectedKnown] };
 }
 

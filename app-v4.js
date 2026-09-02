@@ -666,27 +666,45 @@ function renderCard() {
   renderStateBadge(record);
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
+  const wrap = document.getElementById('flashcard-wrap');
+  if (wrap) {
+    wrap.classList.remove('fly-know', 'fly-learn', 'deal-in');
+    void wrap.offsetWidth; // restart the entrance animation on the reused node
+    wrap.classList.add('deal-in');
+  }
   document.querySelectorAll('#ql-sort button').forEach(button => button.disabled = true);
   document.querySelectorAll('.ql-arrow').forEach(button => { button.disabled = queue.length < 2; });
   renderQlProgress();
 }
 
+function prefersReducedMotion() {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function markCard(kind) {
   if (!flipped || !queue.length) return;
-  const index = queue.splice(flashCursor, 1)[0];
-  if (flashCursor >= queue.length) flashCursor = 0;
-  flashSeen += 1;
-  if (kind === 'know') {
-    flashKnow += 1;
-    flashKnownTotal += 1;
-    updateSrs(index, 'know', 'learn');
-  } else {
-    flashLearn.push(index);
-    updateSrs(index, 'again', 'learn');
-  }
-  saveFlashSession();
-  renderAll();
-  renderCard();
+  document.querySelectorAll('#ql-sort button').forEach(button => button.disabled = true);
+  const commit = () => {
+    const index = queue.splice(flashCursor, 1)[0];
+    if (flashCursor >= queue.length) flashCursor = 0;
+    flashSeen += 1;
+    if (kind === 'know') {
+      flashKnow += 1;
+      flashKnownTotal += 1;
+      updateSrs(index, 'know', 'learn');
+    } else {
+      flashLearn.push(index);
+      updateSrs(index, 'again', 'learn');
+    }
+    saveFlashSession();
+    renderAll();
+    renderCard();
+  };
+  const wrap = document.getElementById('flashcard-wrap');
+  if (prefersReducedMotion() || !wrap) return commit();
+  wrap.classList.remove('deal-in');
+  wrap.classList.add(kind === 'know' ? 'fly-know' : 'fly-learn');
+  setTimeout(commit, 210);
 }
 
 function stepCard(direction) {

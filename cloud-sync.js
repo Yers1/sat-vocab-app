@@ -467,7 +467,7 @@ async function refreshGroupBoard() {
     podium.innerHTML = order.filter(i => data[i]).map(i => {
       const e = data[i];
       return `<button type="button" class="podium-slot p${i + 1}${e.username === mine ? ' is-me' : ''}" onclick="showMemberCard(${i})">`
-        + `<span class="podium-medal">${['🥇', '🥈', '🥉'][i]}</span>`
+        + `<span class="podium-rank">${i + 1}</span>`
         + `<span class="podium-av">${pixelAvatarSvg(e.avatar || e.username, 44)}</span>`
         + `<span class="podium-name">${escapeHtml(e.username)}</span>`
         + `<span class="podium-xp">${Number(e.xp).toLocaleString()} XP</span>`

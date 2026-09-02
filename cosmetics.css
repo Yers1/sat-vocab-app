@@ -34,31 +34,42 @@
 @keyframes heroSpin { to { transform: rotate(360deg); } }
 
 /* ---- banners ---- */
+/* Pixel-art banners: flat colour bands (hard stops) + a 2px dither grid +
+   a marching pixel-chevron strip. Chunky border. No smooth gradients. */
 .hero-banner {
-  height: 74px; border-radius: 12px; position: relative; overflow: hidden;
-  background: #2b2f28;
+  height: 74px; border-radius: 4px; position: relative; overflow: hidden;
+  background: #2b2f28; image-rendering: pixelated;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,.4), inset 0 0 0 4px rgba(255,255,255,.07);
 }
+/* dither grid */
 .hero-banner::after {
   content: ""; position: absolute; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,.14) 1.4px, transparent 1.6px);
-  background-size: 12px 12px; mix-blend-mode: screen; opacity: .5;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 2px, transparent 2px 4px);
+  mix-blend-mode: overlay; opacity: .8; pointer-events: none;
 }
-.hero-banner.banner-none { background: transparent; }
-.hero-banner.banner-none::after { display: none; }
-.hero-banner.banner-dawn   { background: linear-gradient(105deg, #f0b7a0, #e08b6f 45%, #6a4a7a); }
-.hero-banner.banner-forest { background: linear-gradient(105deg, #12321f, #1f5c3c 60%, #3a835a); }
-.hero-banner.banner-ember  { background: linear-gradient(105deg, #2a0f0a, #7a2a18 55%, #d05a3c); }
-.hero-banner.banner-void   { background: linear-gradient(105deg, #14121c, #2a2540 55%, #45406a); }
-.hero-banner.banner-crystalline { background: linear-gradient(105deg, #123, #2b6a86 55%, #7fd7c4); }
-.hero-banner.banner-aurora { background: linear-gradient(105deg, #0f2a2e, #2b6a86 40%, #7f6ad0 75%, #c69be8); }
+/* pixel chevrons */
+.hero-banner::before {
+  content: ""; position: absolute; right: -14px; top: 0; bottom: 0; width: 62%;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,.16) 0 4px, transparent 4px 12px);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 70%);
+          mask: linear-gradient(90deg, transparent, #000 70%);
+}
+.hero-banner.banner-none { background: transparent; box-shadow: none; }
+.hero-banner.banner-none::before, .hero-banner.banner-none::after { display: none; }
+
+.hero-banner.banner-dawn       { background: linear-gradient(180deg, #f2c39c 0 22%, #e79a6f 22% 46%, #b06a86 46% 72%, #4a3a5f 72% 100%); }
+.hero-banner.banner-forest     { background: linear-gradient(180deg, #3a7d4f 0 26%, #256040 26% 56%, #143b26 56% 78%, #0d2818 78% 100%); }
+.hero-banner.banner-ember      { background: linear-gradient(180deg, #f0a24a 0 20%, #d95f2c 20% 44%, #7a2618 44% 72%, #2a0f0a 72% 100%); }
+.hero-banner.banner-void       { background: linear-gradient(180deg, #4a4470 0 24%, #2f2a4a 24% 52%, #1a1730 52% 78%, #0f0d1c 78% 100%); }
+.hero-banner.banner-crystalline{ background: linear-gradient(180deg, #a7e6dc 0 22%, #5fc0d0 22% 46%, #2b6a86 46% 72%, #133 72% 100%); }
+.hero-banner.banner-aurora     { background: linear-gradient(180deg, #7fd7c4 0 20%, #6aa0d0 20% 42%, #8f6ad0 42% 66%, #c69be8 66% 82%, #2a2540 82% 100%); }
+
 @media (prefers-reduced-motion: no-preference) {
-  .hero-banner:not(.banner-none)::before {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(100deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%);
-    transform: translateX(-120%); animation: bannerSheen 6s ease-in-out 2s infinite;
-  }
+  .hero-banner:not(.banner-none)::before { animation: bannerMarch 2.4s steps(3) infinite; }
 }
-@keyframes bannerSheen { 0%,70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+@keyframes bannerMarch { to { transform: translateX(12px); } }
 
 /* ---- collection / shop grid ---- */
 .crystal-pill { display: inline-flex; align-items: center; gap: 6px; font: 700 .74rem 'DM Mono', monospace; }

@@ -49,11 +49,18 @@ function grantStartingCrystals() {
   if (typeof saveAppState === 'function') saveAppState();
 }
 
-function grantCrystals(n) {
+const CRYSTAL_REASONS = { test: 'from the test', session: 'from that session', round: 'from that round' };
+
+function grantCrystals(n, reason) {
+  n = Math.round(n);
+  if (!n) return;
   const c = cosmeticState();
-  c.crystals = Math.max(0, c.crystals + Math.round(n));
+  c.crystals = Math.max(0, c.crystals + n);
   if (typeof saveAppState === 'function') saveAppState();
   renderCrystalCounts();
+  if (reason && n > 0 && typeof showToast === 'function') {
+    showToast(`◆ +${n} crystals ${CRYSTAL_REASONS[reason] || ''}`.trim());
+  }
 }
 
 function renderCrystalCounts() {

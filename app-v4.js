@@ -393,9 +393,8 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
   if (record.reviews === 1) {
     if (!appState.newActivity) appState.newActivity = {};
     appState.newActivity[today] = (appState.newActivity[today] || 0) + 1;
-    if (typeof grantCrystals === 'function') grantCrystals(3);
   }
-  if (!wasMastered && isMasteredCard(record) && typeof grantCrystals === 'function') grantCrystals(8);
+  void wasMastered;
   if (typeof reconcileUnlocks === 'function') reconcileUnlocks();
   recordActivity();
   saveAppState();
@@ -560,6 +559,7 @@ let flashRoundNo = 1;
 let flashKnownTotal = 0;
 let flashCursor = 0; // which card of the remaining queue is on screen (‹ › move it)
 let flashSource = []; // the indices this session was built from, for Restart
+let flashRoundRewarded = false; // one crystal payout per round
 
 // Keep the in-progress stack (per deck) in appState so closing the tab, opening
 // Profile, or switching decks and coming back resumes exactly where you stopped.
@@ -644,6 +644,7 @@ function startFlashcards(indices, kind) {
   flashRoundNo = 1;
   flashKnownTotal = 0;
   flashCursor = 0;
+  flashRoundRewarded = false;
   queue = shuffled(list);
   saveFlashSession();
   renderCard();
@@ -723,6 +724,10 @@ function showRoundRecap() {
   showFlashSubviews(false);
   const learnN = flashLearn.length;
   const done = learnN === 0;
+  if (!flashRoundRewarded && flashKnow > 0 && typeof grantCrystals === 'function') {
+    flashRoundRewarded = true;
+    grantCrystals(flashKnow, 'round');
+  }
   document.getElementById('ql-recap-know-n').textContent = flashKnow;
   document.getElementById('ql-recap-learn-n').textContent = learnN;
   document.getElementById('ql-recap-title').textContent = done
@@ -742,6 +747,7 @@ function nextRound() {
   flashKnow = 0;
   flashSeen = 0;
   flashCursor = 0;
+  flashRoundRewarded = false;
   queue = shuffled(again);
   saveFlashSession();
   renderCard();
@@ -951,6 +957,7 @@ function showQuizResults() {
   document.getElementById('results-mode').classList.remove('hidden');
   const percent = quizItems.length ? Math.round((quizScore / quizItems.length) * 100) : 0;
   document.getElementById('results-score').textContent = `${quizScore}/${quizItems.length}`;
+  if (typeof grantCrystals === 'function' && quizScore > 0) grantCrystals(quizScore * 3, 'test');
   document.getElementById('results-title').textContent = percent >= 90 ? 'Strong retrieval.' : 'One focused pass remains.';
   document.getElementById('results-msg').textContent = missedIndices.length ? `${missedIndices.length} missed words are due again today.` : 'Every answer was correct.';
   queue = shuffled([...new Set(missedIndices)]);
@@ -962,6 +969,7 @@ function showModeResults(title, score, message) {
   document.getElementById('results-title').textContent = title;
   document.getElementById('results-score').textContent = String(score);
   document.getElementById('results-msg').textContent = message;
+  if (typeof grantCrystals === 'function' && Number(score) > 0) grantCrystals(Math.round(Number(score) * 1.5), 'session');
 }
 
 function restartQuiz() {

@@ -571,10 +571,8 @@
   .group-podium { display:grid; grid-template-columns:repeat(3,1fr); align-items:end; gap:8px; margin:6px 0 18px; }
   .group-podium:empty { display:none; }
   .podium-slot { border:0; background:transparent; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; font:inherit; color:var(--text); }
-  .podium-rank { width:22px; height:22px; display:grid; place-items:center; border-radius:50%; font:800 .72rem/1 'DM Mono',monospace; color:#3a2f13; }
-  .podium-slot.p1 .podium-rank { background:#e6bd4f; box-shadow:0 0 0 3px rgba(230,189,79,.28); }
-  .podium-slot.p2 .podium-rank { background:#cfcfcf; color:#333; }
-  .podium-slot.p3 .podium-rank { background:#d0a577; color:#3a2513; }
+  .podium-rank { display:grid; place-items:center; height:26px; }
+  .podium-slot.p1 .podium-rank { filter:drop-shadow(0 0 6px rgba(230,189,79,.6)); }
   .podium-av { display:block; }
   .podium-name { font:700 .68rem 'Playfair Display',serif; text-align:center; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .podium-xp { color:var(--green); font-size:.58rem; font-variant-numeric:tabular-nums; }
@@ -785,7 +783,13 @@
   }
   @keyframes mainRoadPulse { 0% { box-shadow: 0 0 0 4px #272c26, 0 0 0 0 rgba(214,107,80,.65); } 100% { box-shadow: 0 0 0 4px #272c26, 0 0 0 14px transparent; } }
   @keyframes mainOrbit { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: no-preference) {
+    .pixel-medal { animation: medalShine 2.8s ease-in-out infinite; transform-origin: center; }
+    .podium-slot.p1 .pixel-medal { animation-delay: .4s; }
+  }
+  @keyframes medalShine { 0%,80%,100% { filter: brightness(1); } 88% { filter: brightness(1.35); } }
 </style>
+<link rel="stylesheet" href="cosmetics.css">
 </head>
 <body>
 <a class="skip-link" href="#study">Skip to study</a>
@@ -1105,6 +1109,7 @@
 <script src="pdf-words.js"></script>
 <script src="ru-pdf.js"></script>
 <script src="cloud-config.js"></script>
+<script src="cosmetics.js"></script>
 <script src="cloud-sync.js"></script>
 <script type="text/plain" id="legacy-v3-source">
 const RAW = [

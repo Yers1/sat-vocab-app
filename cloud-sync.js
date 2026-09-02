@@ -317,7 +317,7 @@ function groupStatRow() {
   const newToday = Number(((typeof appState !== 'undefined' && appState.newActivity) || {})[today] || 0);
   return {
     username: groupDisplayName(),
-    avatar: avatarSeed(),
+    avatar: (typeof avatarToken === 'function' ? avatarToken() : avatarSeed()),
     xp: Number(metrics.xp || 0),
     streak: Number(metrics.streak || 0),
     mastered: Number(metrics.mastered || 0),
@@ -443,9 +443,16 @@ async function pushGroupStats() {
 
 let lastBoardRows = [];
 
+// Render a peer's chosen hero + frame from the token stored in group_members.avatar.
+function heroMount(token, px) {
+  if (typeof tokenSprite !== 'function') return pixelAvatarSvg(token, px);
+  const frame = typeof tokenFrameClass === 'function' ? tokenFrameClass(token) : 'frame-none';
+  return `<span class="hero-mount ${frame}">${tokenSprite(token, px)}</span>`;
+}
+
 function boardRowInner(entry, rank) {
   return `<span class="lr-rank">${rank}</span>`
-    + `<span class="lr-av">${pixelAvatarSvg(entry.avatar || entry.username, 26)}</span>`
+    + `<span class="lr-av">${heroMount(entry.avatar || entry.username, 26)}</span>`
     + `<strong>${escapeHtml(entry.username)}</strong>`
     + `<span class="lr-sub">${entry.new_today} today · ${entry.streak}d · ${entry.mastered} mastered</span>`
     + `<span class="lr-xp">${Number(entry.xp).toLocaleString()} XP</span>`;
@@ -461,14 +468,20 @@ async function refreshGroupBoard() {
   if (!data || !data.length) { list.innerHTML = '<div class="leader-row"><span class="lr-rank">—</span><strong>No members yet</strong><span class="lr-sub">Share the invite code</span><span class="lr-xp">0 XP</span></div>'; return; }
   lastBoardRows = data;
   const mine = groupDisplayName();
+  // rough "friends" signal for referral unlocks: distinct peers across this board
+  if (typeof appState !== 'undefined' && appState.cosmetics) {
+    const peers = data.filter(x => x.username !== mine).length;
+    appState.cosmetics.referrals = Math.max(Number(appState.cosmetics.referrals) || 0, peers);
+  }
 
+  const medal = (rank, px) => (typeof pixelMedalSvg === 'function' ? pixelMedalSvg(rank, px) : `<span class="podium-rank">${rank}</span>`);
   if (podium && data.length >= 2) {
     const order = [1, 0, 2]; // 2nd, 1st, 3rd — visual left-to-right
     podium.innerHTML = order.filter(i => data[i]).map(i => {
       const e = data[i];
       return `<button type="button" class="podium-slot p${i + 1}${e.username === mine ? ' is-me' : ''}" onclick="showMemberCard(${i})">`
-        + `<span class="podium-rank">${i + 1}</span>`
-        + `<span class="podium-av">${pixelAvatarSvg(e.avatar || e.username, 44)}</span>`
+        + `<span class="podium-rank">${medal(i + 1, 26)}</span>`
+        + `<span class="podium-av">${heroMount(e.avatar || e.username, 44)}</span>`
         + `<span class="podium-name">${escapeHtml(e.username)}</span>`
         + `<span class="podium-xp">${Number(e.xp).toLocaleString()} XP</span>`
         + `<span class="podium-block"></span></button>`;
@@ -488,7 +501,7 @@ function showMemberCard(index) {
   const joined = e.joined_at ? new Date(e.joined_at).toLocaleDateString() : '—';
   const tile = (label, value) => `<div class="mc-tile"><b>${value}</b><span>${label}</span></div>`;
   card.innerHTML = `<button type="button" class="mc-close" aria-label="Close" onclick="closeMemberCard()">×</button>`
-    + `<div class="mc-head">${pixelAvatarSvg(e.avatar || e.username, 72)}<div><strong>${escapeHtml(e.username)}</strong><span>${escapeHtml(activeGroupName())} · joined ${joined}</span></div></div>`
+    + `<div class="mc-head">${heroMount(e.avatar || e.username, 72)}<div><strong>${escapeHtml(e.username)}</strong><span>${escapeHtml(activeGroupName())} · joined ${joined}</span></div></div>`
     + `<div class="mc-grid">`
     + tile('XP', Number(e.xp).toLocaleString())
     + tile('Streak', `${e.streak}d`)

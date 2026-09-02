@@ -50,6 +50,7 @@ const emptyState = () => ({
   activity: {},
   newActivity: {},
   flashSessions: {},
+  cosmetics: null,
   settings: { reminders: [], dailyNew: 75, dailyReviews: 30, dailyGoal: DEFAULT_DAILY_GOAL, recoveryDays: 1, goalsConfigured: true, onboardingComplete: false, locale: 'en', satDate: '' },
   profile: { name: 'SAT learner', bio: 'Building a stronger SAT vocabulary, one honest review at a time.', leaderboardOptIn: false, translationLanguage: 'Russian' },
   lastStudy: new Date().toISOString()
@@ -355,6 +356,7 @@ function cardState(record) {
 
 function updateSrs(index, rating, source = 'learn', metadata = {}) {
   const record = cardRecord(index, true);
+  const wasMastered = isMasteredCard(record);
   const today = localDateKey();
   record.reviews += 1;
   record.lastReview = new Date().toISOString();
@@ -391,7 +393,10 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
   if (record.reviews === 1) {
     if (!appState.newActivity) appState.newActivity = {};
     appState.newActivity[today] = (appState.newActivity[today] || 0) + 1;
+    if (typeof grantCrystals === 'function') grantCrystals(3);
   }
+  if (!wasMastered && isMasteredCard(record) && typeof grantCrystals === 'function') grantCrystals(8);
+  if (typeof reconcileUnlocks === 'function') reconcileUnlocks();
   recordActivity();
   saveAppState();
   return record;
@@ -1197,6 +1202,7 @@ function renderAll() {
   renderFocusedCounts();
   renderLibraryWords();
   renderProfile();
+  if (typeof reconcileUnlocks === 'function') { reconcileUnlocks(); renderCrystalCounts(); }
   if (mode === 'analytics') renderAnalytics();
 }
 
@@ -2340,6 +2346,7 @@ async function initializeApp() {
   updateDeckLabels();
   switchDeck(activeDeckId === 'pdf' && !pdfWords.length ? MAIN_DECK_ID : activeDeckId);
   applyWorkspaceView();
+  if (typeof grantStartingCrystals === 'function') { grantStartingCrystals(); reconcileUnlocks(); renderCrystalCounts(); }
   renderAll();
   renderProfile(true);
   checkReminder();

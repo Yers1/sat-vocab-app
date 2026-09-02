@@ -550,6 +550,7 @@ let flashSeen = 0;
 let flashRoundNo = 1;
 let flashKnownTotal = 0;
 let flashCursor = 0; // which card of the remaining queue is on screen (‹ › move it)
+let flashSource = []; // the indices this session was built from, for Restart
 
 // Keep the in-progress stack (per deck) in appState so closing the tab, opening
 // Profile, or switching decks and coming back resumes exactly where you stopped.
@@ -625,6 +626,7 @@ function showFlashSubviews(studying) {
 
 function startFlashcards(indices, kind) {
   const list = (indices || []).slice();
+  flashSource = list.slice();
   sessionKind = kind || sessionKind || 'daily';
   flashTotal = list.length;
   flashLearn = [];
@@ -661,6 +663,7 @@ function renderCard() {
   flipped = false;
   document.getElementById('flashcard').classList.remove('flipped');
   document.querySelectorAll('#ql-sort button').forEach(button => button.disabled = true);
+  document.querySelectorAll('.ql-arrow').forEach(button => { button.disabled = queue.length < 2; });
   renderQlProgress();
 }
 
@@ -718,7 +721,8 @@ function nextRound() {
 }
 
 function restartFlashcards() {
-  startFlashcards(dailyPlanIndices().plan, 'daily');
+  const source = flashSource.length ? flashSource : dailyPlanIndices().plan;
+  startFlashcards(source, sessionKind || 'daily');
 }
 
 function practicePool(limit = 10) {

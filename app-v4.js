@@ -356,7 +356,6 @@ function cardState(record) {
 
 function updateSrs(index, rating, source = 'learn', metadata = {}) {
   const record = cardRecord(index, true);
-  const wasMastered = isMasteredCard(record);
   const today = localDateKey();
   record.reviews += 1;
   record.lastReview = new Date().toISOString();
@@ -394,7 +393,6 @@ function updateSrs(index, rating, source = 'learn', metadata = {}) {
     if (!appState.newActivity) appState.newActivity = {};
     appState.newActivity[today] = (appState.newActivity[today] || 0) + 1;
   }
-  void wasMastered;
   if (typeof reconcileUnlocks === 'function') reconcileUnlocks();
   recordActivity();
   saveAppState();

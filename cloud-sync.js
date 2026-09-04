@@ -471,7 +471,12 @@ async function refreshGroupBoard() {
   // rough "friends" signal for referral unlocks: distinct peers across this board
   if (typeof appState !== 'undefined' && appState.cosmetics) {
     const peers = data.filter(x => x.username !== mine).length;
-    appState.cosmetics.referrals = Math.max(Number(appState.cosmetics.referrals) || 0, peers);
+    const before = Number(appState.cosmetics.referrals) || 0;
+    if (peers > before) {
+      appState.cosmetics.referrals = peers;
+      if (typeof saveAppState === 'function') saveAppState();
+      if (typeof reconcileUnlocks === 'function' && reconcileUnlocks() && typeof renderCollection === 'function') renderCollection();
+    }
   }
 
   const medal = (rank, px) => (typeof pixelMedalSvg === 'function' ? pixelMedalSvg(rank, px) : `<span class="podium-rank">${rank}</span>`);
